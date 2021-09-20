@@ -381,20 +381,20 @@ The Markov lag time is usually chosen by inspection of an implied timescale plot
 
 Context - do we need to worry about searching hyperparameters for the best combination? 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/wild-mouse-photography-4.jpg}
-    \caption{Top  VAMP scores for each protein/feature combination.}
-    \label{fig:1}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{figures/wild-mouse-photography-4.jpg}
+%     \caption{Top  VAMP scores for each protein/feature combination.}
+%     \label{fig:1}
+% \end{figure}
 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.8\textwidth]{figures/wild-mouse-photography-4.jpg}
-    \caption{Relevance of hyperparameters to properly specified VAMP scores.}
-    \label{fig:2}
-\end{figure}
+% \begin{figure}
+%     \centering
+%     \includegraphics[width=0.8\textwidth]{figures/wild-mouse-photography-4.jpg}
+%     \caption{Relevance of hyperparameters to properly specified VAMP scores.}
+%     \label{fig:2}
+% \end{figure}
 
 
 Comments: 
@@ -427,76 +427,381 @@ Comments:
 
 \section{Conclusions}
 
+\clearpage
 \section{Figures}
 
+Move to SI. 
+
+\clearpage
 \subsection{Choosing the Markov lag-time}
 
-\begin{figure}
+\begin{figure}[h]
     \centering
-    \includegraphics[height=0.8\textwidth]{figures/t_2_gradient_sharey_True_log_True_denom_delta_x.pdf}
+    \includegraphics[height=0.65\textheight]{figures/t_2_gradient_sharey_True_log_True_denom_delta_x.pdf}
     \caption{\textsc{Implied timescale gradient for all hyperparameter trials.} Each panel shows $\Delta t_{2}/\Delta \tau$: gradient of the dominant timescale ($t_{2}$) with respect to the Markov lag-time. The gradient was calculated for each bootstrap sample and then the median was taken. The horizontal black line is the threshold for determining the lag time. The vertical blue line is the chosen lag-time.}
     \label{fig:t2_gradient}
 \end{figure}
 
+\clearpage
+\subsection{Choosing the number of dominant processes}
 
-\subsection{Hyperparameter relevance and information sharing}
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=0.6\textheight]{figures/num_dominant_processes_count.pdf}
+    \caption{\textsc{Distribution of the number of dominant process.} For each hyperparameter trial the number of dominant processes was calculated by finding $\argmax_{i}\left[\mathrm{Med}[t_{i}/t_{i+1}]\right]$ for the $i = 1 - 11$, where the $\mathrm{Med}[t_{i}/t_{i+1}]$ is the median over the bootstrap samples; and $t_{i}/t_{i+1}
+    $ is the ratio of success implied timescales. The selected number of dominant processes was calculated as the largest $i>1$ and is labelled with a `*'.}
+    \label{fig:count_num_proc}
+\end{figure}
 
-\begin{figure}
+\clearpage
+\subsection{BBA}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &               3 &              35 &             100 \\
+    VAMP-2 score                     &           3.882 &           3.873 &           3.723 &           2.505 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [3.840, 3.905] &  [3.834, 3.899] &  [3.631, 3.807] &  [2.442, 2.562] \\
+    Num. eigenvectors                &               4 &               4 &               4 &               4 \\
+    Lag (ns)                         &              40 &              40 &              40 &              40 \\
+    Feature                          &       Distances &       Distances &       Dihedrals &       Distances \\
+    Contact scheme                   &       C$\alpha$ &       C$\alpha$ &               - &   Closest-Heavy \\
+    Transform                        &        Logistic &          Linear &               - &        Logistic \\
+    Logistic center (\si{\angstrom}) &            0.61 &            0.80 &               - &            1.33 \\
+    Logistic steepness               &           24.72 &            8.26 &               - &           17.37 \\
+    TICA lag (ns)                    &              63 &              84 &              45 &              87 \\
+    TICA dimension                   &               6 &              10 &               9 &               1 \\
+    Num. clusters                    &             349 &             260 &             291 &              96 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for BBA.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:1fme_mod_defs}
+\end{table}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/1fme.pdf}
+    \caption{\textsc{Implied timescales of BBA for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:1fme_its}
+\end{figure}
+
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/1fme_sensitivity.pdf}
-    \caption{\textsc{BBA hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
+    \caption{\textsc{BBA hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.}
     \label{fig:1fme_sense}
 \end{figure}
 
 
-\begin{figure}
+\clearpage
+\subsection{Villin}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &               4 &              26 &              99 \\
+    VAMP-2 score                     &           2.773 &           2.758 &           2.741 &           1.496 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [2.682, 2.806] &  [2.649, 2.796] &  [2.627, 2.783] &  [1.422, 1.648] \\
+    Num. eigenvectors                &               3 &               3 &               3 &               3 \\
+    Lag (ns)                         &              30 &              30 &              30 &              30 \\
+    Feature                          &       Distances &       Dihedrals &       Distances &       Distances \\
+    Contact scheme                   &       C$\alpha$ &               - &   Closest-Heavy &       C$\alpha$ \\
+    Transform                        &          Linear &               - &        Logistic &        Logistic \\
+    Logistic center (\si{\angstrom}) &            1.49 &               - &            0.59 &            0.38 \\
+    Logistic steepness               &           17.87 &               - &            2.40 &           38.49 \\
+    TICA lag (ns)                    &              16 &               6 &              21 &              79 \\
+    TICA dimension                   &               8 &               6 &               5 &               9 \\
+    Num. clusters                    &             291 &             458 &             296 &             300 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for villin.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:2f4k_mod_defs}
+\end{table}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/2f4k.pdf}
+    \caption{\textsc{Implied timescales of villin for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:2f4k_its}
+\end{figure}
+
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/2f4k_sensitivity.pdf}
     \caption{\textsc{Villin hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
     \label{fig:2f4k_sense}
 \end{figure}
 
-\begin{figure}
+\clearpage
+\subsection{Trp-cage}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &              46 &              56 &             100 \\
+    VAMP-2 score                     &           2.931 &           2.884 &           2.870 &           2.017 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [2.725, 2.950] &  [2.828, 2.926] &  [2.804, 2.912] &  [1.993, 2.056] \\
+    Num. eigenvectors                &               3 &               3 &               3 &               3 \\
+    Lag (ns)                         &              20 &              20 &              20 &              20 \\
+    Feature                          &       Dihedrals &       Distances &       Distances &       Distances \\
+    Contact scheme                   &               - &       C$\alpha$ &       C$\alpha$ &   Closest-Heavy \\
+    Transform                        &               - &          Linear &        Logistic &        Logistic \\
+    Logistic center (\si{\angstrom}) &               - &            1.21 &            0.49 &            1.33 \\
+    Logistic steepness               &               - &           42.49 &            1.45 &           17.37 \\
+    TICA lag (ns)                    &               1 &              66 &              83 &              87 \\
+    TICA dimension                   &              10 &               6 &               9 &               1 \\
+    Num. clusters                    &             298 &             421 &              70 &              96 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for Trp-cage.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:2jof_mod_defs}
+\end{table}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/2jof.pdf}
+    \caption{\textsc{Implied timescales of Trp-cage for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:2jof_its}
+\end{figure}
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/2jof_sensitivity.pdf}
     \caption{\textsc{Trp-cage hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
     \label{fig:2jof_sense}
 \end{figure}
 
-\begin{figure}
+\clearpage
+\subsection{BBL}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &               2 &              13 &              97 \\
+    VAMP-2 score                     &           2.991 &           2.989 &           2.988 &           1.009 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [2.975, 2.998] &  [2.969, 2.997] &  [2.973, 2.995] &  [1.004, 1.067] \\
+    Num. eigenvectors                &               3 &               3 &               3 &               3 \\
+    Lag (ns)                         &              30 &              30 &              30 &              30 \\
+    Feature                          &       Dihedrals &       Distances &       Distances &       Dihedrals \\
+    Contact scheme                   &               - &       C$\alpha$ &       C$\alpha$ &               - \\
+    Transform                        &               - &          Linear &        Logistic &               - \\
+    Logistic center (\si{\angstrom}) &               - &            0.83 &            1.06 &               - \\
+    Logistic steepness               &               - &           21.27 &           11.70 &               - \\
+    TICA lag (ns)                    &              33 &              44 &              71 &              95 \\
+    TICA dimension                   &              10 &               9 &              10 &               1 \\
+    Num. clusters                    &             311 &             316 &             447 &             111 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for BBL.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:2wav_mod_defs}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/2wav.pdf}
+    \caption{\textsc{Implied timescales of BBL for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:2wav_its}
+\end{figure}
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/2wav_sensitivity.pdf}
     \caption{\textsc{BBL hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
     \label{fig:2wav_sense}
 \end{figure}
 
-\begin{figure}
+\clearpage
+\subsection{Chignolin}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &              17 &              33 &              99 \\
+    VAMP-2 score                     &           1.898 &           1.895 &           1.890 &           1.300 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [1.871, 1.911] &  [1.871, 1.909] &  [1.864, 1.906] &  [1.272, 1.324] \\
+    Num. eigenvectors                &               2 &               2 &               2 &               2 \\
+    Lag (ns)                         &              20 &              20 &              20 &              20 \\
+    Feature                          &       Distances &       Distances &       Dihedrals &       Distances \\
+    Contact scheme                   &   Closest-Heavy &   Closest-Heavy &               - &   Closest-Heavy \\
+    Transform                        &          Linear &        Logistic &               - &        Logistic \\
+    Logistic center (\si{\angstrom}) &            0.41 &            0.59 &               - &            1.49 \\
+    Logistic steepness               &            6.75 &            2.40 &               - &           39.00 \\
+    TICA lag (ns)                    &              13 &              21 &               1 &              77 \\
+    TICA dimension                   &               2 &               5 &              10 &               3 \\
+    Num. clusters                    &             413 &             296 &             298 &              85 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for chignolin.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:cln025_mod_defs}
+\end{table}
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/cln025.pdf}
+    \caption{\textsc{Implied timescales of chignolin for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. They show the implied timescales for the 2nd eigenvector for model 1 - 4, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.}
+    \label{fig:cln025_its}
+\end{figure}
+
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/cln025_sensitivity.pdf}
     \caption{\textsc{Chignolin hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
     \label{fig:cln025_sense}
 \end{figure}
 
-\begin{figure}
+\clearpage
+\subsection{WW-domain}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &              42 &              43 &              99 \\
+    VAMP-2 score                     &           3.887 &           3.748 &           3.735 &           2.449 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [3.876, 3.897] &  [3.545, 3.814] &  [3.528, 3.861] &  [2.357, 2.860] \\
+    Num. eigenvectors                &               4 &               4 &               4 &               4 \\
+    Lag (ns)                         &              40 &              40 &              40 &              40 \\
+    Feature                          &       Dihedrals &       Distances &       Distances &       Dihedrals \\
+    Contact scheme                   &               - &       C$\alpha$ &       C$\alpha$ &               - \\
+    Transform                        &               - &        Logistic &          Linear &               - \\
+    Logistic center (\si{\angstrom}) &               - &            1.06 &            0.80 &               - \\
+    Logistic steepness               &               - &           11.70 &            8.26 &               - \\
+    TICA lag (ns)                    &              33 &              71 &              84 &              95 \\
+    TICA dimension                   &               2 &              10 &              10 &               1 \\
+    Num. clusters                    &             322 &             447 &             260 &             111 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for WW-domain.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:gtt_mod_defs}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/gtt.pdf}
+    \caption{\textsc{Implied timescales of WW-domain for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:gtt_its}
+\end{figure}
+
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/gtt_sensitivity.pdf}
     \caption{\textsc{WW-domain hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
     \label{fig:gtt_sense}
 \end{figure}
 
-\begin{figure}
+
+\clearpage
+\subsection{Protein-B}
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &              12 &              34 &              87 \\
+    VAMP-2 score                     &           2.827 &           2.802 &           2.476 &           1.806 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [2.637, 2.910] &  [2.585, 2.890] &  [2.177, 2.639] &  [1.216, 2.286] \\
+    Num. eigenvectors                &               3 &               3 &               3 &               3 \\
+    Lag (ns)                         &              40 &              40 &              40 &              40 \\
+    Feature                          &       Distances &       Distances &       Dihedrals &       Distances \\
+    Contact scheme                   &       C$\alpha$ &       C$\alpha$ &               - &       C$\alpha$ \\
+    Transform                        &          Linear &        Logistic &               - &        Logistic \\
+    Logistic center (\si{\angstrom}) &            1.21 &            0.84 &               - &            0.38 \\
+    Logistic steepness               &           42.49 &           42.84 &               - &           38.49 \\
+    TICA lag (ns)                    &              66 &              76 &              33 &              79 \\
+    TICA dimension                   &               6 &               4 &              10 &               9 \\
+    Num. clusters                    &             421 &             291 &             311 &             300 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for protein-B.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:prb_mod_defs}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/prb.pdf}
+    \caption{\textsc{Implied timescales of protein-B for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:prb_its}
+\end{figure}
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/prb_sensitivity.pdf}
-    \caption{\textsc{Protein-B hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
+    \caption{\textsc{Protein-B hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.}
     \label{fig:prb_sense}
 \end{figure}
 
-\begin{figure}
+\clearpage
+\subsection{Homeodomain}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{lllll}
+    \toprule
+    Model &               1 &               2 &               3 &               4 \\
+    \midrule
+    Rank                             &               1 &              37 &              41 &              87 \\
+    VAMP-2 score                     &           3.995 &           3.842 &           3.828 &           2.623 \\
+    VAMP-2 \SI{95}{\percent} C.I.    &  [3.987, 3.997] &  [3.791, 3.884] &  [3.747, 3.868] &  [2.116, 2.907] \\
+    Num. eigenvectors                &               4 &               4 &               4 &               4 \\
+    Lag (ns)                         &              20 &              20 &              20 &              20 \\
+    Feature                          &       Dihedrals &       Distances &       Distances &       Distances \\
+    Contact scheme                   &               - &       C$\alpha$ &       C$\alpha$ &       C$\alpha$ \\
+    Transform                        &               - &          Linear &        Logistic &        Logistic \\
+    Logistic center (\si{\angstrom}) &               - &            0.83 &            1.06 &            0.38 \\
+    Logistic steepness               &               - &           21.27 &           11.70 &           38.49 \\
+    TICA lag (ns)                    &               6 &              44 &              71 &              79 \\
+    TICA dimension                   &               6 &               9 &              10 &               9 \\
+    Num. clusters                    &             458 &             316 &             447 &             300 \\
+    \bottomrule
+    \end{tabular}
+    \caption{\textsc{Summary of comparator models for homeodomain.} Models 1, 2, and 3 are the best scoring model for each feature/transform combination, model 4 is the worst performing model of all features.  The performance of the model is determined by its rank in terms of its median VAMP-2 score.  The chosen Markov lag time is determined from figure \ref{fig:t2_gradient} and number of dominant eigenvectors from figure \ref{fig:count_num_proc}, these are the same for each model by construction. The hyperparameters which specify the mapping of trajectories to microstates are also listed.}
+    \label{tab:uvf_mod_defs}
+\end{table}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{figures/model_comparision_its/uvf.pdf}
+    \caption{\textsc{Implied timescales of homeodomain for comparator models.} Panels (a) - (d) correspond to models 1 - 4 which are specified in table \ref{tab:1fme_mod_defs}. Panels (a), (e) and (i) show the implied timescales for the 2nd, 3rd and 4th eigenvectors for model 1, which are the dominant eigenvectors identified in figure \ref{fig:count_num_proc}.  Panels (b), (f) and (j) show the implied timescales for model 2 and so on.}
+    \label{fig:uvf_its}
+\end{figure}
+
+\begin{figure}[h]
     \centering
     \includegraphics[height=0.8\textheight]{figures/sensitivities/uvf_sensitivity.pdf}
     \caption{\textsc{Homeodomain hyperparameter relevance and information sharing}. Shown are the  median (white dot), \SI{50}{\percent} and \SI{95}{\percent} credible intervals (thick and thin lines respectively).  Panels (a)-(c) show the hyperparameter relevance for of each hyperparameter in determining the log of the VAMP-2 score (`VAMP' in blue) and the log of the dominant timescales ($t_{2}, t_{3}, ...$ in orange, green etc.). $\tau_{\mathrm{tICA}}$ is the TICA lag-time; $m$ is the TICA dimension, $n$ is the number of cluster centers; $cent.$ and $steep.$ are the center and steepness parameters of the logistic transform. Panels (d)-(e) show the information sharing parameters for whether the contact distances use the `closest-heavy' ($X-X$) or the `alpha-carbon' ($C_{\alpha}-C_{\alpha}$) scheme.  }
     \label{fig:uvf_sense}
 \end{figure}
+
+
+
+
+
 
 
 \end{document}
