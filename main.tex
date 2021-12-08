@@ -276,12 +276,14 @@ Note that throughout this work we always include the stationary distribution in 
     \item 100 hyperparameters were used to construct MSMs at different lags, and scored using different numbers of eigenvectors using the VAMP-2 score. 
     \item Each set of hyperparameters will be called a  `trial'.  A trial with specific lag time will be called a `model'. 
     \item A common lag time for each protein was selected by checking for convergence in the slowest timescale across all trials. 
-    \item The selected lag time for BBA was \SI{40}{\nano\second}. Literature values are  \SI{1}{\nano\second} (Husic 2016),  \SI{50}{\nano\second}, (Clementi 2018) and   \SI{100}{\nano\second} (Scherer 2019).
+    \item The selected lag time for BBA was \SI{40}{\nano\second}. Literature values are  \SI{1}{\nano\second} \cite{Quantitati2018},  \SI{50}{\nano\second} \cite{Optimized_2016} and   \SI{100}{\nano\second} \cite{scherer_variational_2019}. 
     \item A number of dominant processes/slow eigenvectors ($k$) was selected by looking at the gaps in the implied timescales across all trials.  The largest $k$ across all trials was selected. 
-    \item Selected $k^{*}$ was \num{4}, literature values are \num{2} (Husic 2016) and \num{5} (Scherer 2019). This includes the stationary distribution, so the number of slow relaxation processes actually scored is \num{3}.  
+    \item Selected $k^{*}$ was \num{4}, literature values are \num{2} \cite{Optimized_2016} and \num{5} \cite{scherer_variational_2019}. This includes the stationary distribution, so the number of slow relaxation processes actually scored is \num{3}.  
     \item So this work uses VAMP-2(4) to score the trials with a lag time of \SI{40}{\nano\second}. 
     \item Each trial was ranked according to the VAMP-2(4) score and is shown in figure \sref{fig:bba_vamp_fixed_k}. 
     \item Looking at figure \sref{fig:bba_vamp_fixed_k} we can see that the top scoring models mostly use either the contact distances or the logistic transform of the contact distances as a feature.  The dihedrals all seem to score less well. 
+    \item From this list of trials four were selected for further investigation: The best model using each feature (as judged by the VAMP-2($k=4$)) score and the worst overall model.  These are listed in table \sref{tab:1fme_mod_defs}. 
+    \item The best overall best model used logistic contact distances feature (model no. 2) and had a VAMP2(4) score of \numci{3.88}{3.84}{3.91}. This is statistically indistinguishable from the best model using the linear contact distances (model no. 3) but distinguishable from the best model using the dihedrals feature (model no. 1) with a score of \numci{3.72}{3.63}{3.81}. 
 \end{itemize}
 
 \subsubsection{Sensitivity to hyperparameters}
@@ -290,8 +292,26 @@ Note that throughout this work we always include the stationary distribution in 
     \item In order to understand how hyperparameters affect the VAMP2(4) score a Gaussian process was fit to the VAMP2 scores and hyperparameter values for each trail. The kernel was a product of exponential kernels for each hyperparameter.  
     \item the relevance of each hyperparameter is the inverse of the characteristic length scale of individual kernels for each hyperparameters. 
     \item All of the hyperparameters had a relevance < 1, except for the number of TICA dimensions. 
-    \item This indicates that changing the number of TICA dimensions is most likely to negatively affect the VAMP score, while the other hyperparameters (TICA timelag and 
-    \item Th
+    \item This indicates that changing the number of TICA dimensions is most likely to negatively affect the VAMP score, while the other hyperparameters (TICA timelag and number of cluster centers) will make a negligible impact on the score. 
+    \item The comparatively high relevance of the TICA dimension can be explained in the following way. 
+    \begin{itemize}
+        \item Each TICA component is an approximation to an eigenvector of the propagator. 
+        \item Including too few eigenvectors will mean that the resultant discrete states do not adequately span the subspace of slow processes. 
+        \item The best performing models (models 1 - 3 in table \sref{tab:1fme_mod_defs}) all have larger number of TICA eigenvectors (\numrange{6}{10}) than the worst performing model which has only 1. 
+        \item Including too many eigenvectors will mean there will be high variance in the definitions of microstates leading to a poor basis set for the subspace of slow processes.  
+    \end{itemize}
+    \item The relatively low relevance of the TICA lag time can be explained as follows: 
+    \begin{itemize}
+        \item The TICA lag time defines the resolution of TICA eigenvectors.  
+        \item If the processes they are approximating all have a true timescale longer than the TICA lag-times then the TICA eigenvectors will all be similar. Hence the VAMP score will not change. 
+    \end{itemize}
+    \item The relatively low relevance of the number of cluster centers can be explained as follows: 
+    \begin{itemize}
+        \item Above a certain number of cluster centers, the addition spatial resolution will not affect the accuracy of the eigenvectors.  
+        \item thus increasing the number of cluster centers will not increase the score.  
+        \item The definition of microstates will deteriorate with insufficient data. However, there are between \numrange{3250}{65} frames for every cluster center in the range \numrange{10}{500} (respectively). 
+        \item The heuristic of $\sqrt{N_{\mathrm{frames}}} \simeq 180$ lies in the approximate center of the search space and the best performing models all have similar values (\numrange{260}{349}, models 1 - 3, table \sref{tab:1fme_mod_defs}).  
+    \end{itemize}
 \end{itemize}
 
 
@@ -299,13 +319,21 @@ Note that throughout this work we always include the stationary distribution in 
 
 \begin{itemize}
 
-    \item From this list of trials four were selected for further investigation: The best model using each feature (as judged by the VAMP-2(4)) score and the worst overall model.  These are listed in table \sref{tab:1fme_mod_defs}. 
-    \item The best overall best model used logistic contact distances feature (model no. 2) and had a VAMP2(4) score of \num{3.88}, (\numrange[range-phrase = --]{3.84}{3.91}). This is statistically indistinguishable from the best model using the linear contact distances (model no. 3) but distinguishable from the best model using the dihedrals feature (model no. 1) with a score of \num{3.72}, (\numrange[range-phrase = --]{3.63}{3.81}). 
+
     \item Each of the three best models technically pass the CK test i.e., model predictions are within the confidence interval of the estimated metastable transition probabilities over the course of 10 lag times. The transition probabilities are calculated using a Hidden Markov model, and the confidence intervals are calculated using 100 bootstrap samples. The number of metastable states was determined by looking at the largest gap in the implied timescales for each model separately. Each model used two metastable states. 
     \item However - the confidence intervals are very large.  For example, after a single lag time (\SI{40}{\nano\second}) the confidence interval for model no. 2 (the best overall model) for the state 1 to state 1 transition have a range of approximate \numrange{0.2}{1} (see figure \sref{fig:cktest_bba_2})
     \item Despite model no. 1  being the least best feature, the confidence intervals for the CK test are the smallest of the best scoring models: after 1 lag time, the confidence interval for the state 1 to state 1 transition is \numrange[range-phrase = --]{0.4}{0.7}  (see figure \sref{fig:cktest_bba_1}).  
     \item These observations can be explained by looking at the implied timescales (panels (a)) and the ratio of implied timescales at the model lag time (panels (b)) in figures \sref{fig:its_bba_1} to \sref{fig:its_bba_1}. 
     \item There are no clear separation of timescales between timescale 2 and timescale 3.  Using a longer lag time may have helped this, but the confidence intervals for timescale 2 are very large suggesting a clear separation may not be possible using these hyperparameters. 
+\end{itemize}
+
+\subsubsection{Comparing the best models' eigenvectors}
+
+\begin{itemize}
+    \item The selected models were compared to the overall best performing model by comparing their eigenvectors.  
+    \item Eigenvectors 2, 3 and 4 for models \numrange{1}{4} were compared to the model 2, the best performing model.  
+    \item Figure \sref{fig:bba_m1_ev_comparisons} shows that the eigenvectors for each model are as similar to model 2 as a random selection of configurations are to model 2. 
+    \item This indicates that model 2 is distinct from the the remaining models.  
 \end{itemize}
 
 \subsubsection{Selecting trials based on timescale gap}
@@ -339,6 +367,19 @@ Note that throughout this work we always include the stationary distribution in 
     \item Models 1 and 5 (dihedrals feature, blue and orange lines respectively in figure \sref{fig:bba_folded_comparisons}) a shown a clear single peak in the distribution indicating a precise prediction of the folded state. Model 5 which shows a larger separation in timescales has a slightly smaller median value, indicating a more accurate prediction of the folded state.  
 \end{itemize}
 
+\subsection{Villin}
+
+\subsubsection{Ranking the hyperparameters using standard method}
+
+\begin{itemize}
+    \item The same procedure was followed for Villin. 
+    \item The lag-time selected was \SI{30}{\nano\second}. This value sits within the middle of the range of other values in the literature:   \SI{30}{\nano\second} \cite{SAXS-guide2018, HTMD:_High2016}, \SI{40}{\nano\second} \cite{Computing_2019},  \SI{50}{\nano\second} \cite{Examining_2018, Variationa2018, Optimized_2016, Ward_Clust2017} and \SI{100}{\nano\second} \cite{suarez_what_2021, scherer_variational_2019}
+    \item Selected $k^{*}$ was \num{3}, literature values are \num{2} \cite{Optimized_2016, Variationa2018}, \num{4} \cite{suarez_what_2021}, \num{5} \cite{scherer_variational_2019}, \num{50} \cite{Ward_Clust2017}. 
+    \item Figure \sref{fig:villin_vamp_fixed_k} shows the VAMP2($k=3$) scores for Villin in rank order. 
+    \item The VAMP scores do not reach their theoretical maximum value of \num{3}. This indicates either that the explored features are ill-suited to capture the slow dynamics, or that the Markov lag time is too large to capture rare but short-lived transition which would give rise to a long-timescale process.  
+    \item The majority of the best performing features are the dihedral angles (blue) and the contact distances (orange), whilst the lower scoring features are predominantly the contact distances with logistic transformation (green). 
+    \item Four models were selected, these are listed in table \sref{tab:2f4k_mod_defs}.  The best performing model used the contact distance feature (model 3) and had a VAMP2($k=3$) score of \numci{2.77}{2.68}{2.81}. This is statistically indistinguishable from the secibd best model which used the dihedrals feature (model 1, VAMP2($k=3$) score of \numci{2.76}{2.65}{2.80}) and the third  best model which used the contact distances with logistic transform feature (model 2, VAMP2($k=3$) score of \numci{2.74}{2.63}{2.78}). 
+\end{itemize}
 
 
 
@@ -376,7 +417,7 @@ automatically add a sentence pointing to the information on-line:
 %% Notice that the class file automatically sets \bibliographystyle
 %% and also names the section correctly.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliography{bibliography.bib}
+\bibliography{references.bib}
 
 \end{document}
 
