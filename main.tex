@@ -291,7 +291,7 @@ Note that throughout this work we always include the stationary distribution in 
 \begin{itemize}
     \item In order to understand how hyperparameters affect the VAMP2(4) score a Gaussian process was fit to the VAMP2 scores and hyperparameter values for each trail. The kernel was a product of exponential kernels for each hyperparameter.  
     \item the relevance of each hyperparameter is the inverse of the characteristic length scale of individual kernels for each hyperparameters. 
-    \item All of the hyperparameters had a relevance < 1, except for the number of TICA dimensions. 
+    \item All of the hyperparameters had a relevance $<1$ , except for the number of TICA dimensions. 
     \item This indicates that changing the number of TICA dimensions is most likely to negatively affect the VAMP score, while the other hyperparameters (TICA timelag and number of cluster centers) will make a negligible impact on the score. 
     \item The comparatively high relevance of the TICA dimension can be explained in the following way. 
     \begin{itemize}
@@ -381,6 +381,46 @@ Note that throughout this work we always include the stationary distribution in 
     \item Four models were selected, these are listed in table \sref{tab:2f4k_mod_defs}.  The best performing model used the contact distance feature (model 3) and had a VAMP2($k=3$) score of \numci{2.77}{2.68}{2.81}. This is statistically indistinguishable from the secibd best model which used the dihedrals feature (model 1, VAMP2($k=3$) score of \numci{2.76}{2.65}{2.80}) and the third  best model which used the contact distances with logistic transform feature (model 2, VAMP2($k=3$) score of \numci{2.74}{2.63}{2.78}). 
 \end{itemize}
 
+\subsubsection{Sensitivity to hyperparameters}
+\begin{itemize}
+    \item Similarly to the case of BBA, most of the hyperparameters are irrelevant, with the number of TICA dimensions being the most relevant across each feature.  However, the different between $m$ and the other hyperparameters is smaller. 
+    \item The selected models (models 1 -- 3) all have $m = \numrange[range-phrase= --]{6}{8}$, the worst model (model 4) has $m=9$, while similarly scoring models (models 5 -- 7) have only $m=2$.  
+    \item This can be interpreted as meaning $m=2$ being a sufficient number of dimensions to capture the three slow eigenvectors being scored, while extra dimensions not adversely increasing the variance of the microstates, especially in the case of the contact distance based features.  
+    \item The low relevance of individual hyperparameters implies that holding all other hyperparameters constant changing a single hyperparameter will not change the VAMP score significantly. Only certain combinations of hyperparameters will do this.   
+\end{itemize}
+
+\subsubsection{Comparing the best models using the CK test and implied timescales. }
+\begin{itemize}
+    \item Models 1 - 3 all pass the CK test and there is qualitative agreement between the models in the size and magnitude of the transition probabilities (the gradients of the predictions). 
+    \item The CK test used a 3 state HMM to estimate transition probabilities. The three states were indicated from the large gap in the implied timescales, see figures \sref{fig:its_villin_1}  -- \sref{fig:its_villin_3}. 
+    \item The confidence intervals are in general smaller compared to the case of BBA. This can be attributed to the large and significant gap in the implied timescales ($t_3/t_4 > 4$ for each model)
+    \item There is a small difference in the size of the confidence intervals for the estimated transition probabilities between model 1 (using the dihedrals feature), which have slighly smaller confidence intervals, and models 2 and 3 (using the contact distances withtout and with the logistic transform). 
+    \item This indicates that the dihedrals feature may be more consistent with the dynamics than those with the contact distance based features. 
+\end{itemize}
+
+\subsubsection{Comparing the best models' eigenvectors}
+\begin{itemize}
+    \item the eigenvectors of models 1 and 2 show significant differences to the best overall performing model (model 3), figure \sref{fig:villin_m1_ev_comparisons}.  
+    \item In contrast to the case of BBA, models 1 and 2 were more similar to model 3 than the worst overall model (model 4), which in turn was more similar than a random selection of frames.  
+    \item This observation is in contrast to their similar VAMP scores which are all similar, which only the very worst model (model 4) having a statistically significantly different VAMP score (VAMP2($k=3$) = \numci{1.50}{1.42}{1.65})
+    \item This indicates that while the VAMP scores do not necessarily correlate with qualitative aspects of the model.  
+\end{itemize} 
+
+\subsubsection{Selecting trials based on timescale gap}
+\begin{itemize}
+    \item Models were also selected by incoporating the timescale gap into the selection approach, as detailed for BBA. The VAMp scores are plotted against the timescale gap for $k=2 -- 4$ in figure \sref{fig:villin_vamp_var_k}.  
+    \item Figure \sref{fig:villin_vamp_var_k} shows that the two sets of models (1 --3 and 5--7) have approximately the same VAMP scores and timescale gaps. 
+    \item The selected hyperparameters are similar, with the exception that the number of TICA dimensions for models 5 -- 7 is $m=2$,  much lower than for models 1 --3.  
+\end{itemize}
+
+\subsubsection{Comparison to the folded state}
+
+\begin{itemize}
+    \item Each model (1 -- 7) was coars-grained into a 3 state HMM (2 state in the case of model 4, the worst performing model, indicated by the gap in implied timescales figure \sref{fig:its_villin_4}). 
+    \item Each metastable state was ordered by the stationary distribution, configurations sampled and those samples compared to the folded state (PDB: 2F4K). This is shown in figure  
+    \item None of the metastable states showed a similarity to the folded state, with each sample having an $\alpha$-Carbon RMSD of at least \SI{10}{\angstrom}.  
+    \item However, each model showed agreement in the shape of the distribution.  
+\end{itemize}
 
 
 \subsection{References}
