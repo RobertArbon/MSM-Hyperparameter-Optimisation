@@ -22,6 +22,8 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{amsfonts}
+\usepackage{bm}
+\usepackage{xfrac}
 \usepackage{graphicx}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
@@ -166,11 +168,9 @@ Introduction
 
 
 
-Do VAMP scores matter?  Compare low scoring with high scoring
 
 \section{Theory}
 \subsection{Markov state models}
-\subsection{Gaussian processes}
 
 \section{Methods}
 \subsection{Molecular dynamics}
@@ -242,8 +242,8 @@ For each unique set of hyperparameters, $\theta = (\chi, \tau_{\mathrm{T}}, m, n
 
 The hyperparameter sensitivity data-set consisted of, for each protein, 9.18M measurements of the VAMP-2 score from the combinations bootstrap samples, hyperparameters, lag-time and number of scored processes  ($9.18\mathrm{M}=102 \times 100 \times 10 \times 9$). 
 
-\subsection{VAMP-2 score parameters}
-In order to score each set of hyperparameters, a Markov lag-time and the number of slow processes to score must be determined for each protein. 
+\subsection{Model scoring parameters}\label{model_score_params}
+In order to score each set of hyperparameters, a Markov lag-time and the number of slow processes, or eigenvectors, to score must be determined for each protein. 
 
 For each $\theta$, the following gradient was calculated:
 \begin{equation}
@@ -261,12 +261,62 @@ The number of dominant eigenvectors, $k$, was determined by calculating:
 \end{equation}
 for each value of $\theta$ at the selected values of $\tau^{*}_{\mathrm{M}}$. The selected value of $k^{*}(\theta; \tau^{*}) = \max{\left[k\right]}$ such that at least two different values of $\theta$  selected this value.  The distribution of $k(\theta, \tau^{*})$ for each protein are shown in figure \sref{fig:count_num_proc}. 
 
-Note that throughout this work we always include the stationary distribution in the definition of the dominant eigenvectors.  So that a VAMP score using $k=2$ eigenvectors scores the stationary distribution (which is always $1$ by definition) and the first slow timescale. Thus when we refer to ``two dominant eigenvectors'' this implies two metastable states. 
+Note that throughout this work we always include the stationary distribution in the definition of the dominant eigenvectors.  So that a VAMP2 score using $k=2$ eigenvectors scores the stationary distribution (which is always $1$ by definition) and first slow process, this will denoted VAMP2$(k=2)$. 
+
+\subsection{Model validation}
+
+Markov state models were validated by i) plotting the first \num{10} implied timescale plots as a function of the Markov lag-time and by ii) performing a Chapman-Kolmogorov test.  The Chapman-Kolmogorov test coarse-grains the MSM into a Hidden Markov state model and tests the predictions (hidden state-to-hidden state transition probabilities) of the HMM over 10 Markov lag-times, against the same values estimated using the trajectory information directly.  The number of hidden states was determined by the inspection of the ratio of successive timescales ($t_{i}/t_{i+1}$. The CK test is said to be successful if the model predictions lie within the confidence intervals of the estimated probabilities. The central values and confidence intervals for both the implied timescales and CK-test were estimated as the median and \SI{95}{\percent} quantiles of \num{100} bootstrap samples.  
+
+
+\subsection{Hyperparameter relevance}
+
+In order to estimate the sensitivity of the VAMP2 scores to the hyperparameters, the VAMP2 score was modelled as a Gaussian process with additive noise.  
+\begin{equation}
+    \mathbf{y}(\mathbf{x}) \sim \mathcal{N}(\bm{\mu}(\mathbf{x}),\mathbf{K} + \sigma_{n}^{2}\mathbf{I}) \
+\end{equation}
+Where $\mathbf{x}$ is a vector of hyperparameters ($\mathbf{x}=(\tau_{\mathrm{TICA}}, m, \ldots)$; the vector $\bm{\mu}$ contains the predicted mean values of the GP at different values of $\mathbf{x}$;  $K_{ij}$ is the covariance between the VAMP score at two different points (values of $\mathbf{x}$) $i$ and $j$; $\sigma_{n}^{2}$ is the variance of the additive noise;  $\mathbf{y}$ is a vector of the predicted values of VAMP score (including the effects of the noise).  The quasi-continuous hyperparameters ($\tau_{\mathrm{TICA}}, m, n$) were scaled to lie in the range $[0, 1]$.  The contact distance scheme ($\alpha$-Carbon, or heavy atom) was coded as two separate dummy coded variables.  
+
+ The covariance between the observations was modelled with a fully multiplicative and stationary kernel of the form: 
+ \begin{align}\label{eqn:kernel_form}
+     K_{i, j} + \delta_{i, j}\sigma_{n}^{2} = & \\
+     k\left(r; \theta\right) = &
+     \eta^{2}\prod_h k_{M}\left(r; \nu\right) + \delta_{i, j}\sigma_{n}^{2}
+ \end{align}
+ where, 
+  \begin{equation}
+     r_{h} = \frac{|x_{h, i}-x_{h, j}|}{l_h}.
+ \end{equation}
+ where the product $h$ runs over individual elements of $\mathbf{x}$ (i.e., $\tau_{\mathrm{TICA}}, m, \ldots$); $l_h$, $\eta$ and $\sigma_n$ are parameters to  be learnt from the data. In the parameter estimation process a weakly informative prior was placed over $\eta$, and $\sigma_{n}$ ($\mathrm{half-Cauchy}(\beta=2)$) and the $l_h$  ($\mathrm{Gamma}(\alpha=2, \beta=0.5)$).  
+ 
+ A GP model was created for each combination of protein and feature ($3\times 8=24$ models in total). A number of different modelling options were tried to ensure a good fit to the data, these were: log-transforming the VAMP score, and using different different kernels, $k_{M}$. The kernels were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infy$ correspond to the Exponential and Gaussian kernels respectively). So for each protein/feature combination $2\times 4 =8$ different models were fit. The outcome transformation and kernel were selected to ensure a good fit across all different protein and feature combinations to ensure models were comparable.  All parameters were estimated using the Markov-Chain Monte Carlo, using a No-U-turn sampler. The kernel and outcome transformation which gave rise to i) zero divergent transitions, ii) an R-hat statistic less than 1.01 and,  iii) an effective sample size of at least \SI{25}{\percent} of the total observations,  were selected.  The number of tuning steps and the acceptance ratio was also varied to ensure a good fit across all models. The reported models used an acceptance ratio of \SI{90}{\percent}, \num{3000} tuning steps, \num{5000} sampling steps using four independent chains, a log-transform of the VAMP scores and an exponential kernel for each hyperparameters.  
+ 
+ The relevance of each quasi-continuous hyperparameter for each protein and feature combination was calculated as $R_{h} = \frac{1}{l_{h}}$.  
+ All fitting and analysis was performed using the PyMC3 and ArViz packages. 
+ 
+ \subsection{Comparing the eigenvectors of different models}
+ 
+MSMs were compared by comparing $p$ dominant eigenvectors (as determined by the methods in section \ref{model_score_params}). To compare the $i$'th right eigenvector of model $B$ ($\psi^{B}_{i}$, $2 \le i \le p$) to the $i$'th right eigenvector of model $A$ ($\psi^{A}_{i}$) the following procedure was followed: 
+
+\begin{enumerate}
+    \item The $n$ discrete states of model $B$  (defined by the hyperparameters $\theta^{B}$) were projected onto the 2nd, 3rd, p'th right eigenvectors of $B$.  \label{molpx_project}
+    \item $50$ different discrete states ($d_{i,j}$, $j = 1,\ldots, 50$) we selected which i) spanned the range of values of $\psi^{B}_{i}$, and ii) had minimal projection onto the other eigenvectors ($\psi^{B}_{k}$, $2 \le k \ne i \le p$). \label{molpx_sample}
+    \item For each $d_{i,j}$ a single molecular configuration was sampled to give rise a trajectory along the eigenvector $\psi^{B}_{i}$ - $\mathbf{x}_{i, j}$.  \label{molpx_configs}
+    \item $\mathbf{x}_{i, j}$ was discretized using model $A$ hyperparameters ($\theta^{A}$) and then projected onto the right eigenvector of model $A$, $\psi^{A}_{i}$. 
+    \item The difference of the model $B$ to the model $A$, for the eigenvector $i$, $\Delta(B; A)_{i}$ is measured by the root-mean square error between the two projections:
+    \begin{equation}
+        \Delta(B; A)_{i} = \sqrt{\frac{1}{50}\sum_{j=1}^{50} \left(\psi^{A}_{i}(\mathbf{x}_{i, j})- \psi^{B}_{i}(\mathbf{x}_{i, j})\right )^{2}}
+    \end{equation}
+    \item Because of the ambiguity in the sign of the eigenvectors, a second calculation of  $\Delta(B; A)_{i}$ was made replacing $\psi^{B}_{i}(\mathbf{x}_{i, j})$ with $\psi^{B}_{i}(\mathbf{x}_{i, 51-j})$ and the minimum value taken.  
+    \item The whole process was bootstrapped using \num{100} bootstrap samples. The final estimate and confidence intervals of $\Delta(B; A)_{i}$ were calculated as the median and \SI{2.5}{\percent} and \SI{97.5}{\percent} quantiles of the bootstrap distribution.  
+\end{enumerate}
+
+The Python package molPx was used to perform steps \ref{molpx_project} to \label{molpx_configs}. 
+
 
 
 \section{Results and discussion}
 
-
+    
 \subsection{BBA}
 
 
@@ -421,6 +471,9 @@ Note that throughout this work we always include the stationary distribution in 
     \item None of the metastable states showed a similarity to the folded state, with each sample having an $\alpha$-Carbon RMSD of at least \SI{10}{\angstrom}.  
     \item However, each model showed agreement in the shape of the distribution.  
 \end{itemize}
+
+\subsection{Conclusions}
+
 
 
 \subsection{References}
