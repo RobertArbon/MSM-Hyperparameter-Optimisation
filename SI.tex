@@ -42,6 +42,22 @@
 %     \label{fig:count_num_proc}
 % \end{figure}
 
+\section{Selecting the Markov lag-time}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[height=0.8\textheight]{figures/t_2_gradient_sharey_True_log_True_denom_delta_x.pdf}
+    \caption{The gradient of the implied timescales for each trial for each protein.  Each blue line is the gradient of the logarithm of the the second (i.e., longest) implied timescale for each hyperparameter trial, calculated as the median over \num{100} bootstrap samples. The black horizontal line is the threshold for convergence. The green vertical is the selected Markov lag time calculated as the smallest lag time at which a single trial crosses the threshold.}
+    \label{fig:its_grad_all}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[height=0.8\textheight]{figures/num_dominant_processes_count.pdf}
+    \caption{The distribution of dominant timescales for each protein.  The number of dominant timescales are the number of timescales which lie above the largest timescale gap ($t_{i}/t_{i+1}$). The selected number of timescales are shown with an asterisk ('*') and are calculated as the largest number of timescales which have two or more trials with that number.}
+    \label{fig:num_proc_all}
+\end{figure}
 
 \section{BBA}
 
