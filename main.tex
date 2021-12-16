@@ -314,7 +314,7 @@ The Python package molPx was used to perform steps \ref{molpx_project} to \label
 
 
 
-\section{Results and discussion}
+\section{Results}
 
  MSM selection using the VAMP scores usually proceeds along the following lines. The MSM is specified for scoring with a lag-time $\tau$, which is determined either by comparison with previous work (e.g., \cite{Optimized_2016}) or expert judgement (e.g., \cite{scherer_variational_2019, chen_dynamic_2019}). A number of eigenvectors representing the slow dynamic processes to be optimized are selected, also usually by expert judgement \cite{mcgibbonVariationalCrossvalidationSlow2015, scherer_variational_2019} or through prior knowledge of the process to be optimized (e.g. \cite{Optimized_2016}).  A number of hyperparameters are selected, either at random\cite{Optimized_2016} or more usually over a grid \cite{scherer_variational_2019, chen_dynamic_2019}. Models are ranked according to the score and the highest scoring model selected. The feature is known to have the largest impact on the quality of the model \cite{scherer_variational_2019, Optimized_2016} and sometimes the feature is pre-selected, either through another VAMP score \cite{scherer_variational_2019} or by selecting a feature which has the highest proportion of high scoring trials [ref?].  The final lag time is selected by inspection of implied timescale plots and the the model validated using a Chapman-Kolmogorov test.
 
@@ -357,7 +357,36 @@ The model selection method used here has produced contradictory results.  The be
     \label{fig:bba_vamp_var_k}
 \end{figure}
 
-Given that the VAMP2 scores do not inherently take into account the separation of timescales, a more complete picture is given by plotting the VAMP2 scores with their corresponding timescale separation, this is shown in figure \ref{fig:bba_vamp_var_k}.  In panel $(k=2)$ the VAMP2$(k=2)$ scores for each hyperparameter trial are plotted against $\sfrac{t_2}{t_3}$, in panel $(k=3)$ the VAMP2$(k=3)$ scores for the same trials are plotted against $\sfrac{t_3}{t_4}$ and similarly for $k=4, 5$ in the remaining panels. The large coloured discs denote models 2 
+Given that the VAMP2 scores do not inherently take into account the separation of timescales, a more complete picture is given by plotting the VAMP2 scores with their corresponding timescale separation, this is shown in figure \ref{fig:bba_vamp_var_k}.  In panel $(k=2)$ the VAMP2$(k=2)$ scores for each hyperparameter trial are plotted against $\sfrac{t_2}{t_3}$, in panel $(k=3)$ the VAMP2$(k=3)$ scores for the same trials are plotted against $\sfrac{t_3}{t_4}$ and similarly for $k=4, 5$ in the remaining panels. This view of the hyperparameter trials allows us to see both the quality of hyperparameters and the validity of the assumption of a separation in timescales.  The figure shows that the majority of the hyperparameter trials do not give rise to a significant gap in the implied timescale.  Those that do, generally do so with a gap between the second and third implied timescale (panel $k=2$).  
+
+This information can be used to select hyperparameter which are more likely to give rise to valid coarse-grained MSMs.  To see this, three new models (one for each feature) were selected by only considering those hyperparameter trials which gave rise to a large timescale gap for a particular value of $k$.  The new set of  models were selected from those with a gap larger than the 98th percentile\footnote{this number is somewhat arbitrary and was chosen so that a model with each feature was selected.} of all gaps. All the trials selected this way had the largest gap between the second and third timescale (panel $k=2$) and of those the highest scoring trials were selected for each feature (panel $k=2$, coloured crosses). These models are described in table \sref{tab:1fme_mod_defs} as models 5, 6, and 7. 
+
+Each of these new models have almost exactly the same VAMP2 score when evaluated on just the more appropriate first two eigenvectors  (models 5, and 7 VAMP$(k=2) =\ $\numci{1.96}{1.95}{1.97}, model 6, VAMP2$(k=2) =\ $\numci{1.96}{1.96}{1.97}), rather than on the VAMP2$(k=4)$ score.  The VAMP$(k=4)$ score for these models implies that both the contact distance and logistic transform contact distance are the best features (models 6 and 7, VAMP2$(k=4) =\ $\numci{3.57}{3.41}{3.72}, \numci{3.37}{3.16}{3.58}) with the dihedrals feature the worst feature (model 5, VAMP2$(k=4)=\ $\numci{3.01}{2.93}{3.09}).   
+
+Each of the models passes the Chapman-Kolmogorov test although as before the precision of  confidences intervals varies for each model (figures \sref{fig:cktest_bba_5} to \sref{fig:cktest_bba_7}). The dihedrals feature (model 5) is the most precise, followed by the contact distance feature (model 6), followed by the logistic contact feature (model 7), with similar confidence intervals as model 1. The folding timescales were the same and more precise than models 1 - 3 (\SIci{ 1.90}{ 1.57}{ 2.52}{\micro\second}, \SIci{ 2.14}{ 1.75}{ 6.53}{\micro\second}, and \SIci{ 1.74}{ 1.43}{ 2.44}{\micro\second} for models 5 - 7 respectively).  Each model was again compared to the folded state (figure \sref{fig:bba_folded_comparisons}, orange lines). Each of the unfolded metastable states were similar, but a bimodal distribution was again found in the folded state of the contact distance and logistic contact distance feature.  
+
+\subsection{Discussion and conclusions}
+
+A hyperparameter optimisation procedure has been followed which mimics the essential features of standard MSM optimisation using the VAMP2 objective function.  The hyperparameter scores were largely insensitive to changes in the hyperparameters, with the exception of the number of TICA eigenvectors.  This implies that random sampling is a adequate method for exploring the range of hyperparameters, negating the need for the relatively expensive grid search algorithm or more complex methods such as Bayesian optimisation which are currently in favour for large machine learning models.  
+
+The model selection procedure selected a set of hyperparameters with the logistic transformed contact distances as the best feature.  To have faith in the robustness of this result (at least) two conditions need to be met: 
+\begin{enumerate}
+    \item the model should be valid i.e., it should fit the data within statistical uncertainty (implied timescale plots, Chapman-Kolmogorov test), and 
+    \item similarly scoring models should produce similar model observables. 
+\end{enumerate}
+The top ranking model certainly met the first condition  but only by virtue of very large statistical uncertainty.  The second condition was partially met with comparison to the model using second best feature (which had the same VAMP2 score). The folding timescales $t_{2}$ are technically similar, but again due to the very large uncertainty in measurement. There are differences in the both the sampled metastable states and the eigenvectors. These observations imply that the model selection procedure can produce models that are not valid or robust. 
+
+All three selected hyperparameters showed poor separation in implied timescales - a key assumption for producing valid coarse-grained models (such as hidden Markov models). the spectral gap is forms the basis of the SGOOP\cite{tiwary_spectral_2016} dimensionality reduction technique and has been emphasized as a necessary component for validating AI approaches to enhanced sampling \cite{pant_confronting_2020}. Enforcing selection amongst only those sets of hyperparameters 
+
+
+
+TThe highest ranking hyperparameters produced an MSM which was technically valid but with a high variance in the model observables (implied timescales and transition probabilities from the CK-test). The second highest ranking hyperparameters, scored similarly and had similar , yet did not have similar eigenvectors.  
+
+
+
+
+
+
 
 
 
@@ -430,36 +459,36 @@ Given that the VAMP2 scores do not inherently take into account the separation o
 
 
 
-\subsubsection{Selecting trials based on timescale gap}
+% \subsubsection{Selecting trials based on timescale gap}
 
-\begin{itemize}
-    \item The above observations suggest that incorporating the timescale gap into the model selection procedure. 
-    \item Instead of fixing $k$, the models are scored using a range of $k$ (here we used $k=2-k^{*}+1$). For each $k$ the model score is plotted against the timescale gap. So for $k=2$, the model scores are plotted against the ratio of the implied timescales between eigenvector 2 and eigenvector 3 (where eigenvector 1 is the stationary distribution).  This is shown in figure \sref{fig:bba_vamp_var_k}.  
-    \item The majority of the trials shown small separation of timescales, however some show a large gap and the best performing models are selected from those with a gap larger than the 98th percentile\footnote{this number is somewhat arbitrary and was chosen so that a model with each feature was selected.}. 
-    \item The models selected this way are labeled \numrange{5}{7} and are listed in table \sref{tab:1fme_mod_defs}.  
-    \item The implied number of slow processes was \num{2} for each feature and each model scored similarly (VAMP-2(k=2): \numci{1.96}{1.95}{1.97} for each model). This is in contrast to the model ranks implied by scoring with $k=4$ eigenvectors, in which the two features based on the contact distances  scored higher (models 2 and 3, \numci{3.88}{3.84}{3.91}, \numci{3.87}{3.83}{3.90}) than the dihedral model (model 1, \numci{3.72}{3.63}{3.81}). 
-    \item Thus the two different scoring methods result in a different ranking of models.  
-    \item Models \numrange{5}{7} showed larger separation of timescales and smaller confidence intervals in the median timescales, compared to models \numrange{1}{3} (figures \sref{fig:its_bba_5} -- \sref{fig:its_bba_7} c.f. \sref{fig:its_bba_1} -- \sref{fig:its_bba_3}). 
-    \item Consequently the confidence intervals for the Chapman-Kolmogorov tests are much smaller (figures \sref{fig:cktest_bba_5} -- \sref{fig:cktest_bba_7} c.f. \sref{fig:cktest_bba_1} -- \sref{fig:cktest_bba_3}).  
-    \item This implies a much better model validity for the models selected by pre-conditioning on a large timescale gap. 
-    \item 
-\end{itemize}
+% \begin{itemize}
+%     \item The above observations suggest that incorporating the timescale gap into the model selection procedure. 
+%     \item Instead of fixing $k$, the models are scored using a range of $k$ (here we used $k=2-k^{*}+1$). For each $k$ the model score is plotted against the timescale gap. So for $k=2$, the model scores are plotted against the ratio of the implied timescales between eigenvector 2 and eigenvector 3 (where eigenvector 1 is the stationary distribution).  This is shown in figure \sref{fig:bba_vamp_var_k}.  
+%     \item The majority of the trials shown small separation of timescales, however some show a large gap and the best performing models are selected from those with a gap larger than the 98th percentile\footnote{this number is somewhat arbitrary and was chosen so that a model with each feature was selected.}. 
+%     \item The models selected this way are labeled \numrange{5}{7} and are listed in table \sref{tab:1fme_mod_defs}.  
+%     \item The implied number of slow processes was \num{2} for each feature and each model scored similarly (VAMP-2(k=2): \numci{1.96}{1.95}{1.97} for each model). This is in contrast to the model ranks implied by scoring with $k=4$ eigenvectors, in which the two features based on the contact distances  scored higher (models 2 and 3, \numci{3.88}{3.84}{3.91}, \numci{3.87}{3.83}{3.90}) than the dihedral model (model 1, \numci{3.72}{3.63}{3.81}). 
+%     \item Thus the two different scoring methods result in a different ranking of models.  
+%     \item Models \numrange{5}{7} showed larger separation of timescales and smaller confidence intervals in the median timescales, compared to models \numrange{1}{3} (figures \sref{fig:its_bba_5} -- \sref{fig:its_bba_7} c.f. \sref{fig:its_bba_1} -- \sref{fig:its_bba_3}). 
+%     \item Consequently the confidence intervals for the Chapman-Kolmogorov tests are much smaller (figures \sref{fig:cktest_bba_5} -- \sref{fig:cktest_bba_7} c.f. \sref{fig:cktest_bba_1} -- \sref{fig:cktest_bba_3}).  
+%     \item This implies a much better model validity for the models selected by pre-conditioning on a large timescale gap. 
+%     \item 
+% \end{itemize}
 
-\subsubsection{Comparison to the folded state}
+% \subsubsection{Comparison to the folded state}
 
-\begin{itemize}
-    \item Models \numrange{1}{7} were coarse-grained into a two-state hidden Markov model, as indicated by the largest gap in the timescales for each model (panel (b)  of figures \sref{fig:its_bba_1} --  -- \sref{fig:its_bba_7}).
-    \item The two metastable states estimated from the models were compared to the folded state (PDB accession code: 1FME) using the distribution the $\alpha$-Carbon RMSD (figure \sref{fig:bba_folded_comparisons}).  
-    \item State 0 in each case was the most populated state and corresponds to the unfolded state. Each model showed a similar structural dissimilarity to the folded state, with the peak in each distribution lying between \SI{7.5}{\angstrom} and \SI{10}{\angstrom}.  
-    \item The models were differentiated by their predictions of the folded state. 
-    \item Three out of the seven models show a clear bimodal distribution in the folded state predictions: 
-        \begin{enumerate}
-            \item models 2 and 7 (logistic contact-distances feature, blue and orange line respectively in figure \sref{fig:bba_folded_comparisons}); 
-            \item model 6  (contact-distances feature, orange line in figure \sref{fig:bba_folded_comparisons}). 
-        \end{enumerate}
-    \item The bimodal distribution may be due to another metastable state, indicated in the ratio of implied timescales for model 6 and 7 (panel (b) in figures \sref{fig:its_bba_6} and \sref{fig:its_bba_7}) by a clear separation between timescales 4 and 5.  
-    \item Models 1 and 5 (dihedrals feature, blue and orange lines respectively in figure \sref{fig:bba_folded_comparisons}) a shown a clear single peak in the distribution indicating a precise prediction of the folded state. Model 5 which shows a larger separation in timescales has a slightly smaller median value, indicating a more accurate prediction of the folded state.  
-\end{itemize}
+% \begin{itemize}
+%     \item Models \numrange{1}{7} were coarse-grained into a two-state hidden Markov model, as indicated by the largest gap in the timescales for each model (panel (b)  of figures \sref{fig:its_bba_1} --  -- \sref{fig:its_bba_7}).
+%     \item The two metastable states estimated from the models were compared to the folded state (PDB accession code: 1FME) using the distribution the $\alpha$-Carbon RMSD (figure \sref{fig:bba_folded_comparisons}).  
+%     \item State 0 in each case was the most populated state and corresponds to the unfolded state. Each model showed a similar structural dissimilarity to the folded state, with the peak in each distribution lying between \SI{7.5}{\angstrom} and \SI{10}{\angstrom}.  
+%     \item The models were differentiated by their predictions of the folded state. 
+%     \item Three out of the seven models show a clear bimodal distribution in the folded state predictions: 
+%         \begin{enumerate}
+%             \item models 2 and 7 (logistic contact-distances feature, blue and orange line respectively in figure \sref{fig:bba_folded_comparisons}); 
+%             \item model 6  (contact-distances feature, orange line in figure \sref{fig:bba_folded_comparisons}). 
+%         \end{enumerate}
+%     \item The bimodal distribution may be due to another metastable state, indicated in the ratio of implied timescales for model 6 and 7 (panel (b) in figures \sref{fig:its_bba_6} and \sref{fig:its_bba_7}) by a clear separation between timescales 4 and 5.  
+%     \item Models 1 and 5 (dihedrals feature, blue and orange lines respectively in figure \sref{fig:bba_folded_comparisons}) a shown a clear single peak in the distribution indicating a precise prediction of the folded state. Model 5 which shows a larger separation in timescales has a slightly smaller median value, indicating a more accurate prediction of the folded state.  
+% \end{itemize}
 
 \subsection{Villin}
 
