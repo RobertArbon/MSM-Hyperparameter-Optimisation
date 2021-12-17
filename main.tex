@@ -29,6 +29,14 @@
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\SIci}[4]{\SI{#1}{#4},\ \SI{95}{\percent}C.I.\ [\numrange[range-phrase=---]{#2}{#3} \si{#4}]}
 \newcommand{\numci}[3]{\num{#1},\ \SI{95}{\percent}C.I.\ [\numrange[range-phrase=---]{#2}{#3}]}
+% Fancy table stuff
+\newcommand{\nextitem}{\par\hspace*{\labelsep}\textbullet\hspace*{\labelsep}}
+\newcolumntype{Z}{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}X}
+
+% Shorthand for features
+\newcommand{\distlabel}{$dist.\ $}
+\newcommand{\logitdistlabel}{$\mathrm{logit}(dist.)\ $}
+\newcommand{\dihedlabel}{$dihed.\ $}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % supplementary materials
@@ -164,7 +172,21 @@ separate page at the end of the document.
 %% Start the main part of the manuscript here.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Introduction}
-Introduction
+
+\begin{itemize}
+    \item Markov state models are continually popular model for analysing MD data. 
+    \item The variational approach to learning Markov processes allows a principled procedure for choosing hyperparameters of the discretization process.
+    \item They are particularly relevant in the age of large scale simulations [refs: any number of F@H/Amaro papers]
+    \item Adaptive sampling strategies such as FAST, Westpa, etc.   have been developed which automate sampling by adaptively launching simulations from carefully chosen configurations. 
+    \item AS, Westpa and others requires the user to define discrete states to seed new sampling epochs. 
+    \item These states lie along the slow relaxation processes of the system. 
+    \item This requires the selection of either predefined set of hyperparameters or a method of choosing those hyperparameters adaptively. 
+    \item A standard procedure for selecting hyperparameters is to first sample (randomly or systematically on a grid) from a hyperparameter search space and then evaluate the VAMP score on a number of eigenvectors that need to be optimized.  
+    \item This means that the number of eigenvectors of interest will need to be known ahead of time - this is often not known. 
+    \item This is especially true in the adaptive sampling context when the number of dominant eigenvectors may change.  
+    \item This paper investigates whether such an automated procedure is really viable. 
+
+\end{itemize}
 
 
 
@@ -175,7 +197,7 @@ Introduction
 \section{Methods}
 \subsection{Molecular dynamics}
 
-This work used eight of the twelve fast-folding proteins which have become the de-facto benchmark dataset for testing molecular kinetics methods. The methods used to create this data are described elsewhere. The proteins used, their PDB accession codes, the amount of simulation data, the number of residues and the average folding timescale are shown in table \ref{tab:data_description}. Each long trajectory was split into sub-trajectories of length \SI{200}{\nano\second}. 
+This work used eight of the twelve fast-folding proteins which have become the de-facto benchmark dataset for testing molecular kinetics methods. The methods used to create this data are described elsewhere\cite{lindorff-larsen_how_2011}. The proteins used, their PDB accession codes, the amount of simulation data, the number of residues and the average folding timescale are shown in table \ref{tab:data_description}. Each long trajectory was split into sub-trajectories of length \SI{200}{\nano\second}. 
 
 \begin{table}
     \caption{\textsc{Description of molecular dynamics data}}
@@ -201,50 +223,49 @@ This work used eight of the twelve fast-folding proteins which have become the d
 \end{table}
 
 \subsection{Markov state models}
-MSMs were fit using the standard pipeline: 
+MSMs were fit using a standard pipeline when focusing on the slow relaxation processes \cite{noe_markov_2019, husic_markov_2018}: 
 \begin{enumerate}
     \item Project molecular dynamics (MD) trajectories onto a set of features, $\chi$. 
-    \item Reduce the dimension of the feature trajectories using TICA with a lag time $\sigma_{T}$ by projecting onto the first $m$ TICA coordinates. The TICA coordinates were scaled by their corresponding eigenvalues so that distances in the TICA space correspond to kinetic distances (known as kinetic mapping).
+    \item Reduce the dimension of the feature trajectories using TICA with a lag time $\tau_{\mathrm{TICA}}$ by projecting onto the first $m$ TICA coordinates. The TICA coordinates were scaled by their corresponding eigenvalues so that distances in the TICA space correspond to kinetic distances (known as kinetic mapping)\cite{noeKineticDistanceKinetic2015}).
     \item The frames of the TICA trajectories were clustered using k-means algorithm into $n$ discrete microstates. 
-    \item An reversible, maximum likelihood MSM was then estimated  
+    \item An reversible, maximum likelihood MSM was then estimated. 
 \end{enumerate}
 The MD trajectories were first strided so that each frame corresponded to \SI{1}{\nano\second}. The trajectories were strided to \SI{10}{\nano\second} when estimating the TICA eigenvectors and k-means cluster centers.
 
-The uncertainty for model derived quantities (e.g., implied timescales, VAMP-2 scores etc.) was estimated using the bootstrap with \num{102}\footnote{This number was chosen to make efficient use of the compute cluster used for the calculations.} bootstrap samples. The point estimate and error-bars  were calculated as the median and  \SI{2.5}{\percent} \& \SI{97.5}{\percent} quantiles of the distribution over the bootstrap samples. It is common practice to estimated uncertainty using a Bayesian MSM but this does not reflect the full range of sources of uncertainty, namely the process of projecting the MD trajectories onto the discrete set of microstates. 
-
+The uncertainty for model derived quantities (e.g., implied timescales, VAMP2 scores etc.) was estimated using the bootstrap with \num{102}\footnote{This number was chosen to make efficient use of the compute cluster used for the calculations.} bootstrap samples. The point estimate and error-bars  were calculated as the median and  \SI{2.5}{\percent} \& \SI{97.5}{\percent} quantiles of the distribution over the bootstrap samples.
 
 \subsection{Modelling choices and scoring}
-\num{100} different MSM hyperparameters for estimating the microstates were randomly sampled from the search space described by table \ref{tab:search_space}. The dihedral angles feature used all the available residue dihedral angles (except the $\omega$ angle). The definitions of the contact distances ($d$) were either the closest heavy-atom distance, or the alpha-Carbon distance. The un-adjusted distance, $d$ (identity transform) or a  logistic transform $f(d) = [1-\exp{(s(d-c))}]^{-1}$ were used.  The center, $c$, and steepness $s$, hyperparameters apply to the logistic transform only and have units of \si{\angstrom} and \si{\per\angstrom} respectively. The TICA eigenvectors were scaled by their eigenvalues ($\lambda$).
+\num{100} different hyperparameters for estimating the microstates were randomly sampled from the search space described by table \ref{tab:search_space}. The dihedral angles feature used all the available residue dihedral angles (except the $\omega$ angle). The definitions of the contact distances ($d$) were either the closest heavy-atom distance, or the alpha-Carbon distance. The un-adjusted distance, $d$ (identity transform) or a  logistic transform $\mathrm{logit}(d) = [1-\exp{(s(d-c))}]^{-1}$ were used.  The center, $c$, and steepness $s$, hyperparameters apply to the logistic transform only and have units of \si{\angstrom} and \si{\per\angstrom} respectively. The TICA eigenvectors were scaled by their eigenvalues ($\lambda$).
 
-For each unique set of hyperparameters, $\theta = (\chi, \tau_{\mathrm{T}}, m, n)$,  an MSM was estimated using the procedure above with a Markov lag-time, $\tau_{\mathrm{M}}$, of \SI{10}{\nano\second}, \SI{20}{\nano\second} to \SI{100}{\nano\second}. Each combination of $\theta$ and  $\tau_{\mathrm{M}}$ the slowest \numrange{2}{10} eigenvectors were scored using the VAMP-2 score (this includes the eigenvector corresponding to the stationary distribution). 
-
+For each unique set of hyperparameters, $\mathbf{x} = (\chi, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau_{\mathrm{M}}$: \SI{10}{\nano\second} to \SI{100}{\nano\second}. For each combination of $\mathbf{x}$ and  $\tau_{\mathrm{M}}$ the slowest \numrange{2}{10} eigenvectors were scored using the VAMP2 score (this includes the eigenvector corresponding to the stationary distribution). 
 \begin{table}
     \centering
     \begin{tabularx}{\textwidth}{lXXXX}
     \toprule
     \textbf{Features}  & & & &\\
-    Dihedral angles & \emph{Which} & & &\\
-    & $\phi, \psi, \chi_{1}, \ldots, \chi_{5}$ & & & \\
-    Contact distances &  \emph{Definition} & \emph{Transformation}& \emph{Center} ($c$) & \emph{Steepness} ($s$) \\
+    Dihedral angles & \textsc{Which} & & &\\
+    & \multicolumn{2}{l}{$dihed.=\phi, \psi, \chi_{1}, \ldots, \chi_{5}$ } & & \\
+    Contact distances &  \textsc{Definition} & \textsc{Transform}& \textsc{Center} ($c$) & \textsc{Steepness} ($s$) \\
 
-     & Closest-heavy, C$\alpha$ & logistic, identity &  \numrange{3}{15} & \numrange{0.1}{50} \\
+     & \nextitem $X$-$X$  \nextitem C$\alpha$-C$\alpha$ & \nextitem $\mathrm{logit}(dist.)$ \nextitem $dist.$ &  \numrange{3}{15} & \numrange{0.1}{50} \\
     \midrule
-    \textbf{Decomposition} & \emph{Eigenvectors}, $m$ & \emph{Lag-time}, $\tau_{T}$ ($\si{\nano\second}$) & \emph{Scaling}\\ 
+    \textbf{Decomposition} & \textsc{Eigenvectors}, $m$ & \textsc{Lag-time}, $\tau_{T}$ ($\si{\nano\second}$) & \textsc{Scaling}\\ 
     TICA & \numrange{1}{20} & \numrange{1}{100} & $\lambda$\\
     \midrule
-    \textbf{Clustering} & \emph{Clusters}, $n$ &\\
+    \textbf{Clustering} & \textsc{Clusters}, $n$ &\\
     k-means & \numrange{10}{1000} & \\
     \bottomrule
     \end{tabularx}
-    \caption{\textsc{Hyperparameter search space}. }
+    \caption{\textsc{Hyperparameter search space}. $X$-$X$ and C$\alpha$-C$\alpha$  refer to the closest heavy atom and $\alpha$-Carbon scheme respectively, for measuring the contact distance ($dist.$).   }
     \label{tab:search_space}
 \end{table}
 
-The hyperparameter sensitivity data-set consisted of, for each protein, 9.18M measurements of the VAMP-2 score from the combinations bootstrap samples, hyperparameters, lag-time and number of scored processes  ($9.18\mathrm{M}=102 \times 100 \times 10 \times 9$). 
+The hyperparameter sensitivity data-set consisted of, for each protein, 9.18M measurements of the VAMP2 score from the combinations bootstrap samples, hyperparameters, lag-time and number of scored processes  ($9.18\mathrm{M}=102 \times 100 \times 10 \times 9$). 
 
 \subsection{Model scoring parameters}\label{model_score_params}
 In order to score each set of hyperparameters, a Markov lag-time and the number of slow processes, or eigenvectors, to score must be determined for each protein. 
 
+\subsubsection{Markov lag time}
 For each $\theta$, the following gradient was calculated:
 \begin{equation}
     g(\tau_{\mathrm{M}}, \theta) = \frac{\Delta \log{\left(t_{2}(\tau_{\mathrm{M}}, \theta)\right)}}{\Delta \tau_{\mathrm{M}}}, 
@@ -253,28 +274,28 @@ where $t_{2}(\tau_{\mathrm{M}})$ is the timescale of the slowest relaxation proc
 \begin{equation}
     \tau^{*}_{\mathrm{M}}  = \argmin_{\tau_{\mathrm{M}}, \theta}\left[g(\tau_{\mathrm{M}}, \theta)\right], \quad 0 < g < \log{1.01}
 \end{equation}
-This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau_{\mathrm{M}}$ are plotted on a log scale and the smallest $\tau_{\mathrm{M}}$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. Plots of $g(\tau_{\mathrm{M}}, \theta)$ for each protein are shown  in figure \sref{fig:t2_gradient}. 
+This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau_{\mathrm{M}}$ are plotted on a log scale and the smallest $\tau_{\mathrm{M}}$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. Plots of $g(\tau_{\mathrm{M}}, \theta)$ for each protein are shown  in figure \sref{fig:its_grad_all}. 
 
+\subsubsection{Number of dominant eigenvectors}\label{sec:num_dom_evs}
 The number of dominant eigenvectors, $k$, was determined by calculating:
 \begin{equation}
     k(\theta; \tau^{*}) = \argmax_{i}{\left[\frac{t_{i}}{t_{i+1}}\right]} + 1, \quad i = 2, \ldots, 9, 
 \end{equation}
-for each value of $\theta$ at the selected values of $\tau^{*}_{\mathrm{M}}$. The selected value of $k^{*}(\theta; \tau^{*}) = \max{\left[k\right]}$ such that at least two different values of $\theta$  selected this value.  The distribution of $k(\theta, \tau^{*})$ for each protein are shown in figure \sref{fig:count_num_proc}. 
+for each value of $\theta$ at the selected values of $\tau^{*}_{\mathrm{M}}$. The selected value of $k^{*}(\theta; \tau^{*}) = \max{\left[k\right]}$ such that at least two different values of $\theta$  selected this value.  The distribution of $k(\theta, \tau^{*})$ for each protein are shown in figure \sref{fig:num_proc_all}. 
 
 Note that throughout this work we always include the stationary distribution in the definition of the dominant eigenvectors.  So that a VAMP2 score using $k=2$ eigenvectors scores the stationary distribution (which is always $1$ by definition) and first slow process, this will denoted VAMP2$(k=2)$. 
 
 \subsection{Model validation}
 
-Markov state models were validated by i) plotting the first \num{10} implied timescale plots as a function of the Markov lag-time and by ii) performing a Chapman-Kolmogorov test.  The Chapman-Kolmogorov test coarse-grains the MSM into a Hidden Markov state model and tests the predictions (hidden state-to-hidden state transition probabilities) of the HMM over 10 Markov lag-times, against the same values estimated using the trajectory information directly.  The number of hidden states was determined by the inspection of the ratio of successive timescales ($t_{i}/t_{i+1}$. The CK test is said to be successful if the model predictions lie within the confidence intervals of the estimated probabilities. The central values and confidence intervals for both the implied timescales and CK-test were estimated as the median and \SI{95}{\percent} quantiles of \num{100} bootstrap samples.  
-
+Markov state models were validated by i) plotting the first \num{10} implied timescale plots as a function of the Markov lag-time and by ii) performing a Chapman-Kolmogorov test (CK test\cite{noe_projected_2013}).  The CK test coarse-grains the MSM into a hidden Markov model and tests the predictions (hidden state-to-hidden state transition probabilities) of the HMM over 10 Markov lag-times, against the same values estimated using the trajectory information directly.  The number of hidden states was determined by the inspection of the ratio of successive timescales ($t_{i}/t_{i+1}$). The CK test is said to be successful if the model predictions lie within the confidence intervals of the estimated probabilities. The central values and confidence intervals for both the implied timescales and CK-test were estimated as the median and \SI{95}{\percent} quantiles of \num{100} bootstrap samples.  
 
 \subsection{Hyperparameter relevance}
 
-In order to estimate the sensitivity of the VAMP2 scores to the hyperparameters, the VAMP2 score was modelled as a Gaussian process with additive noise.  
+In order to estimate the sensitivity of both the VAMP2 scores and dominant implied timescales to the hyperparameters, these responses were modelled as a Gaussian process (GP) with additive noise:  
 \begin{equation}
     \mathbf{y}(\mathbf{x}) \sim \mathcal{N}(\bm{\mu}(\mathbf{x}),\mathbf{K} + \sigma_{n}^{2}\mathbf{I}) \
 \end{equation}
-Where $\mathbf{x}$ is a vector of hyperparameters ($\mathbf{x}=(\tau_{\mathrm{TICA}}, m, \ldots)$; the vector $\bm{\mu}$ contains the predicted mean values of the GP at different values of $\mathbf{x}$;  $K_{ij}$ is the covariance between the VAMP score at two different points (values of $\mathbf{x}$) $i$ and $j$; $\sigma_{n}^{2}$ is the variance of the additive noise;  $\mathbf{y}$ is a vector of the predicted values of VAMP score (including the effects of the noise).  The quasi-continuous hyperparameters ($\tau_{\mathrm{TICA}}, m, n$) were scaled to lie in the range $[0, 1]$.  The contact distance scheme ($\alpha$-Carbon, or heavy atom) was coded as two separate dummy coded variables.  
+where $\mathbf{x}$ is a vector of hyperparameters ($\mathbf{x}=(\tau_{\mathrm{TICA}}, m, \ldots))$; the vector $\bm{\mu}$ contains the predicted mean values of the GP at different values of $\mathbf{x}$;  $K_{ij}$ is the covariance between the VAMP score at two different points (values of $\mathbf{x}$) $i$ and $j$; $\sigma_{n}^{2}$ is the variance of the additive noise;  $\mathbf{y}$ is a vector of the predicted values of VAMP score or implied timescales (including the effects of the noise).  The quasi-continuous hyperparameters ($\tau_{\mathrm{TICA}}, m, n, c, s$) were scaled to lie in the range $[0, 1]$.  The contact distance scheme ($X$-$X$, C$\alpha$-C$\alpha$) was coded as two separate dummy coded variables.  
 
  The covariance between the observations was modelled with a fully multiplicative and stationary kernel of the form: 
  \begin{align}\label{eqn:kernel_form}
@@ -282,108 +303,163 @@ Where $\mathbf{x}$ is a vector of hyperparameters ($\mathbf{x}=(\tau_{\mathrm{TI
      k\left(r; \theta\right) = &
      \eta^{2}\prod_h k_{M}\left(r; \nu\right) + \delta_{i, j}\sigma_{n}^{2}
  \end{align}
- where, 
+ where 
   \begin{equation}
      r_{h} = \frac{|x_{h, i}-x_{h, j}|}{l_h}.
  \end{equation}
- where the product $h$ runs over individual elements of $\mathbf{x}$ (i.e., $\tau_{\mathrm{TICA}}, m, \ldots$); $l_h$, $\eta$ and $\sigma_n$ are parameters to  be learnt from the data. In the parameter estimation process a weakly informative prior was placed over $\eta$, and $\sigma_{n}$ ($\mathrm{half-Cauchy}(\beta=2)$) and the $l_h$  ($\mathrm{Gamma}(\alpha=2, \beta=0.5)$).  
+ The the product $h$ runs over individual elements of $\mathbf{x}$ (i.e., $\tau_{\mathrm{TICA}}, m, \ldots$); and $l_h$, $\eta$ and $\sigma_n$ are parameters to  be learnt from the data. In the parameter estimation process a weakly informative prior was placed over $\eta$, and $\sigma_{n}$ ($\mathrm{half-Cauchy}(\beta=2)$) and the $l_h$  ($\mathrm{Gamma}(\alpha=2, \beta=0.5)$).  
  
- A GP model was created for each combination of protein and feature ($3\times 8=24$ models in total). A number of different modelling options were tried to ensure a good fit to the data, these were: log-transforming the VAMP score, and using different different kernels, $k_{M}$. The kernels were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively). So for each protein/feature combination $2\times 4 =8$ different models were fit. The outcome transformation and kernel were selected to ensure a good fit across all different protein and feature combinations to ensure models were comparable.  All parameters were estimated using the Markov-Chain Monte Carlo, using a No-U-turn sampler. The kernel and outcome transformation which gave rise to i) zero divergent transitions, ii) an R-hat statistic less than 1.01 and,  iii) an effective sample size of at least \SI{25}{\percent} of the total observations,  were selected.  The number of tuning steps and the acceptance ratio was also varied to ensure a good fit across all models. The reported models used an acceptance ratio of \SI{90}{\percent}, \num{3000} tuning steps, \num{5000} sampling steps using four independent chains, a log-transform of the VAMP scores and an exponential kernel for each hyperparameters.  
+ A GP model was created for each combination of protein, feature and outcome (VAMP2 score of the dominant implied timescales). A number of different modelling options were tried to ensure a good fit to the data, these were: log-transforming the VAMP score, and using different different kernels, $k_{M}$. The kernels were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively). So for each protein/feature/response combination, $2\times 4 =8$ different models were fit. The outcome transformation and kernel were selected to ensure a good fit across all the different protein/feature/outcome combinations to ensure models were comparable.  All parameters were estimated using the Markov-Chain Monte Carlo, using a No-U-turn sampler. The kernel and outcome transformation which gave rise to i) zero divergent transitions, ii) an R-hat statistic less than 1.01 and,  iii) an effective sample size of at least \SI{25}{\percent} of the total observations,  were selected.  The number of tuning steps and the acceptance ratio was also varied to ensure a good fit across all models. The reported models used an acceptance ratio of \SI{90}{\percent}, \num{3000} tuning steps, \num{5000} sampling steps using four independent chains, a log-transform of the VAMP scores and an exponential kernel for each hyperparameters.  
  
  The relevance of each quasi-continuous hyperparameter for each protein and feature combination was calculated as $R_{h} = \frac{1}{l_{h}}$.  
- All fitting and analysis was performed using the PyMC3 and ArViz packages. 
+ All fitting and analysis was performed using the PyMC3 (version xxx) and ArViz (version xxx) packages. 
  
  \subsection{Comparing the eigenvectors of different models}
  
-MSMs were compared by comparing $p$ dominant eigenvectors (as determined by the methods in section \ref{model_score_params}). To compare the $i$'th right eigenvector of model $B$ ($\psi^{B}_{i}$, $2 \le i \le p$) to the $i$'th right eigenvector of model $A$ ($\psi^{A}_{i}$) the following procedure was followed: 
+MSMs were compared by comparing $p$ dominant eigenvectors (as determined by the methods in section \ref{sec:num_dom_evs}). To compare the $i$'th right eigenvector of model $B$ ($\psi^{B}_{i}$, $2 \le i \le p$) to the $i$'th right eigenvector of model $A$ ($\psi^{A}_{i}$) the following procedure was followed: 
 
 \begin{enumerate}
-    \item The $n$ discrete states of model $B$  (defined by the hyperparameters $\theta^{B}$) were projected onto the 2nd, 3rd, p'th right eigenvectors of $B$.  \label{molpx_project}
+    \item The $n$ discrete states of model $B$  (defined by the hyperparameters $\mathbf{x}^{B}$) were projected onto the 2nd, 3rd, p'th right eigenvectors of $B$.  \label{molpx_project}
     \item $50$ different discrete states ($d_{i,j}$, $j = 1,\ldots, 50$) we selected which i) spanned the range of values of $\psi^{B}_{i}$, and ii) had minimal projection onto the other eigenvectors ($\psi^{B}_{k}$, $2 \le k \ne i \le p$). \label{molpx_sample}
-    \item For each $d_{i,j}$ a single molecular configuration was sampled to give rise a trajectory along the eigenvector $\psi^{B}_{i}$ - $\mathbf{x}_{i, j}$.  \label{molpx_configs}
-    \item $\mathbf{x}_{i, j}$ was discretized using model $A$ hyperparameters ($\theta^{A}$) and then projected onto the right eigenvector of model $A$, $\psi^{A}_{i}$. 
+    \item For each $d_{i,j}$ a single molecular configuration ($\mathbf{z}_{i, j}$) was sampled to give rise a trajectory along the eigenvector $\psi^{B}_{i}$.  \label{molpx_configs}
+    \item $\mathbf{z}_{i, j}$ was discretized using model $A$ hyperparameters ($\mathbf{x}^{A}$) and then projected onto the right eigenvector of model $A$, $\psi^{A}_{i}$. 
     \item The difference of the model $B$ to the model $A$, for the eigenvector $i$, $\Delta(B; A)_{i}$ is measured by the root-mean square error between the two projections:
     \begin{equation}
-        \Delta(B; A)_{i} = \sqrt{\frac{1}{50}\sum_{j=1}^{50} \left(\psi^{A}_{i}(\mathbf{x}_{i, j})- \psi^{B}_{i}(\mathbf{x}_{i, j})\right )^{2}}
+        \Delta(B; A)_{i} = \sqrt{\frac{1}{50}\sum_{j=1}^{50} \left(\psi^{A}_{i}(\mathbf{z}_{i, j})- \psi^{B}_{i}(\mathbf{z}_{i, j})\right )^{2}}
     \end{equation}\label{eqn:overlap}
-    \item Because of the ambiguity in the sign of the eigenvectors, a second calculation of  $\Delta(B; A)_{i}$ was made replacing $\psi^{B}_{i}(\mathbf{x}_{i, j})$ with $\psi^{B}_{i}(\mathbf{x}_{i, 51-j})$ and the minimum value taken.  
-    \item The whole process was bootstrapped using \num{100} bootstrap samples. The final estimate and confidence intervals of $\Delta(B; A)_{i}$ were calculated as the median and \SI{2.5}{\percent} and \SI{97.5}{\percent} quantiles of the bootstrap distribution.  
+    \item Because of the ambiguity in the sign of the eigenvectors, a second calculation of  $\Delta(B; A)_{i}$ was made replacing $\psi^{B}_{i}(\mathbf{z}_{i, j})$ with $\psi^{B}_{i}(\mathbf{z}_{i, 51-j})$ and the minimum value taken.  
+    \item The whole process was bootstrapped using \num{100} samples of the molecular dynamics trajectories. The final estimate and confidence intervals of $\Delta(B; A)_{i}$ were calculated as the median and \SI{2.5}{\percent} and \SI{97.5}{\percent} quantiles of the bootstrap distribution.  
 \end{enumerate}
 
-The Python package molPx was used to perform steps \ref{molpx_project} to \label{molpx_configs}. 
-
-
+The Python package molPx (version xx) was used to perform steps \ref{molpx_project} to \ref{molpx_configs}. 
 
 \section{Results}
 
- MSM selection using the VAMP scores usually proceeds along the following lines. The MSM is specified for scoring with a lag-time $\tau$, which is determined either by comparison with previous work (e.g., \cite{Optimized_2016}) or expert judgement (e.g., \cite{scherer_variational_2019, chen_dynamic_2019}). A number of eigenvectors representing the slow dynamic processes to be optimized are selected, also usually by expert judgement \cite{mcgibbonVariationalCrossvalidationSlow2015, scherer_variational_2019} or through prior knowledge of the process to be optimized (e.g. \cite{Optimized_2016}).  A number of hyperparameters are selected, either at random\cite{Optimized_2016} or more usually over a grid \cite{scherer_variational_2019, chen_dynamic_2019}. Models are ranked according to the score and the highest scoring model selected. The feature is known to have the largest impact on the quality of the model \cite{scherer_variational_2019, Optimized_2016} and sometimes the feature is pre-selected, either through another VAMP score \cite{scherer_variational_2019} or by selecting a feature which has the highest proportion of high scoring trials [ref?].  The final lag time is selected by inspection of implied timescale plots and the the model validated using a Chapman-Kolmogorov test.
+ MSM selection using the VAMP scores usually proceeds along the following lines. The MSM is specified for scoring with a lag-time $\tau$, which is determined either by comparison with previous work (e.g., \cite{Optimized_2016}) or expert judgement (e.g., \cite{scherer_variational_2019, chen_dynamic_2019}). A number of eigenvectors representing the slow dynamic processes to be optimized are selected, also usually by expert judgement \cite{mcgibbonVariationalCrossvalidationSlow2015, scherer_variational_2019} or through prior knowledge of the process to be optimized (e.g. \cite{Optimized_2016}).  A number of hyperparameters are selected, either at random\cite{Optimized_2016} or more usually over a grid \cite{scherer_variational_2019, chen_dynamic_2019}. Models are ranked according to the score and the highest scoring model selected. The feature is known to have the largest impact on the quality of the model \cite{scherer_variational_2019, Optimized_2016} and sometimes the feature is pre-selected, either through another type of VAMP score \cite{scherer_variational_2019} or by selecting a feature which has the highest proportion of high scoring trials [ref?].  The final lag time is selected by inspection of implied timescale plots and the the model validated using a Chapman-Kolmogorov test.
 
 We demonstrate some of the problems with this hyperparameter selection pipeline by showcasing the creation  of two coarse-grained MSMs using two proteins, BBA and the Villin headpiece. 
 
 \subsection{BBA}
 
-In order to select models using the VAMP2 score the Markov lag time and number of eigenvectors to score must be determined.  The VAMP2 scores for each trial were recorded at a range of Markov lag times and with a range of eigenvectors. The Markov lag-time selected was \SI{40}{\nano\second}; the gradients of the implied timescales plot which demonstrate convergence to this value are shown in figure \sref{fig:its_grad_all} panel (c). This value is in the middle of the range of other MSMs built using this data: \SI{1}{\nano\second} \cite{Quantitati2018},  \SI{50}{\nano\second} \cite{Optimized_2016} and   \SI{100}{\nano\second} \cite{scherer_variational_2019}. The number eigenvectors used for scoring was $k=4$,  this includes the stationary distribution so the number of slow relaxation processes scored was three. The distribution of timescale gaps is used to select this number is shown in figure \sref{fig:num_proc_all} panel (c).  This number is also in the middle of the range used to optimize hyperparameters using this data: \num{2} \cite{Optimized_2016} and \num{5} \cite{scherer_variational_2019}.  Each hyperparameter trial was thus scored using $\tau=\SI{40}{\nano\second}$ with VAMP2$(k=2)$ with  the resulting ranking shown in \sref{fig:bba_vamp_fixed_k}. 
+The Markov lag-time selected was \SI{40}{\nano\second}; the gradients of the implied timescales plot which demonstrate convergence to this value are shown in figure \sref{fig:its_grad_all} panel (c). This value is in the middle of the range of other MSMs built using this data: \SI{1}{\nano\second} \cite{Quantitati2018},  \SI{50}{\nano\second} \cite{Optimized_2016} and   \SI{100}{\nano\second} \cite{scherer_variational_2019}. The number eigenvectors used for scoring was $k=4$,  this includes the stationary distribution so the number of slow relaxation processes scored was three. The distribution of timescale gaps used to select this number is shown in figure \sref{fig:num_proc_all} panel (c). This number is also in the middle of the range used to optimize hyperparameters using this data: \num{2} \cite{Optimized_2016} and \num{5} \cite{scherer_variational_2019}.  Each hyperparameter trial was thus scored using $\tau=\SI{40}{\nano\second}$ with VAMP2$(k=2)$. The ranked trials are shown in \sref{fig:bba_vamp_fixed_k}.  
 
 \subsubsection{Sampling relevant hyperparameters}
 The first decision in the hyperparameter selection pipeline is the method of sampling the hyperparameters to evaluate.  There is a large and ever evolving literature on the optimal way to choose hyperparameters [insert refs from thesis]. Among the most popular methods are the two simplest: choosing hyperparameters at random or via from a grid of points, both evenly spaced over the hyperparameter search space. Grid methods appear to be the more systematic but in fact are usually less efficient \cite{bergstrajamesbergstraRandomSearchHyperParameter2012}, especially with many low relevance hyperparameters (so that exhaustively sampling specific combinations is not necessary to capture the full variation in model scores).  In practice both random search (\cite{Optimized_2016}) and grid search (\cite{chen_dynamic_2019}) are used for estimating MSMs. To decide which sampling method is more appropriate for optimizing MSMs the hyperparameter relevance for determining the VAMP2 score was estimated (separately for each feature) and is shown figure \sref{fig:bba_sensitivity} (white dots and blue error bars). 
 
-The number of TICA dimensions is the most relevant hyperparameter for determining the VAMP score with a median relevance for each feature of $R_{m}\ge 1$. This implies that changing $m$, while keeping all other hyperparameters constant, is most likely to negatively impact the VAMP score, while the other hyperparameters ($h=n, \tau_{\mathrm{TICA}}, c$, and $s$) with lower relevance ($R_{h} \le 1$) will only have a relatively small impact. The absolute relevance for all hyperparameters are only small with the maximum value of $R_{m} \le 2$.  
+The number of TICA dimensions is the most relevant hyperparameter for determining the VAMP score with a median relevance for each feature of $R_{m}\ge 1$. This implies that changing $m$, while keeping all other hyperparameters constant, is most likely to negatively impact the VAMP score, while the other hyperparameters ($h=n, \tau_{\mathrm{TICA}}, c$, and $s$) with lower relevance ($R_{h} \le 1$) will only have a relatively small impact. However, the absolute relevances for all hyperparameters are only small with the maximum value of $R_{m} \le 2$.  This implies that only changing a single hyperparameter, while keeping the remaining fixed, will have only a small effect on the VAMP2 score. 
 
-The high relevance of the $m$ is not surprising in light of the bias-variance tradeoff \cite{friedman2001elements}: with an insufficient number of TICA dimensions, the resulting discrete basis (from the clustering step), will not adequately describe the true eigenvectors of the propagator; with too many TICA dimensions may result in dimensions which only capture noisy fluctuations resulting in poor convergence to suitable cluster definition, although given the small values of $m$ sampled, this regime is unlikely to have been reached. 
+[Suggested chart: Something like ./examples/heat-map-response-surface.png, or lines-response-surface.png]
 
-The low relevance of $n$ is perhaps more surprising. It would be expected that both $n$ and $m$ would behave in similar ways, creating highly biased discrete states in for low values of $n$ and $m$ and highly variable cluster definitions for high $m$ and $n$ (the bias-variance tradeoff for $n$ in MSM construction is well documented \cite{mcgibbonVariationalCrossvalidationSlow2015, wuVariationalApproachLearning2020c}). It is possible that we do not see an effect on the VAMP score for large values of $n$ as range of values sampled here ($10 < n <500$) is comparable to the $\sqrt{N}$ heuristic for the number of cluster centers ($\sqrt{N} \simeq 180$ for the case of BBA) \cite{Ward_Clust2017}. This does not explain why for very low values of $n$ we do not see a decrease in the VAMP score. However, the relevance of $n$ and $m$ is relatively large for determining the value of $t_{2}$ (white dots and orange error bars in figure \sref{fig:bba_sensitivity}) and small for $t_{3, 4}$ (white dots and green and red error bars respectively). This suggest that the VAMP2$(k=4)$ metric may not capture important variations in model observables (i.e., implied timescales) with respect to changing hyperparameters. This will be explored more fully in section xxx.   
+The high relevance of the $m$ is not surprising in light of the bias-variance tradeoff \cite{friedman2001elements}: with an insufficient number of TICA dimensions, the resulting discrete basis (from the clustering step), will not adequately describe the true eigenvectors of the propagator.  Too many TICA dimensions may result in dimensions which only capture noisy fluctuations  in the data, resulting in poor convergence to suitable cluster definitions. However,  given the small values of $m$ sampled, this regime is unlikely to have been reached. 
 
-The overall low relevance of all hyperparameters suggests that using random sampling for choosing hyperparameters is adequate sampling procedure. The pattern of generally low relevance is also a feature of all eight of the proteins studied here.  Random sampling has the benefit of being easy to extend with more sampling (without having to redefine new grids of hyperparameters) and to changes in the hyperparameter search space. It is therefore recommended that MSM hyperparameters be randomly sampled from a relevant search space.    
+The low relevance of $n$ is perhaps more surprising. It would be expected that both $n$ and $m$ would behave in similar ways, creating highly biased discrete states for low values of $n$ and $m$, and highly variable cluster definitions for large $m$ and $n$ (the bias-variance tradeoff for $n$ in MSM construction is well documented \cite{mcgibbonVariationalCrossvalidationSlow2015, wuVariationalApproachLearning2020c}). It is possible that we do not see an effect on the VAMP score for large values of $n$ as range of values sampled here ($10 < n <500$) is comparable to the $\sqrt{N}$ heuristic\cite{Ward_Clust2017} for the number of cluster centers ($\sqrt{N} \simeq 180$ for the case of BBA). This does not explain why for very low values of $n$ we do not see a decrease in the VAMP score. 
+
+In contrast to the VAMP2 score, the relevance of $n$ and $m$ is relatively large for determining the value of $t_{2}$ (white dots and orange error bars in figure \sref{fig:bba_sensitivity}) and small for determining $t_{3, 4}$ (white dots and green and red error bars respectively). This suggest that the VAMP2$(k=4)$ metric may not capture variations in the implied timescales with respect to changing hyperparameters.   
 
 \subsubsection{Model selection with a fixed values of $k$}
 
-Figure \sref{fig:bba_vamp_fixed_k} shows that the majority of the top scoring models use the either the contact distance or logistic contact distance feature suggesting that the either of these features are the most appropriate. This is backed up by the selection of the top scoring models for each feature (see table \sref{tab:1fme_mod_defs}). The two overall best models (models 2 and 3) are statistically indistinguishable from one another (VAMP2$(k=4)=\ $\numci{3.88}{3.84}{3.91} and \numci{3.87}{3.83}{3.90} respectively) and use the contact distance and logistic contact distance respectively. The third best model uses the dihedrals feature and is statistically distinguishable from the other two, with VAMP2$(k=4) =\ $\numci{3.72}{3.63}{3.81} albeit with a small (0.11) difference in median VAMP2 scores.  
+\begin{table}
+\begin{tabular}{lllll}
+\toprule
+Model no.                   &                  1 &                  2    &                  3           &                  4 \\
+\midrule                
+Method                         &          Fixed $k$ &          Fixed $k$ &          Fixed $k$            &   Fixed $k$ (worst) \\
+Lag (ns)                       &                 40 &                 40 &                 40            &                  40 \\
+Feature                        &          Dihedrals &          Distances &          Distances            &           Distances \\
+Transform                      &                  - &           Logistic &             Linear            &            Logistic \\
+Contact scheme                 &                  - &C$\alpha$-C$\alpha$ & C$\alpha$-C$\alpha$          &       Closest-Heavy \\
+Center (\si{\angstrom})        &                  - &                6.1 &                  -            &                13.3 \\
+Steepness (\si{\per\angstrom}) &                  - &                2.5 &                  -            &                 1.7 \\
+TICA lag (ns)                  &                 45 &                 63 &                 84            &                  87 \\
+TICA dimension                 &                  9 &                  6 &                 10            &                   1 \\
+Num. clusters                  &                291 &                349 &                260            &                  96 \\
+$k_{\mathrm{fixed}}$           &                  4 &                  4 &                  4            &                   4 \\
+$k_{\mathrm{gap}}$             &                  2 &                  2 &                  2            &                   2 \\
+VAMP-2(k=2)                    &  1.95, [1.94-1.96] &  1.97, [1.95-1.98] &  1.97, [1.95-1.98]            &   1.92, [1.91-1.94] \\
+VAMP-2(k=3)                    &  2.86, [2.80-2.90] &  2.93, [2.90-2.95] &  2.93, [2.90-2.95]            &   2.36, [2.31-2.40] \\
+VAMP-2(k=4)                    &  3.72, [3.63-3.81] &  3.88, [3.84-3.91] &  3.87, [3.83-3.90]            &   2.51, [2.44-2.56] \\
+\bottomrule         
+\end{tabular}
+\caption{\textsc{Summary of comparator models for BBA selected using the VAMP2 score.} Models 1 - 4 are selected using a fixed number of processes ($k_{\mathrm{fixed}}$) in the VAMP2 score, and are the best performing models for each feature (1 -3) and the worst performing model overall (4).}
+\label{tab:1fme_mod_defs_m1}
+\end{table}
 
-Each of the three selected models were validated by a Chapman-Kolmogorov test with a two-state hidden Markov model. A two, rather than four state hidden Markov model was chosen because inspection of the timescale gaps (figures \sref{fig:its_bba_1} - \sref{fig:its_bba_3}, panel (b)), reveals only one dominant relaxation process for all models, albeit with a very poor separation in timescale between $t_2$ and $t_3$. Each model passed the test but the confidence intervals are very large (see figures \sref{fig:cktest_bba_1} to \sref{fig:cktest_bba_3}).  For example, after a single lag time (\SI{40}{\nano\second}) the confidence interval for model 2 (the best overall model) for the state 1 to state 1 transition have a range of approximate \numrange{0.2}{1} (see figure \sref{fig:cktest_bba_2}).
+Figure \sref{fig:bba_vamp_fixed_k} shows that the majority of the top scoring models use the either the contact distance or logistic contact distance feature, suggesting that the either of these features are the most appropriate. This is backed up by the selection of the top scoring models for each feature (table \ref{tab:1fme_mod_defs_m1}). The two overall best models (models 2 and 3) use the \distlabel and \logitdistlabel and are statistically indistinguishable from one another (VAMP2$(k=4)=\ $\numci{3.88}{3.84}{3.91} and \numci{3.87}{3.83}{3.90} respectively). The third best model uses the \dihedlabel feature and is statistically distinguishable from the other two, with VAMP2$(k=4) =\ $\numci{3.72}{3.63}{3.81} albeit with a small (0.11) difference in median VAMP2 scores.  
 
-The two states in each model correspond to the folded and unfolded states. This was determined by sampling the two states and comparing them to the folded state (PDB accession code: 1FME) using the distribution the $\alpha$-Carbon RMSD (figure \sref{fig:bba_folded_comparisons}, blue lines).  State 0 was identified in all cases as the unfolded (with mode of the distributions in the range \SIrange{8}{9}{\angstrom}) and state 1 as the folded state. However, the best performing model (figure \sref{fig:bba_folded_comparisons} panels (c) and (f), blue lines) shows a clear bimodal distribution with peaks at \SI{3.5}{\angstrom} and \SI{6.5}{\angstrom}, indicating the presence of a third metastable state, distinct from the folded and unfolded states.   
-The implied timescale of the folding process was statistically similar across each model $t_2 =\ $\SIci{ 1.65}{ 1.41}{ 2.51}{\micro\second}, \SIci{ 3.49}{ 1.86}{ 77.81}{\micro\second} and \SIci{ 2.75}{ 1.66}{ 61.45}{\micro\second}  for models 1, 2, and 3 respectively (see also figures \sref{fig:its_bba_1} - \sref{fig:its_bba_3}). However, like the transition probabilities, the confidence intervals for models 2 and 3 (the best performing models) are so large as to be almost meaningless. 
+Each of the three selected models were validated by a Chapman-Kolmogorov test with a two-state hidden Markov model. A two, rather than four, state hidden Markov model was chosen because inspection of the timescale gaps (figures \sref{fig:its_bba_1} - \sref{fig:its_bba_3}, panel (b)) revealed only one dominant relaxation process for all models, albeit with a very poor separation in timescale between $t_2$ and $t_3$. Each model passed the test but the confidence intervals are very large (figures \sref{fig:cktest_bba_1} to \sref{fig:cktest_bba_3}).  For example, after a single lag time (\SI{40}{\nano\second}) the confidence interval for model 2 (the best overall model) for the state 1 to state 1 transition have a range of approximately \SIrange{20}{100}{\percent} (figure \sref{fig:cktest_bba_2}).
 
-While the implied timescales of the folding process are similar, the sampled eigenvectors of models 1 and 3 are dissimilar to the best performing model 2.  This is shown in figure \sref{fig:bba_m1_ev_comparisons}, which plots the overlap between eigenvectors (equation \ref{eqn:overlap}). For comparison, the overlap between model 2 and the worst scoring model (model 4) and a random selection of configurations is also shown. Figure \sref{fig:bba_m1_ev_comparisons} panel (a) shows that the folding eigenvectors of models 1 and 3 are as similar to model 2, as a random sample of atomic configurations.  
+The two states in each model correspond to the folded and unfolded states. This was determined by sampling the two states and comparing them to the folded state (PDB accession code: 1FME) using the distribution of the $\alpha$-Carbon RMSD (figure \sref{fig:bba_folded_comparisons}, blue lines).  State 0 was identified in all cases as the unfolded state (with mode of the distributions in the range \SIrange{8}{9}{\angstrom}) and state 1 as the folded state. However, the best performing model (figure \sref{fig:bba_folded_comparisons} panels (c) and (f), blue lines) shows a clear bimodal distribution with peaks at \SI{3.5}{\angstrom} and \SI{6.5}{\angstrom}, indicating the presence of a third metastable state, distinct from the folded and unfolded states.   
 
-The model selection method used here has produced contradictory results.  The best performing set of hyperparameters (model 2), as judged by the VAMP2$(k=4)$ score, uses the logistic transformed contact distances as a feature.  The resulting discretization  does not give rise to a clear separation between the implied timescales of the corresponding MSM, although the largest gap is between the 2nd and 3rd implied times. Coarse-graining the MSM into a two state hidden Markov model reveals a  `folded' state which actually shows evidence of two distinct conformational substates. While this model technically passes the validation test, it does so by virtue of the large confidence intervals in the estimated transition probabilities.  The second best performing set of hyperparameters (model 3) has a VAMP score and implied folding timescale which is statistically similar to model 2.  In contrast however, there us little overlap in the folding eigenvector between model 3 and model 2.  Clearly, rigidly following this model selection pipeline can results in poorly specified models. 
+The implied timescale of the folding process was statistically similar across each model $t_2 =\ $\SIci{ 1.65}{ 1.41}{ 2.51}{\micro\second}, \SIci{ 3.49}{ 1.86}{ 77.81}{\micro\second} and \SIci{ 2.75}{ 1.66}{ 61.45}{\micro\second}  for models 1, 2, and 3 respectively (figures \sref{fig:its_bba_1} - \sref{fig:its_bba_3}). However, like the transition probabilities, the confidence intervals for models 2 and 3 (the best performing models) are so large as to be almost meaningless. 
+
+While the implied timescales of the folding process are technically similar, the  eigenvectors of models 1 and 3 are dissimilar to the best performing model 2.  This is shown in figure \sref{fig:bba_m1_ev_comparisons}, which plots the difference between eigenvectors (equation \ref{eqn:overlap}). For comparison, the overlap between model 2 and the worst scoring model (model 4) and a random selection of configurations is also shown. Figure \sref{fig:bba_m1_ev_comparisons} panel (a) shows that the folding eigenvectors of models 1 and 3 are as similar to model 2 as a random sample of atomic configurations. 
+
+The model selection method used here has produced contradictory results.  The best performing set of hyperparameters (model 2) uses \logitdistlabel feature.  The resulting discretization  does not give rise to a clear separation between the 2nd and 3rd implied timescale of the corresponding MSM. Coarse-graining the MSM into a two state hidden Markov model reveals a  `folded' state which actually shows evidence of two distinct conformational substates. While this model technically passes the validation test, it does so by virtue of the large confidence intervals in the estimated transition probabilities.  The second best performing set of hyperparameters (model 3) uses the  \distlabel feature and has a VAMP score and implied folding timescale which is statistically similar to model 2.  In contrast however, there us little overlap in the folding eigenvector between model 3 and model 2.  Clearly, rigidly following this model selection pipeline can results in poorly specified models. 
 
 \subsubsection{Model selection taking into account the timescale gap}
+\begin{table}
+\begin{tabular}{llll}
+\toprule
+Model no.                      &                  5 &                  6 &                  7 \\
+\midrule
+Method                          &             TS Gap &             TS Gap &             TS Gap \\
+Lag (ns)                        &                 40 &                 40 &                 40 \\
+Feature                         &          Dihedrals &          Distances &          Distances \\
+Transform                       &                  - &             Linear &           Logistic \\
+Contact scheme                  &                  - &      Closest-Heavy &          C$\alpha$ \\
+Center (\si{\angstrom})         &                  - &                  - &                4.7 \\
+Steepness (\si{\per\angstrom})  &                  - &                  - &                0.5 \\
+TICA lag (ns)                   &                 19 &                 13 &                 16 \\
+TICA dimension                  &                  1 &                  2 &                  1 \\
+Num. clusters                   &                220 &                413 &                392 \\
+$k_{\mathrm{fixed}}$            &                  4 &                  4 &                  4 \\
+$k_{\mathrm{gap}}$              &                  2 &                  2 &                  2 \\
+VAMP-2(k=2)                     &  1.96, [1.95-1.97] &  1.96, [1.96-1.97] &  1.96, [1.95-1.97] \\
+VAMP-2(k=3)                     &  2.57, [2.54-2.60] &  2.80, [2.74-2.91] &  2.70, [2.63-2.89] \\
+VAMP-2(k=4)                     &  3.01, [2.93-3.09] &  3.57, [3.41-3.72] &  3.37, [3.16-3.58] \\
+\bottomrule
+\end{tabular}
+\caption{\textsc{Summary of comparator models for BBA selected by the VAMP2 score and timescale gap.}  Models 5 - 7 are the best performing models for each feature after consideration of the timescale gap. The number of processes is used to calculate this is $k_{\mathrm{gap}}$.}
+\label{tab:1fme_mod_defs_m2}
+\end{table}
+
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.9\textwidth]{figures/vamp_scores/BBA_vamp_vs_gap.pdf}
-    \caption{BBA hyperparameter trial scores and implied timescale gaps.  Each panel shows the VAMP-2 score with $k$ eigenvectors against the ratio of implied timescales $t_{k}/t_{k+1}$. Large coloured disks show the models selected using $k=4$ eigenvectors (models 1 - 3 in table \ref{tab:1fme_mod_defs}).  Crosses show the models selected using the timescale ratio and VAMP-2 scores (models 5 - 7 in table \ref{tab:1fme_mod_defs}).}
+    \includegraphics[width=0.8\textwidth]{figures/vamp_scores/BBA_vamp_vs_gap.pdf}
+    \caption{BBA hyperparameter trial scores and implied timescale gaps.  Each panel shows the VAMP-2 score with $k$ eigenvectors against the ratio of implied timescales $t_{k}/t_{k+1}$. Large coloured disks show the models selected using $k=4$ eigenvectors (models 1 - 3 in table \ref{tab:1fme_mod_defs_m1}).  Crosses show the models selected using the timescale ratio and VAMP-2 scores (models 5 - 7 in table \ref{tab:1fme_mod_defs_m2}).}
     \label{fig:bba_vamp_var_k}
 \end{figure}
 
 Given that the VAMP2 scores do not inherently take into account the separation of timescales, a more complete picture is given by plotting the VAMP2 scores with their corresponding timescale separation, this is shown in figure \ref{fig:bba_vamp_var_k}.  In panel $(k=2)$ the VAMP2$(k=2)$ scores for each hyperparameter trial are plotted against $\sfrac{t_2}{t_3}$, in panel $(k=3)$ the VAMP2$(k=3)$ scores for the same trials are plotted against $\sfrac{t_3}{t_4}$ and similarly for $k=4, 5$ in the remaining panels. This view of the hyperparameter trials allows us to see both the quality of hyperparameters and the validity of the assumption of a separation in timescales.  The figure shows that the majority of the hyperparameter trials do not give rise to a significant gap in the implied timescale.  Those that do, generally do so with a gap between the second and third implied timescale (panel $k=2$).  
 
-This information can be used to select hyperparameter which are more likely to give rise to valid coarse-grained MSMs.  To see this, three new models (one for each feature) were selected by only considering those hyperparameter trials which gave rise to a large timescale gap for a particular value of $k$.  The new set of  models were selected from those with a gap larger than the 98th percentile\footnote{this number is somewhat arbitrary and was chosen so that a model with each feature was selected.} of all gaps. All the trials selected this way had the largest gap between the second and third timescale (panel $k=2$) and of those the highest scoring trials were selected for each feature (panel $k=2$, coloured crosses). These models are described in table \sref{tab:1fme_mod_defs} as models 5, 6, and 7. 
+This information can be used to select hyperparameter which are more likely to give rise to valid coarse-grained MSMs.  To see this, three new models (one for each feature) were selected by only considering those hyperparameter trials which gave rise to a large timescale gap for a particular value of $k$.  The new set of  models were selected from those with a gap larger than the 98th percentile\footnote{this number is somewhat arbitrary and was chosen so that a model with each feature was selected.} of all gaps. All the trials selected this way had the largest gap between the second and third timescale (panel $k=2$) and of those the highest scoring trials were selected for each feature (panel $k=2$, coloured crosses). These models are described in table \ref{tab:1fme_mod_defs_m2} as models 5, 6, and 7. 
 
-Each of these new models have almost exactly the same VAMP2 score when evaluated on just the more appropriate first two eigenvectors  (models 5, and 7 VAMP$(k=2) =\ $\numci{1.96}{1.95}{1.97}, model 6, VAMP2$(k=2) =\ $\numci{1.96}{1.96}{1.97}), rather than on the VAMP2$(k=4)$ score.  The VAMP$(k=4)$ score for these models implies that both the contact distance and logistic transform contact distance are the best features (models 6 and 7, VAMP2$(k=4) =\ $\numci{3.57}{3.41}{3.72}, \numci{3.37}{3.16}{3.58}) with the dihedrals feature the worst feature (model 5, VAMP2$(k=4)=\ $\numci{3.01}{2.93}{3.09}).   
+Each of these new models have almost exactly the same VAMP2 score when evaluated on the first two eigenvectors  (models 5 and 7: VAMP$(k=2) =\ $\numci{1.96}{1.95}{1.97}, model 6: VAMP2$(k=2) =\ $\numci{1.96}{1.96}{1.97}), rather than on the VAMP2$(k=4)$ score.  The VAMP$(k=4)$ score for these models implies that both the \distlabel  and \logitdistlabel are the best features (models 6 and 7, VAMP2$(k=4) =\ $\numci{3.57}{3.41}{3.72}, \numci{3.37}{3.16}{3.58}, respectively) with the \dihedlabel feature being the worst feature (model 5, VAMP2$(k=4)=\ $\numci{3.01}{2.93}{3.09}).   
 
-Each of the models passes the Chapman-Kolmogorov test although as before the precision of  confidences intervals varies for each model (figures \sref{fig:cktest_bba_5} to \sref{fig:cktest_bba_7}). The dihedrals feature (model 5) is the most precise, followed by the contact distance feature (model 6), followed by the logistic contact feature (model 7), with similar confidence intervals as model 1. The folding timescales were the same and more precise than models 1 - 3 (\SIci{ 1.90}{ 1.57}{ 2.52}{\micro\second}, \SIci{ 2.14}{ 1.75}{ 6.53}{\micro\second}, and \SIci{ 1.74}{ 1.43}{ 2.44}{\micro\second} for models 5 - 7 respectively).  Each model was again compared to the folded state (figure \sref{fig:bba_folded_comparisons}, orange lines). Each of the unfolded metastable states were similar, but a bimodal distribution was again found in the folded state of the contact distance and logistic contact distance feature.  
+Each of the models passes the Chapman-Kolmogorov test although as before the precision of  confidences intervals varies for each model (figures \sref{fig:cktest_bba_5} to \sref{fig:cktest_bba_7}). The \dihedlabel feature (model 5) is the most precise, followed by the \distlabel feature (model 6), followed by the \logitdistlabel feature (model 7). The folding timescales were the same and more precise than models 1 - 3 (\SIci{ 1.90}{ 1.57}{ 2.52}{\micro\second}, \SIci{ 2.14}{ 1.75}{ 6.53}{\micro\second}, and \SIci{ 1.74}{ 1.43}{ 2.44}{\micro\second} for models 5 - 7 respectively).  
+
+Each model was again compared to the folded state (figure \sref{fig:bba_folded_comparisons}, orange lines). Each of the unfolded metastable states were similar, but a bimodal distribution was again found in the folded state of the contact distance and logistic contact distance feature. This is indicative of a distinct metastable state implies that more relaxation processes are needed to precisely define the coarse-grained model.  
 
 \subsection{Discussion and conclusions}
 
-A hyperparameter optimisation procedure has been followed which mimics the essential features of standard MSM optimisation using the VAMP2 objective function.  The hyperparameter scores were largely insensitive to changes in the hyperparameters, with the exception of the number of TICA eigenvectors.  This implies that random sampling is a adequate method for exploring the range of hyperparameters, negating the need for the relatively expensive grid search algorithm or more complex methods such as Bayesian optimisation which are currently in favour for large machine learning models.  
+A hyperparameter optimisation procedure has been followed which mimics the essential features of standard MSM optimisation using the VAMP2 objective function.  The low relevance of all hyperparameters suggests that using random sampling for choosing hyperparameters is adequate sampling procedure, negating the need for the relatively expensive grid search algorithm or more complex methods such as Bayesian optimisation which are currently in favour for large machine learning models.   Random sampling has the benefit of being easy to extend with more sampling (without having to redefine new grids of hyperparameters) and to changes in the hyperparameter search space. It is therefore recommended that MSM hyperparameters be randomly sampled from a relevant search space.    
 
-The model selection procedure selected a set of hyperparameters with the logistic transformed contact distances as the best feature.  To have faith in the robustness of this result (at least) two conditions need to be met: 
+The model selection procedure selected a set of hyperparameters with the \logitdistlabel as the best feature.  To have faith in the robustness of this result two conditions need to be met: 
 \begin{enumerate}
     \item the model should be valid i.e., it should fit the data within statistical uncertainty (implied timescale plots, Chapman-Kolmogorov test), and 
-    \item similarly scoring models should produce similar model observables. 
+    \item similarly scoring models should produce similar model observables, i.e., the criterion used to optimize the model should correlate with observables of interest. 
 \end{enumerate}
-The top ranking model certainly met the first condition  but only by virtue of very large statistical uncertainty.  The second condition was partially met with comparison to the model using second best feature (which had the same VAMP2 score). The folding timescales $t_{2}$ are technically similar, but again due to the very large uncertainty in measurement. There are differences in the both the sampled metastable states and the eigenvectors. These observations imply that the model selection procedure can produce models that are not valid or robust. 
+The top ranking model certainly met the first condition  but only by virtue of very large statistical uncertainty.  The second condition was partially met with comparison to the model using second best feature (which had the same VAMP2 score). The folding timescales $t_{2}$ are technically similar, but again due to the very large uncertainty in measurement. There are differences between each of the selected models in the both the sampled metastable states and the eigenvectors. These observations imply that the model selection procedure can produce models that are not valid or robust. 
 
-All three selected hyperparameters showed poor separation in implied timescales - a key assumption for producing valid coarse-grained models (such as hidden Markov models). the spectral gap is forms the basis of the SGOOP\cite{tiwary_spectral_2016} dimensionality reduction technique and has been emphasized as a necessary component for validating AI approaches to enhanced sampling \cite{pant_confronting_2020}. Enforcing selection amongst only those sets of hyperparameters 
+All three selected hyperparameters showed poor separation in implied timescales - a key assumption for producing valid coarse-grained models (such as hidden Markov models). The spectral gap is forms the basis of the SGOOP\cite{tiwary_spectral_2016} dimensionality reduction technique and has been emphasized as a necessary component for validating AI approaches to enhanced sampling \cite{pant_confronting_2020}. 
+
+The model selection procedure was extended to first select a number of dominant eigenvectors (the stationary and folding eigenvectors were selected here) based on the presence of a significant timescale gap, and then choose the best hyperparameters based on the VAMP score.  Enforcing selection amongst only those sets of hyperparameters with a significant timescale gap produced models which fit the data more precisely than the previous models, and produced folding timescales which were more precise while still being similar to each other.  Despite this improvement, the predictions of the folded state for two of the features, revealed at least one other metastable state. This implies the selected number of dominant eigenvectors was too small.  
+
+The extended model selection procedure also suffers from the problem that there is no theoretical guide to the optimal trade-off between the timescale gap and the quality of the dominant eigenvectors.  The truncation error (VAMPE) score does treat the number of eigenvectors as another hyperparameter (\cite{wuVariationalApproachLearning2020c}) but this does not fully resolve the problem as this treats the error arising due to a poor set of hyperparameters on a equal footing to the truncation error. i.e., it does not differentiate between many eigenvectors with poor accuracy and a smaller number of very accurate eigenvectors.  
 
 
-
-TThe highest ranking hyperparameters produced an MSM which was technically valid but with a high variance in the model observables (implied timescales and transition probabilities from the CK-test). The second highest ranking hyperparameters, scored similarly and had similar , yet did not have similar eigenvectors.  
-
-
-
+These problems with model selection highlight the fact that there will likely be not automatic model selection procedure for MSM using the VAMP scores. The VAMP scores guide hyperparameter selection but model observables should be carefully inspected and alternative hyperparameters should still be considered. 
 
 
 
@@ -515,7 +591,7 @@ TThe highest ranking hyperparameters produced an MSM which was technically valid
 \subsubsection{Comparing the best models using the CK test and implied timescales. }
 \begin{itemize}
     \item Models 1 - 3 all pass the CK test and there is qualitative agreement between the models in the size and magnitude of the transition probabilities (the gradients of the predictions). 
-    \item The CK test used a 3 state HMM to estimate transition probabilities. The three states were indicated from the large gap in the implied timescales, see figures \sref{fig:its_villin_1}  -- \sref{fig:its_villin_3}. 
+    \item The CK test used a 3 state HMM to estimate transition probabilities. The three states were indicated from the large gap in the implied timescales, figures \sref{fig:its_villin_1}  -- \sref{fig:its_villin_3}. 
     \item The confidence intervals are in general smaller compared to the case of BBA. This can be attributed to the large and significant gap in the implied timescales ($t_3/t_4 > 4$ for each model)
     \item There is a small difference in the size of the confidence intervals for the estimated transition probabilities between model 1 (using the dihedrals feature), which have slighly smaller confidence intervals, and models 2 and 3 (using the contact distances withtout and with the logistic transform). 
     \item This indicates that the dihedrals feature may be more consistent with the dynamics than those with the contact distance based features. 
