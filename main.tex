@@ -447,7 +447,15 @@ where $\mathbf{x}$ is a vector of hyperparameters ($\mathbf{x}=(\tau_{\mathrm{TI
  The relevance of each quasi-continuous hyperparameter for each protein and feature combination was calculated as $R_{h} = \frac{1}{l_{h}}$. 
  All fitting and analysis was performed using the PyMC3 (version 3.9.3)~\cite{salvatierProbabilisticProgrammingPython2016} and ArViz (version 0.11.1)~\cite{arviz_2019} packages. 
  
+ \subsection{Bayesian optimisation}
  
+\begin{align}
+ \mathbb{E}[I] &= \mathbb{E}[\max{(0, f-f^{*})}] \label{eqn:ei_def} \\ 
+ & = \sigma \left ( z \Phi(z)  + \phi(z) \right) \label{eqn:ei_for_gp}
+\end{align}
+
+where $z = (\mu-\mu^{*})/\sigma$ and $\mu$, $\sigma$ are the mean and standard deviation of Gaussian process at a given point, and $\mu^{*}$ is the largest value of the GP \emph{at an observed set of input hyperparameters} (i.e., it is not necessarily the maximum of the GP). 
+
 
 \section{Results and discussion}
 
@@ -462,21 +470,21 @@ relevant hyperparameters are contained in the  hyperparameter search space, tabl
     \item Does the Markov lag time and number of scored eigenvectors affect the ranking of models?  
 \end{enumerate}
 
-From the answers to these questions we conclude with a set of recommendations for MSM modelling.  Throughout this work we will use the term `good hyperparameters' to refer to those which maximize the implied timescales of the model.  
+From the answers to these questions we conclude with a set of recommendations for MSM modelling.  Throughout this work we will use the term `good hyperparameters' to refer to those which maximize the implied timescales of the model. 
 
 \subsection{How well do the randomly selected MSMs predict folding timescales?}
 
 \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{figures/1fme_timescales.pdf}
-    \caption{Slowest timescale $t_{2}$ extracted from each trial MSM. Panel (a) shows the randomly sampled hyperparameter trials. Panel (b) includes the results of one iteration of Bayesian optimisation (original trials shown as transparent).  Central value and error bars are derived from 100 bootstrap samples as the median, the \SI{95}{\percent} quantiles. The blacked dashed line is the value  reported in~\cite{lindorff-larsen_how_2011} and is derived directly from the MD trajectories.} 
+    \caption{Slowest timescale $t_{2}$ extracted from each trial MSM. Panel (a) shows the randomly sampled hyperparameter trials. Panel (b) includes the results of one iteration of Bayesian optimisation (original trials shown as transparent). Panel (c) includes the results of one iteration of Bayesian optimisation excluding the influence of the best ranked trial in panel (a).  Central value and error bars are derived from 100 bootstrap samples as the median, the \SI{95}{\percent} quantiles. The blacked dashed line is the value  reported in~\cite{lindorff-larsen_how_2011} and is derived directly from the MD trajectories.} 
     \label{fig:1fme_timescales}
 \end{figure}
 
 Figure \ref{fig:1fme_timescales} show the slowest timescale extracted from each of the MSMs. The value determined from analysis of the MD trajectories~\cite{lindorff-larsen_how_2011} is \SI{18}{\micro\second} and is shown as a dashed line. Only a single set of hyperparameters predicts a timescale close to this value (\SI{20}{\micro\second}, unsigned error: \SI{14}{\percent}), while the other trials an unsigned error of  at least \SI{45}{\percent}. The trials using the logistic-distances (soft-contact map) make up the majority of both the best and worst performing hyperparameters; while the dihedral and contact distances sit within the middle of the distribution of timescales (see figure~\sref{fig:ts_distribution}). This suggests that only a small volume of the hyperparameter search space gives rise good models.  
 
 
-\subsection{How sensitive are timescales to the MSM hyperparameters?}
+\subsection{How sensitive are timescales to the MSM hyperparameters?}\label{sec:sensitivity}
 
 \begin{figure}
     \centering
@@ -485,21 +493,15 @@ Figure \ref{fig:1fme_timescales} show the slowest timescale extracted from each 
     \label{fig:sensitivity}
 \end{figure}
 
-In order to understand the sparsity of good hyperparameters we estimate the sensitivity of the timescales to the hyperparameters. Previous work has shown that the type of feature used is important in determining the eigenvector accuracy. This is consistent with figures~\ref{fig:1fme_timescales}  where the majority of the best hyperparameters use the soft-contact map (logistic distances) feature.  However, as figure~\ref{fig:ts_distribution} also shows that a) there is significant overlap of the timescale distributions for each feature, and b) the best performing feature also gives rise to the worst performing models. The type of feature is therefore a necessary but not sufficient hyperparameter to tune in order to maximize the timescales. 
+In order to understand the sparsity of good hyperparameters we estimate the sensitivity of the timescales to the hyperparameters. Previous work has shown that the type of feature used is important in determining the eigenvector accuracy. This is consistent with figures~\ref{fig:1fme_timescales}  where the majority of the best hyperparameters use the soft-contact map (logistic distances) feature.  However, as figure~\ref{fig:ts_distribution} also shows that a) there is significant overlap of the timescale distributions for each feature, and b) the best performing feature also gives rise to the worst performing models. The type of feature is therefore a necessary but not sufficient hyperparameter to tune in order to maximize the timescales. It is important, therefore, to consider the remaining hyperparameters (e.g., the TICA lag time, TICA dimension etc.) and how they affect the timescales.  
 
-We estimate the sensitivity of the remaining hyperparameters for each feature by modelling $\log{t_{2}} \sim \mathcal{GP}(\bm{mu}, \mathbf{K})$. Where the elements of $\mathbf{K}$ were given by equation~\ref{eqn:kernel}, and $\bm{\theta} = (m, \tau, n)$  for the dihedral feature,  $\bm{\theta} = (d, m, \tau, n)$ for the linear distances feature, and $\bm{\theta} = (d m, \tau, n, c, s)$  for the logistic distances feature. An exponential kernel in $\mathbf{K}$ gave the best fitting model as judged by the RMSE. The sensitivity is calculated from the characteristic length-scales in $\mathbf{K}$ as the relevance $R=1/l$.  
+We estimate the sensitivity of the remaining hyperparameters for each feature by modelling $\log{t_{2}} \sim \mathcal{GP}(\bm{mu}, \mathbf{K})$. This model of the response of the $t_2$ to variation in the hyperparameters we call a \emph{response surface}. The elements of $\mathbf{K}$ were given by equation~\ref{eqn:kernel}, and $\bm{\theta} = (m, \tau, n)$  for the dihedral feature,  $\bm{\theta} = (d, m, \tau, n)$ for the linear distances feature, and $\bm{\theta} = (d m, \tau, n, c, s)$  for the logistic distances feature. An exponential kernel in $\mathbf{K}$ gave the best fitting model as judged by the RMSE. The sensitivity is calculated from the characteristic length-scales, $l$, in $\mathbf{K}$ via the relevance $R=1/l$.  
 
+Figure~\ref{fig:sensitivity} plots the  the relevance of hyperparameters, $R$, in determining $t_{2}$. It shows that the hyperparameters vary in how important they are in determining $t_2$ for each different feature.  For the dihedral feature (`dihed.') its shows that the TICA dimension, lag time and number of microstates are all equally relevant in determining $t_2$, however $t_2$ does not vary greatly with changes in any of these hyperparameters (as $R\simeq 1$). For the inter-residue distance feature (`dist.') the number of microstates is the most relevant in determining $t_2$. For the logistic-distances feature (`logit(dist.)') the location of the centre of the logistic function (which corresponds approximately to the contact map cut-off) is the most important hyperparameter. The fitted Gaussian process regression models which give rise these values are shown in the supplementary material figures~\ref{fig:repsonse_diheds}, \ref{fig:repsonse_dist}, and \ref{fig:repsonse_logistic}. 
 
-Figure~\ref{fig:sensitivity} plots the  the relevance of hyperparameters to $t_{2}$ and shows that the hyperparameters vary in how important they are in determining $t_2$ for each different feature.  For the dihedral feature (`dihed.') its shows that the TICA dimension, lag time and number of microstates are all equally relevant in determining $t_2$, however $t_2$ does not vary greatly with changes in any of these hyperparameters (as $R\simeq 1$). For the inter-residue distance feature (`dist.') the number of microstates is the most relevant in determining $t_2$. For the logistic-distances feature (`logit(dist.)') the location of the centre of the logistic function (which corresponds approximately to the contact map cut-off) is the most important hyperparameter.  The number of microstates is now as relevant as the other hyperparameters. The fitted Gaussian process regression models which give rise these values are shown in the supplementary materials section~\ref{sec:sense_fitting}. 
-
-
-It shows that the $VAMP2_{\mathrm{eq}}$ score not sensitive to any particular hyperparameter for any of the features.  This is partly due to the limitations of the GP model - the model predictions correlated positively but not strongly with the observed $VAMP2_{\mathrm{eq}}$ scores. This is also due to the sparsity of observations of the same order of magnitude of the slowest timescale.  This means the correlation of hyperparameters to the most important variation in $VAMP2_{\mathrm{eq}}$ (i.e. with the largest values), is not adequately captured. It therefore appears that each hyperparameter is equally unimportant important in determining model quality across all features. 
-
+Why is the hyperparameter sensitivity important? As was previously shown~\cite{bergstra_jamesbergstra_random_2012} if all the hyperparameters have a large relevance ($R \gg 1$) then to find the maximum of the response surface (i.e., the hyperparameters which give rise to the maximim $t_2$) then it is important to try all combinations of hyperparameters i.e., a  grid-search strategy, or to employ an active learning approach~\cite{snoekAbstractBayesianOptimization2013}.  However, if only a small proportion of the hyperparameters have a high relevance then randomly sampling hyperparameters is the more efficient strategy. 
 
 \subsection{Can we improve the timescale estimates?}
-
-
-
 
 \begin{figure}
     \centering
@@ -508,7 +510,14 @@ It shows that the $VAMP2_{\mathrm{eq}}$ score not sensitive to any particular hy
     \label{fig:ei_surface}
 \end{figure}
 
-In order to have faith in the results of our analysis and to potentially improve the model we would like to have a consistent picture of how hyperparameters affect the timescales.  To achieve this we utilise the response surface from the previous section to calculate the expected improvement over the hyperparameter search space.  The expected improvement is the expected value of the GP above the current best $VAMP2_{\mathrm{eq}}$ score.  Bayesian optimisation consists of alternating between finding the value of the hyperparameters which maximize $ei$ and evaluating the score, and reestimating the response surface with this new information.  However, given the low sensitivity of the hyperparameters we select a the top 10  new hyperparameters ranked according to their $ei$.  The results are show in figure xxx
+In order to check the convergence of the results shown in panel (a) of figure~\ref{fig:1fme_timescales} and to potentially improve the $t_2$ estimate,  we use a single round of Bayesian optimisation. To do this, we first calculate the expected improvement, $\mathbb{E}[I]$,  using the response surface calculated previous using equation~\ref{eqn:ei_for_gp} for the logistic distances feature only. We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The expected improvement is as a function of the two most important hyperparameters for the logistic-distances feature are shown in figure~\ref{fig:ei_surface}.  
+
+The details of this procedure can be found in the supplementary materials. 
+
+The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent (the best timescale before the optimisation, shown in purple, with $t_2 \simeq \SI{20}{\micro\second}$):  the optimised timescales range up to $t_2 \simeq \SI{24}{\micro\second}$ (whhich are improvements on the incumbent by up to \SI{20}{\percent}). The optimised hyperparameters differ from the incumbent (except in the choice of distance scheme - all used the alpha-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
+
+We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimate the response surface and expected improvement and sample new hyperparameters. The new values of $t_2$,  shown in panel (c) of figure~\ref{fig:1fme_timescales}, are all improvements with the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimise MSM hyperparameters, even when the timescale measurements are noisey and there are no strong dependence on any of hyperparameters.  
+
 
 
 \subsection{VAMP scores for reversible MSMs}
