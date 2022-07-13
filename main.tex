@@ -510,21 +510,21 @@ Why is the hyperparameter sensitivity important? As was previously shown~\cite{b
     \label{fig:ei_surface}
 \end{figure}
 
-In order to check the convergence of the results shown in panel (a) of figure~\ref{fig:1fme_timescales} and to potentially improve the $t_2$ estimate,  we use a single round of Bayesian optimisation. To do this, we first calculate the expected improvement, $\mathbb{E}[I]$,  using the response surface calculated previous using equation~\ref{eqn:ei_for_gp} for the logistic distances feature only. We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The expected improvement is as a function of the two most important hyperparameters for the logistic-distances feature are shown in figure~\ref{fig:ei_surface}.  
+In order to check the convergence of the results shown in panel (a) of figure~\ref{fig:1fme_timescales} and to potentially improve the $t_2$ estimate,  we use a single round of Bayesian optimisation. To do this, we first calculate the expected improvement, $\mathbb{E}[I]$,  using the response surface calculated previous using equation~\ref{eqn:ei_for_gp} for the logistic distances feature only. We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The details of this procedure can be found in the supplementary materials. 
 
-The details of this procedure can be found in the supplementary materials. 
+In the previous section we determined what hyperparameters were most relevant for determining the dominant timescale, $t_2$, for the logistic distances feature this was centre of the logistic curve. Similarly, we can ask: what are the most relevant hyperparameters for the expected improvement?  This is shown in figure~\ref{fig:sensitivity} (`logit(dist.)', $y=\mathbb{E}[I]$) which shows the `centre' hyperparameter is  most important but by a larger margin compared to the other hyperparameters.  The expected improvement is shown in figure~\ref{fig:ei_surface} as a function of the `centre' and the `steepness' hyperparameters (the remaining hyperparameters are held at their values at the peak of expected improvement).  This shows that we expect any values of the `centre' and `steepness' hyperparameters to increase $t_2$ by at least \SI{2}{\micro\second} if the other hyperparameters take on their values in the annotation. However, with $c\simeq \SI{7}{\angstrom}$ and $s\simeq \SI{0.5}{\per\angstrom}$ we can expect an improvement in the timescales of almost $\SI{3}{\micro\second}$. 
 
-The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent (the best timescale before the optimisation, shown in purple, with $t_2 \simeq \SI{20}{\micro\second}$):  the optimised timescales range up to $t_2 \simeq \SI{24}{\micro\second}$ (whhich are improvements on the incumbent by up to \SI{20}{\percent}). The optimised hyperparameters differ from the incumbent (except in the choice of distance scheme - all used the alpha-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
+The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent (the best timescale before the optimisation, shown in purple, with $t_2 \simeq \SI{20}{\micro\second}$):  the optimised timescales range up to $t_2 \simeq \SI{24}{\micro\second}$, which are similar to the improvements predicted by the expected improvement function. The optimised hyperparameters differ slightly from the incumbent (except in the choice of distance scheme - all used the alpha-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
 
-We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimate the response surface and expected improvement and sample new hyperparameters. The new values of $t_2$,  shown in panel (c) of figure~\ref{fig:1fme_timescales}, are all improvements with the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimise MSM hyperparameters, even when the timescale measurements are noisey and there are no strong dependence on any of hyperparameters.  
+We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimate the response surface and expected improvement and sample new hyperparameters. The new incumbent in this case is $t_2 = \simeq \SI{10}{\micro\second}$, shown in purple in panel (c) figure~\ref{fig:1fme_timescales}.  The new values of $t_2$,  are all improvements of up to \SI{10}{\micro\second} the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimise MSM hyperparameters, even when the timescale measurements are noisy and there are no strong dependence on any of hyperparameters.  
 
 
 
-\subsection{VAMP scores for reversible MSMs}
+\subsection{Are VAMP scores suitable for model selection of reversible MSMs?}
 \begin{figure}
     \centering
     \includegraphics{figures/bad_vamp_ranks.pdf}
-    \caption{Models with VAMP scores inversely proportional to timescales. Panels (a) and (c) show the VAMP2 scores (as calculated by equation~\ref{eqn:vamp_def} and as implemented in the package Deeptime~[ref]) for a selection of models where the slowest timescale is inversely proportional to the VAMP2(k=2) score. The horizontal axis is the model rank as judged by the VAMP2(k=2) score. Models which do not show this correlation are not shown.  Panels (b) and (d) show similar but for a lower ranking set of models. }
+    \caption{Models with VAMP scores inversely proportional to timescales. Panels (a) and (c) show the VAMP2 scores (as calculated by equation~\ref{eqn:vamp_score_def} and as implemented in the package Deeptime~[ref]) for a selection of models where the slowest timescale is inversely proportional to the VAMP2(k=2) score. The horizontal axis is the model rank as judged by the VAMP2(k=2) score. Models which do not show this correlation are not shown.  Panels (b) and (d) show similar but for a lower ranking set of models. }
     \label{fig:bad_vamp_scores}
 \end{figure}
 
@@ -537,40 +537,18 @@ We can also ask ourselves whether we could improve our hyperparameters using Bay
 \end{figure}
 
 
+The VAMP2 score~\cite{wuVariationalApproachLearning2020c} provide a principled metric for optimising MSM hyperparameters. The benefits are that it can be used for stationary, non-stationary, reversible and non-reversible MSMs. It is linked directly to the kinetic variance captured by the basis states such that maximizing the VAMP2(k) score will maximize the timescales of pertaining to the first $k$ eigenvectors of the model. In addition it can be used with bootstrapping and cross-validation model selection techniques. 
 
-\begin{itemize}
-    \item The VAMP2(k=2) scores for each hyperparameter trial were calculated and ranked accordingly.  
-    \item It was found that for some sets of trials, the VAMP2 score was anti-correlated with the slowest timescale. 
-    \item This is shown in figure~\ref{fig:bad_vamp_scores}. In panel (a) the VAMP2 score is shown for the trials ranked first, third, and fourth. In panel (c) the first five timescales are shown for each model.  The dashed line shows the folding timescale from reference~\cite{lindorff-larsen_how_2011}.  
-    \item Timescales three to six are the same, however the folding timescale clearly \emph{increases} with \emph{decreasing} VAMP2 score, which is contrary to the variational principle. 
-    \item Panels (b) and (d) show this effect again with trials ranked 7, 8, 9, 11 and 12.  The trials which do not show this effect are not shown for clarity. 
-    \item Each trial, while based on the same MD data, will give rise to a different count and population matrices. 
-    \item We suggest that this is due to the discrepancy between the count and population matrices on the one hand (which are purely empirical and are not consistent with detailed balance) and the singular vectors (which are derived from a transition matrix which \emph{does} obey detailed balance). 
-    \item With reference to the definition of the VAMP2 score (equation~\ref{eqn:vamp_score_def} with $r=2$) $\mathbf{C}_{00, 01, 11}$ are not consistent with detailed balance. However, $\mathbf{U}, \mathbf{V}$ are derived from $\mathbf{T}^{\mathrm{rev}}$ which is in turn from $\mathbf{C}_{00, 01, 11}$ \emph{with additional constraints enforcing detailed balance}. 
-    \item A similar effect can be seen with a three-state toy model (example 1 from~\cite{trendelkamp-schroer_estimation_2015}). \num{10000} 20-step trajectories were sampled from the same transition matrix. The implied timescales and VAMP2(k=2) scores were estimated and are shown in figure ~\ref{fig:bad_vamps_examples} panel (a).  The timescales are correlated with the VAMP2 scores but the correlation is not perfect. Many subsets of these results could form sets which are anti-correlated, in the same way as in figure~\ref{fig:bad_vamp_scores}. In panel (b) we plot the sum of the squares of the first two eigenvalues, which shows perfect rank correlation (as they must as they are analytically related to each other. 
-\end{itemize}
+We tested whether the VAMP scores are appropriate for model selection with reversible MSMs. For each of the hyperparameters trials we calculated the VAMP2(k=2) score so that we are focused solely on maximizing the dominant $t_2$ timescale. Inspection of the results revealed that for subsets of the trials, VAMP2(k=2) was inversly proportional to the $t_2$. This is shown in figure~\ref{fig:bad_vamp_scores}. In panel (a) the VAMP2 score is shown for the trials ranked first, third, and fourth. In panel (c) the first five timescales are shown for each model.  The dashed line shows the folding timescale from reference~\cite{lindorff-larsen_how_2011}. Timescales for the third to sixth eigenvectors are the same, however $t_2$ clearly \emph{increases} with \emph{decreasing} VAMP2 score. The second ranked model is omitted for clarity because it does not follow this pattern. 
+
+We posit that the reason for this behaviour is due to the fact by enforcing reversibility in the estimation of the transition matrix it is impossible to get consistency between the three count matrices ($\mathbb{C}_{00, 0t, tt}$) and the eigenvectors ($\mathbb{U}/\mathbb{V}$) in equation~\ref{eqn:vamp_score_def}).  A similar effect can be seen with a three-state toy model (example 1 from~\cite{trendelkamp-schroer_estimation_2015}). \num{10000} 20-step trajectories were sampled from the same transition matrix. The implied timescales and VAMP2(k=2) scores were estimated and are shown in figure ~\ref{fig:bad_vamps_examples} panel (a).  The timescales are correlated with the VAMP2 scores but the correlation is not perfect. Many subsets of these results could form sets which are anti-correlated, in the same way as in figure~\ref{fig:bad_vamp_scores}. In panel (b) we plot the sum of the squares of the first two eigenvalues, which shows perfect rank correlation (as they must as they are analytically related to each other). 
+
+The reason for writing the VAMP score as the product of count  matrices and eigenvectors/singular vector matrices is to facilitate data-splitting in cross-validation. While we used bootstrapping for this work, the effect of data splitting would be to worsen the discrepancy between the count and transition matrices. This is because the count matrices are now estimated on different data compared to the eigenvector matrices.  
 
 
+In addition to the problem of consistency between the matrices in equation~\ref{eqn:vamp_score_def} from a) enforcing reversibility and b) data splitting for cross-validation, we recommend that cross-validated VAMP scores are not used for reversible and stationary MSMs.  Instead we recommend bootstrapping the sum of the squared eigenvalues (VAMP$_{eq}$(k)) directly from the reversible transition matrix. This has the same theoretical properties of the VAMP2 score (i.e., represents captured kinetic variance, and link to variational theorem) while not wasting data due to data splitting and perfect correlation with the implied timescales. 
 
-
-% The VAMP formalism provides an overarching framework for variationally optimising basis states for both reversible and non-reversible (and non-stationary) MSMs. For reversible MSM any given trial set of basis states will give rise to transition matrix where the sum of powers of the eigenvalues  will be bounded from above by the true sum. In order to calculate these scores the following formula is used (eq. 24 in []): 
-
-% \begin{equation}
-% \max _{\mathbf{U}, \mathbf{V}} \operatorname{VAMP2}=\left\|\mathbf{C}_{00}(\mathbf{w})^{-\frac{1}{2}} \mathbf{C}_{01}(\mathbf{w}) \mathbf{C}_{11}(\mathbf{w})^{-\frac{1}{2}}\right\|_{r}^{r},
-% \end{equation}\label{eqn:vamp_def}
-
-% [explanation].  For reversible processes $\mathbf{C}_{00} = \mathbf{C}_{tt}$ (and $\mathbf{U} = \mathbf{V}$) however due to finite amount of data the relation will not be true in practice. As we show in the appendix, small discrepancies in these count matrices can lead to the following paradoxical results: 
-% \begin{itemize}
-%     \item Two models may have the same VAMP2 score and have very different timescale spectra. 
-%     \item Two models may have VAMP2 scores anti-correlated with their timescales. 
-% \end{itemize}
-
-% This is shown for the hyperparameter trials in figure~\ref{fig:bad_vamp_scores}. In panels (a) and (c) the  model with the highest VAMP2(k=2) score is compared to two other models which have lower median VAMP2 scores yet slower timescales.  The fourth ranked model is model with the highest implied timescale.  Panels (b) and (d) show this effect for models compared to the seventh ranked model.  
-
-
-
-
-\subsection{Does the lag time affect the model selection?}
+\subsection{Does the lag time and number of scored eigenvectors affect the model selection?}
 
 \begin{figure}
     \centering
@@ -579,10 +557,11 @@ We can also ask ourselves whether we could improve our hyperparameters using Bay
     \label{fig:vamp_rank_vs_lag}
 \end{figure}
 
-The lag time is an important parameter of the model which can only be selected once a discretization has been performed, by looking at the implied timescales.  But in order to select and score models a lag time must be selected. Each discretization is expected to affect both the absolute values of the eigenvalues but also their relative values, so me might expect the relative rankings of the models to change with different lag times. To test this we calculated the Spearman's rank correlation coefficient for the top 10 ranked models ranked at different lag times and using different numbers of values of eigenvalues in the score (VAMP2(k=2, 3, 5 and 10)), this is shown in figure \ref{fig:vamp_rank_vs_lag}.  This shows the for small values of $k$ and small lag-times the model ranking are inconsistent. For large lag-times and larger values of $k$ the rankings remain consistent at different lag times. this result suggests that when choosing a lag time to score models, choosing a large number of eigenvectors in the score will reduce the sensitivity of the selected models to changes in the optimal lag time (which is selected after inspection of the implied timescales). 
+When evaluating MSMs using a variational score one must specify the both the Markov lag time ($\tau$) and the number of eigenvectors to score ($k$).  However, both these choices affect the VAMP scores although it is not clear  whether these choices affect the model ranking.  To test how these choices affect model selection we measured the consistency in model rank, as measured by the VAMP2$_{eq}$(k) using the Spearman's rank correlation coefficient, at a) different lag times for given values of $k$ and b) at different numbers of scored eigenvector at a given lag time. 
 
 
-\subsection{How does the number of scored eigenvectors affect model selection?}
+Figure~\ref{fig:vamp_rank_vs_lag} shows the consistency between model rankings at different lag times ($\SI{1}{\nano\second} < \tau < \SI{101}{\nano\second}$) with $k=2$ (panel (a)) and with $k=10$ (panel (b)). In addition, scatter plots of the data used to calculate these coefficients for $k=2, 3, 5, \& 10$ are shown in the supplementary information figures~\ref{fig:vampeq2_rank_vs_lag_pairplot} to \ref{fig:vampeq10_rank_vs_lag_pairplot}.  Across all lags and for both small and large numbers of scored eigenvectors, the consistency in the model ranking is high (greater than \SI{85}{\percent}). For all but the shortest lag time ($\tau=\SI{1}{\nano\second}$) the rank correlation is much greater, ranging up to \SI{100}{\percent} for between long lag-times.  this effect is most pronounced for larger numbers of scored eigenvectors. In particular, good consistency is achieved at lag times smaller than those required for the model to be Markovian ($\tau=\SI{41}{\nano\second}$).
+
 
 \begin{figure}
     \centering
@@ -591,24 +570,25 @@ The lag time is an important parameter of the model which can only be selected o
     \label{fig:vampeq_rank_vs_n_procs}
 \end{figure}
 
-
-
-Each eigenvector represents a conformational relaxation process which may be important in and of itself, but which also serves to define metastable states. It is therefore important to optimize as many processes will be necessary. However, it is not clear whether increases in a VAMP score will improve each eigenvector equally and whether there are trade-offs for including 'too many' eigenvectors in the score definition. the pathological case of including as many eigenvectors as there are discrete states will introduce noise as inevitably some processes will not be resolvable at the given lag time.  To answer this question, the Spearman's rank correlation coefficient was calculated, at a lag time of \SI{41}{\nano\second}  between models ranks using $k=2, 3, 4, ..., 21$ eigenvectors.  The results are shown in figure \ref{fig:vamp_rank_vs_n_procs}. The figure shows that the model rankings show low consistency when scored with small numbers of eigenvectors ($k=2 -- 9$) while for larger numbers of eigenvectors ($10+$) the model ranking remain fairly consistent. 
+Figure~\ref{fig:vampeq_rank_vs_n_procs} shows the consistency between model rankings at different number of scored eigenvectors ($2 < k < 21$) at a lag time of \SI{41}{\nano\second} (the value used in all previous analysis). Again, the consistency is generally high with a rank correlation between all pairs of $k$ of at least \SI{80}{\percent}. The ranking is most consistent between values of $k$ larger than \num{4}.  From these two analyses taken together, we see that for long lag-times and large number of scored eigenvectors model ranking is not affected by the choice of $\tau$ and $k$.
 
 
 \subsection{Conclusions}
+This work has answered a number of questions pertaining to selecting hyperparameters for discrete MSMs.  We have seen that type of feature is important but that the other hyperparameters need to be chosen carefully to optimise the implied timescales.  The sensitivity of the implied timescales is generally low, meaning small variations in their values do not change the timescales significantly.  However, the relative sensitivity of the non-feature hyperparameters changes depending on type of feature used: e.g., with some features the number of microstates is most important while with others the timescales are not affected.  The VAMP variational scores, which have recently used to perform model selection on reversible MSMs have been shown to give results which are not in line with the variational principle underlying them. 
 
-\begin{itemize}
-    \item We have shown that `good' hyperparameters are rare within reasonably defined hyperparameter search space for protein folding. 
-    \item The most important hyperparameters is the protein feature, in line with previous findings.  
-    \item Even amongst the best feature (the soft-contact map or logistic transform of contact distances) the best hyperparameters are still rare. 
-    \item The sensitivity of the implied timescales to the hyperparameters is relatively low, but varies by hyperparameter. This suggests that searching over grids of hyperparameters is wasteful - random sampling is sufficient.  
-    \item Selecting new hyperparameters to try using the expected improvement reliably selects models with relatively slow timescales.  
-    \item This suggests that hyperparameter selection could be amenable to to Bayesian optimisation. 
-    \item the VAMP2 scores for reversible models do not rank models in accordance with the variational principle. This is due to discrepancies introduced when enforcing detailed balance in the transition matrix.  
-    \item Model selection does depend, albeit in a small way, on the lag time and on the number of scored processes.  
-    \item Recommendations? 
-\end{itemize}
+Given this relatively complex picture of hyperparameter optimisation we recommend the following for optimising reversible MSMs: 
+
+\begin{enumerate}
+    \item A number of different features should be tried. They can be selected from a list, potentially informed by the VAMP scores developed for by Schrere et. al. \cite{scherer_variational_2019}. 
+    \item Remaining hyperparameters should be randomly sampled from a suitable search space. Using a grid search method is inefficient and not easily modified to sample more hyperparameter if necessary. 
+    \item Scoring models using bootstrapped values of sum of squared eigenvalues is preferable to using the VAMP2 variational score because it can lead to contradictory results. 
+    \item If the MSM requires significant resources, Bayesian optimisation may be a useful tool.  This work used a Gaussian process surrogate model but other, more flexible models may perform better (see limitations discussion below). 
+    \item Even if the the MSM does not require significant resources, Bayesian optimisation provides a principled way of checking the convergence the model.  We suggest reporting an optimised model and a set of models which make it clear that the behaviour of model observables is consistent with varation in the hyperparmeters. 
+    \item When scoring the models use as many eigenvectors as are resolvable. This can be estimated from a selection of models or all processes can be scored and saved in a database (as was performed here).  
+    \item For model selection, it is not important to select a `Markovain' lag time although this should be attempted to be estimated from a selection of models.  
+\end{enumerate}
+
+There are a number of limitations to this study.  First the we have a performed our analysis on only one system which limits the applicability some of the specific results. For example, the sensitivity of the hyperparameters to the timescales should be not taken as generally applicable for other systems. Second, the fitting of the Gaussian process used in the sensitivity calculation and the Bayesian optimisation required a lot of ad-hoc preprocessing and its own model selection procedure.  More flexible models which still return estimates of input importance and of uncertainty, such as random forests or tree parzen estimators, may be more appropriate.  Third, it is 
 
 
 \subsection{References}
