@@ -176,7 +176,7 @@ separate page at the end of the document.
 
 Markov state models continue to be a popular model for extracting kinetic information from unbiased molecular dynamics simulations. Studies published in the last two years alone include a wide range of applications, such as understanding:  protein association kinetics [recent noe/olsson nature paper, Cannariato], Enzyme dynamics [koulgi], ion binding mechanisms  [dutta, McKiernan] , hydrogen bond dynamics [ibrahim], mechanisms of drug binding for drug discovery [hu, Pantsar, Hempel, Tosstorff, Liu, ...], mutational effects conformational dynamics [Fernandez-Quintero, Sharma], kinetics of intrinsically disordered proteins [Paul], protein folding [Zhou], understanding allostery [Tian].  Estimating an MSM proceeds by first associating molecular configurations with a set of discrete states,  counting transitions between the states separated by the temporal resolution of the model ($\tau$) and then deriving transition probabilities between the states~\cite{trendelkamp-schroer_estimation_2015}. The final model is summarised by the transition matrix, $\mathbf{T}$ where the elements are the conditional probaibilities of transitioning between states: $T_{i,j}(\tau) = P(x=j, t=t+\tau| x=i, t=t)$.  
 
-The whole pipeline of transforming MD frames into $\mathbf{T}$ involves a making number of modelling choices, or chossing \emph{hyperparameters}.  The more important hyperparameters are which coordinate subset of the simulation to include (typically the atomic positions of the solutes); how to transform these coordinates into important  features (e.g., contact maps may be useful for describing protein folding); projecting features on to important collective variables (typically time-lagged independent component analysis, TICA [pande] is used for this process); and finally how to define discrete states from these collective variables.  The hyperparameters are differentiated from the \emph{parameters} of the model because the latter are calculated from the data via the optimisation of a loss-function (e.g., the log-likelihood), while the hyperparameters are chosen via expert judgement, or via some summary metric of the model. To take a simple example, when faced with predicting some outcome $y$ against an number of different features $x_i$ as a linear model $y = \beta_0  + \beta_1 x_1, + \beta_2 x_2 ..$, the parameters $\beta_i$ are determined from the data by maximizing the log likelihood, while the choice of whether or not to include $x_3$ or not in the definition of the model may be taken by looking at the accuracy of the model.  
+The whole pipeline of transforming MD frames into $\mathbf{T}$ involves a making number of modelling choices, or choosing  \emph{hyperparameters}.  The more important hyperparameters are which coordinate subset of the simulation to include (typically the atomic positions of the solutes); how to transform these coordinates into important  features (e.g., contact maps may be useful for describing protein folding); projecting features on to important collective variables (typically time-lagged independent component analysis, TICA [pande] is used for this process); and finally how to define discrete states from these collective variables.  The hyperparameters are differentiated from the \emph{parameters} of the model because the latter are calculated from the data via the optimisation of a loss-function (e.g., the log-likelihood), while the hyperparameters are chosen via expert judgement, or via some summary metric of the model. To take a simple example, when faced with predicting some outcome $y$ against an number of different features $x_i$ as a linear model $y = \beta_0  + \beta_1 x_1, + \beta_2 x_2 ..$, the parameters $\beta_i$ are determined from the data by maximizing the log likelihood, while the choice of whether or not to include $x_3$ or not in the definition of the model may be taken by looking at the accuracy of the model.  
 
 Hyperparameter optimisation is a widely studied topic in machine learning [refs from thesis] where many hyperparameters (e.g., learning rates and schedules, network architecture, regularization etc. in deep learning) need to be carefully chosen to achieve the best performance. Various methods exist finding the optimal set of hyperparameters, from exhaustively searching over a uniformly space grid or randomly selected from a predefined search space [bergstra], to active learning approaches such as Bayesian optimisation [from thesis]. 
 
@@ -229,13 +229,14 @@ When $r=1$ and the model is assumed to be stationary\cite{mcgibbonVariationalCro
 
 where $\mathbf{U}$ is the matrix of eigenvectors of $\mathbf{T}$. The functional dependence of the GMRQ on $\bm{\theta}$ is to emphasize that the eigenvectors and count matrices are dependent on the hyperparameters. 
 
-The variational approach to Markov processes placed reversible and stationary MSMs in a broader context of Koopman models which may or may not be reversible or stationary.  In this context there is a family of variational scores, differentiate by a positive integer $r$: 
+The variational approach to Markov processes placed reversible and stationary MSMs in a broader context of Koopman models which may or may not be reversible or stationary.  In this context there is a family of variational scores, differentiated by a positive integer $r$: 
 \begin{equation}
      \operatorname{VAMP-r}(\bm{\theta}) = \left \| (\mathbf{U}^{T}\mathbf{C}_{00}\mathbf{U})^{-\frac{1}{2}}(\mathbf{U}^{T}\mathbf{C}_{0t}\mathbf{V})(\mathbf{V}^{T}\mathbf{C}_{tt}\mathbf{V})^{-\frac{1}{2}} \right \|_{r}^{r}
 \end{equation}\label{eqn:vamp_score_def}
 
 where $\mathbf{C}_{tt}$ is the column-sum of the count matrix $[\mathbf{C}_{tt}]_{i, i} = \sum_i [\mathbf{C}_{0t}]_{i, j}$; $\mathbf{U}$ and $\mathbf{V}$ are the left and right singular vectors of the transition matrix; and the norm is the Schatten-r norm raised to the $r$th power.  If the data is stationary, reversible and $r=1$ this is equivalent to the GMRQ. With $r=2$ this expression measures the kinetic variance~\cite{noeKineticDistanceKinetic2015} captured by the basis sets. The VAMP-r scores have also been adapted to score the models based on the type of feature alone (rather than scoring the full MSM)~\cite{scherer_variational_2019}. 
 
+It should be noted that, as the timescales are monotonic functions of the eigenvalues, maximizing the sum of the timescales also maximizes the VAMP scores. 
 
 \subsubsection{Cross-validation and the bootstrap}
 To ensure that hyperparameters selected by VAMP scores  (we will refer only to VAMP scors from now on) will select hyperparameters that are suited to unseen data and not just the data used to estimate the MSM, equations~\ref{eqn:gmrq} and \ref{eqn:vamp_score_def} were adapted to be used with cross-validation~\cite{arlotSurveyCrossvalidationProcedures2009}. This is where the MD data is randomly split into two equally sized subsets. The eigenvectors/singular vectors $\mathbf{U}/\mathbf{V}$ are calculated on one set, while the count matrices $\mathbf{C}_{00/0t/tt}$ are calculated on the other set.  This is repeated a number of times (e.g., 50~\cite{scherer_variational_2019}) times and an average of the VAMP scores taken.
@@ -249,67 +250,53 @@ A drawback of cross-validation approach is that it requires the data to be split
 
 \subsubsection{Methods for optimizing hyperparameters}
 
-\begin{itemize}
-    \item Finding the best set of hyperparameters $\bm{\theta}$ using either the VAMP scores or the GMRQ, is an optimisation problem. i.e., the optimum hyperparameters, $\bm{\theta}^{*}$ are given by:  
-    \begin{equation}
-        \bm{\theta}^{*} = \argmax_{\bm{\theta}}{[S(\bm{\theta}, k, r)]}
-    \end{equation}
-    where $S$ can be the GMRQ or VAMP-r score.  
-    \item For MSMs and many machine learning models this is a black-box problem because the gradient of the objective function ($S$) with respect to the hyperparameters $\bm{\theta}$ is not known. 
-    \item Grid search is popular for finding hyperparameters for MSMs [insert refs]. This is where a n-dimensional grid is created over the hyperparameter search space, and the scores evaluated at each point on the grid. This scales poorly with the number of hyperparameters.    
-    \item In [bergstra] they showed that randomly selecting hyperparameters from the search space is more efficient when only a small number of hyperparameters are relevant to determining the score. 
-    \item this is because grid search places equal importance on each hyperparameters. 
-    \item Active learning approaches, such as Bayesian optimisation can be used [all the refs]. 
-    \item In Bayesian optimisation a regression model (response surface) to estimate $\hat{S} \simeq S(\bm{\theta})$ from previous values of $(S, \bm{\theta})$.  
-    \item A utility function  is then calculated $\alpha(\hat{S})$ which gives the utility associated with all values of $\bm{\theta}$ in finding the optimum of $S(\bm{\theta})$. 
-    \item The values of $\bm{\theta}$ which maximize $\alpha$ are scored by estimating the MSM and calculating the true score $S(\bm{\theta})$. This observation is used to update the response surface the procedure begins again, until satisfactory convergence in $S$ is reached.  
-    \item Each value of $\bm{\theta}$ that is evaluated is called a trial. 
-    \item Different utility functions are available. A popular function is the expected improvement. 
-    \item The improvement, $I$, is the one-sided difference between the current best trial value ($S^{*}$) and a value of the score: $I(S, S^{*}) = S\cdot\mathbb{1}_{S>S^{*}}$. 
-    \item The expected improvement is the expectation of this value after integrating out the uncertainty in the response surface $\hat{S}$. 
-    \item Because of the need to model the uncertainty in $\hat{S}$, Gaussian processes are good candidates for the response surface regression models.
-    \item The are able to fit highly non-linear outcomes to a range of different input types. 
-\end{itemize}
+Finding the best set of hyperparameters $\bm{\theta}$ using either the VAMP scores or implied timescales (we will use the term \emph{response} generally), is a black-box optimisation problem.  It is black-box because we do not (in general) have access to the gradients, $\nabla_{\bm{\theta}} \operatorname{VAMP-r}$, which would facilitate a gradient based optimisation.  There are three broad classes of optimisation techniques in this case: exhaustive searching,  model based searching and population based algorithms. 
 
-\subsubsection{Gaussian process}
+Examples of exhaustive searching grid search (popular with MSMs[all the refs]) where hyperparameters are taken from a uniformly placed grid over the hyperparameter search space, and random search search, where hyperparameters are randomly sampled from the search space. 
 
-\begin{itemize}
-    \item Gaussian process regression (GPR) has been used in [bergstra] to estimate the sensitivity of hyperparameters to model scores and loss functions. 
-    \item GPR is also used in in Bayesian optimisation. 
-    \item A GPR model models an outcome $y$ as a function of inputs $\mathbf{x}$, so that all the values of $y$ form a multivariate normal distribution. 
-    \item i.e., for $N$ observations, $(y_{i}, \mathbf{x}_{i})$: 
-    \begin{equation}
-        y \sim \mathcal{N}\left(\mu(\mathbf{x}), \mathbf{K}\right )
-    \end{equation}
-    where $\mu(\mathbf{x})$ is the mean function and $\mathbf{K}$ matrix which specifies the covariance between the points. 
-    
-    
-\end{itemize}
+Grid search is an effective strategy when the response is sensitive to all the hyperparameters.  However, it has poor scaling with the number of hyperparameters ($N^d$, where $N$ is the number of grid points per hyperparameter and $d$ is number of hyperparameters), so when only a small subset of hyperparameters are relevant, random search is more efficient~\cite{bergstra_jamesbergstra_random_2012}.  
 
-A Gaussian processes is a stochasticnces process which, for any finite realisation of that process, gives rise to a normal distribution.  A GP can be indexed by a single variable for example, time, or by a vector of variables, $\mathbf{x}$, in which case the resulting distribution is a multivariate normal distribution. A GP is specified by a normal function $\mu(\mathbf{x})$ which defines the mean of the distribution as a function of the indexing variables, and by a covariance matrix, $\mathbf{K}$, which specifies the covariance between the GP at different values of $\mathbf{x}$.  
+A popular type of model based search is Bayesian optimisation. The Bayesian optimisation algorithm is as follows: 
+\begin{enumerate}
+    \item Randomly sample a small set of hyperparameters and measure the response of the resulting MSMs. This gives a hyperparameter trial data-set $\mathcal{D}_{n}=\left\{(y_1, \bm{\theta}_1),  \ldots (y_n, \bm{\theta}_n) \right \}$ where $y$ is the model response.
+    \item Fit a regression model called a \emph{response surface}, which predicts $y$ as a function of $\bm{\theta}$ using the data $\mathcal{D}$: $y \simeq \hat{S}(\theta) + \epsilon$ (where $\epsilon$ is some error term). 
+    \item \label{step:calc_alpha} Calculate an acquisition function, $\alpha$, which is a function of the response surface: $\alpha=\alpha\left[\hat{\bm{\theta}}\right]$. The acquisition function maps the hyperparameters to their utility towards optimising $y$. In other words, it suggests hyperparameters that are likely to optimize $y$. 
+    \item Use $\alpha$ to suggest a set of hyperparameters, $\bm{\theta}_{n+1} = \argmax_{\bm{\theta}}{\left[\alpha(\hat{S})\right]}$ and measure the response, $y_{n+1}$ by fitting the MSM.  
+    \item \label{step:reestimate_rs} Re-estimate the response surface with the new observations incorporated into the trial data-set, $\mathcal{D}_{n+1}$
+    \item Repeat steps~\ref{step:calc_alpha} to \ref{step:reestimate_rs} as many times as necessary. 
+\end{enumerate}
 
-GP regression can be used to fit data to a GP where $\mu(\mathbf{x})$ and $\mathbf{K}$ are learned for the data. In order to be able to make predictions on unseen data the covariance of the data is specified by covariance function or kernel, and the parameters of the kernel are learned. For example a radial basis function, or Gaussian kernel can be employed: 
+Gaussian process regression models  are popular as response surface models and these will be discussed below. There are many different acquisition functions, in this work we use the expected improvement.  The improvement, $I$, is the one-sided difference between the current best trial value, called the incumbent, $y^{*} = \max_{\bm{\theta}\in \mathcal{D}}{S(\bm{\theta})}$ and a value of the score: $I(\bm{\theta}) = \max{\left(\hat{S}(\bm{\theta}     -y^{*}, 0\right)}$. The expected improvement is the expectation of this value after integrating out the uncertainty in the response surface $\hat{S}$. It takes into account both the size of the improvement and its probability of occurring.  The third class of optimisation algorithms are population algorithms, which include evolutionary algorithms [], particle swarm optimisation [] and covariance matrix adaption [], these will not be explored here further. 
+
+\subsubsection{Gaussian process regression}
+
+Gaussian process regression (GPR) models an outcome ($y$) as a function of inputs $\bm{\theta}$ in the form of a multivariate normal distribution: 
 \begin{equation}
-    k(x_i, x_j) = \exp\left(-\frac{\left|x_i-x_j\right|^2}{l^2}\right)
+   y = \hat{S}(\bm{\theta}) \sim \mathcal{N}\left(\mu(\bm{\theta}), \mathbf{K}\right )
 \end{equation}
+where $\mu(\bm{\theta})$ is the mean function and $\mathbf{K}$ matrix which specifies the covariance between the observations. The training data is the MSM response and hyperparameters: $\mathcal{D}_{n}=\left\{(y_1, \bm{\theta}_1),  \ldots (y_n, \bm{\theta}_n) \right \}$. A a given input, GPR predicts a normal distribution with a mean ($\mu(\bm{\theta})$) and variance $\sigma^{2}(\bm{\theta})$. In order to make predictions on unseen data, the covariance between a new observation $\bm{\theta}^{\prime}$, needs to be specified. To do this, the elements of $\mathbf{K}$ are specified by a kernel function, for example: 
+\begin{align}
+    K_{i,j} & = \eta^2  k(\theta_i, \theta_j) + \sigma^2
+    k(\theta_i, \theta_j) =  \exp\left(-\frac{\left|\theta_i-\theta_j\right|^2}{l^2}\right)
+\end{align}
 
-where $x_i$ and $x_j$ are two observations and $l$ is the characteristic lengths scale o the GP. The elements of the covariance function are given by: $[\mathbf{K}]_{i, j} = k(x_i, x_j)$.  The outcome being modelled is given by: 
+where $k(\theta_i, \theta_j)$ is a Gaussian kernel,  $\theta_i$ and $\theta_j$ are two values of the inputs, $\eta$ determines the scale of the response, $l$ is the characteristic lengths scale of the Gaussian process and $\sigma$ is a term to account for the noise in the observations. $l$ determines how correlated the response is as a function of the distance between their inputs, in other words - how sensitive the response is to the inputs. There are many different types of kernel with different functional forms depending on the type of data (e.g., periodic data). When the covariance depends only on distance between observations (as above) the kernel is known as stationary.  We will only consider stationary kernels in this work and these will be discussed in the methods section. 
 
-\begin{equation}
-    y(x) \sim \mathcal{N}(\mu(x), \mathbf{K})
-\end{equation}
+The parameters of the GPR ($\eta, l, \sigma$ in the above case) are learned through maximizing the marginal log-likelihood of the data with respect to the parameters. Typically, prior distributions are placed over the GP parameters which reflect prior knowledge or restrictions on the data. Details on the fitting process can be found in [rasmussen and williams]. 
 
-The parameters of the GP, the mean function, $\mu(x)$ and the kernel hyperparameters ($l$ in the example above), can be learned either through maximizing the marginal log-likelihood of the data with respect to the parameters, or by Bayesian estimation. In both cases, prior distributions are placed over the GP parameters which reflect prior knowledge or restrictions on the data.    
+With multidimensional inputs (i.e., multiple MSM hyperparameters) then there is flexibility over how to create a kernel over all the inputs. Two simple approaches is a fully additive ($K^{\mathrm{+}}$) and a fully multiplicative ($K^{\mathrm{\times}}$) covariance function: 
 
-GPs are commonly used for Bayesian optimisation and in particular for tuning hyperparameters. However they have also been used to measure the sensitivity of an output $y$ to a given set of inputs $x$ by estimation of the characteristic length scale of the kernel, $l$ \cite{bergstra_jamesbergstra_random_2012}.  If an outcome varies rapidly in response to small changes in an input, $x$, then the characteristic length-scale of the fitted GP will be small and vice versa.  Thus, the relevance of an input $x$ for determining an outcome $y$ will be given by $R=1/l$.  If the input is multidimensional $\mathbf{x}$, a separate characteristic length-scale for each dimension can be learned ( known as automatic relevance determination [ref]).  
+\begin{align}
+    K^{\mathrm{+}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j) + k(\theta^{2}_i, \theta^{2}_j) \ldots \right ] + \sigma^2  \label{eqn:plus_kernel} \\ 
+    K^{\mathrm{\times}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j) \times k(\theta^{2}_i, \theta^{2}_j) \times \ldots \right ] + \sigma^2 \label{eqn:mult_kernel}
+\end{align}
 
-\begin{equation}
-    K_{i,j} = \eta^{2}\left(k(\left|\tau_{T, i} -\tau_{T, j}\right|/l_{\tau_{T}}) +  k(\left|m_{i} -m_{j}\right|/l_{m}) + \ldots \right) + \sigma^{2}
-\end{equation}\label{eqn:kernel}
-where $k$ are covariance kernels, $\eta, \sigma$ and $l_{\cdot}$ are kernel hyperparameters inferred from the data. They correspond to the scale, noise and characteristic length-scale of the Gaussian process respectively. 
+where the elements of $\bm{\theta}$ are labelled $\theta^{1}, \theta^{2} \ldots$. Kernel functions can by combined in arbitrary ways to suite the modelling needs, see [duvenand thesis]. 
 
+\subsubsection{Sensitivity analysis}
 
-\subsubsection{Hyperparameter relevance}
+Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work we conduct a \emph{global sensitivity analysis} which looks at model outputs a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis is based on the work of [bergstra] which models the response of the MSM as Gaussian process.
+
 
 
 
@@ -324,14 +311,7 @@ This work used eight of the twelve fast-folding proteins which have become the d
     \toprule
     Name & PDB & Simulation time (\si{\micro\second}) & Average folding time (\si{\micro\second}) & No. Residues & \\
     \midrule
-    Chignolin           & cln025    & \num{106}     & \num{0.6} & 10 & \\
-    Trp-cage            & 2JOF      & \num{208}     & \num{14}  & 20 & \\
     BBA                 & 1FME      & \num{325}     & \num{18}  & 28 & \\
-    Villin              & 2F4K      & \num{125}     & \num{2.8} & 35  &\\
-    WW domain           & 2F21      & \num{1137}    & \num{21}  & 35 & \\
-    BBL                 & 2WXC      & \num{429}     & \num{29}  & 47  &\\
-    Protein B           & 1PRB      & \num{104}     & \num{3.9} & 47 & \\
-    Homeodomain         & 2P6J      & \num{327}     & \num{3.1} & 52 & \\
     \bottomrule
     \end{tabularx}
     \label{tab:data_description}
