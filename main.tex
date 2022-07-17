@@ -280,25 +280,27 @@ where $\mu(\bm{\theta})$ is the mean function and $\mathbf{K}$ matrix which spec
     k(\theta_i, \theta_j) =  \exp\left(-\frac{\left|\theta_i-\theta_j\right|^2}{l^2}\right)
 \end{align}
 
-where $k(\theta_i, \theta_j)$ is a Gaussian kernel,  $\theta_i$ and $\theta_j$ are two values of the inputs, $\eta$ determines the scale of the response, $l$ is the characteristic lengths scale of the Gaussian process and $\sigma$ is a term to account for the noise in the observations. $l$ determines how correlated the response is as a function of the distance between their inputs, in other words - how sensitive the response is to the inputs. There are many different types of kernel with different functional forms depending on the type of data (e.g., periodic data). When the covariance depends only on distance between observations (as above) the kernel is known as stationary.  We will only consider stationary kernels in this work and these will be discussed in the methods section. 
+where $k(\theta_i, \theta_j)$ is a Gaussian kernel,  $\theta_i$ and $\theta_j$ are two values of the inputs, $\eta$ determines the scale of the response, $l$ is the characteristic lengths scale of the Gaussian process and $\sigma$ is a term to account for the noise in the observations. There are many different types of kernel with different functional forms depending on the type of data (e.g., periodic data). When the covariance depends only on distance between observations (as above) the kernel is known as stationary.  We will only consider stationary kernels in this work and these will be discussed in the methods section. 
 
 The parameters of the GPR ($\eta, l, \sigma$ in the above case) are learned through maximizing the marginal log-likelihood of the data with respect to the parameters. Typically, prior distributions are placed over the GP parameters which reflect prior knowledge or restrictions on the data. Details on the fitting process can be found in [rasmussen and williams]. 
 
 With multidimensional inputs (i.e., multiple MSM hyperparameters) then there is flexibility over how to create a kernel over all the inputs. Two simple approaches is a fully additive ($K^{\mathrm{+}}$) and a fully multiplicative ($K^{\mathrm{\times}}$) covariance function: 
 
 \begin{align}
-    K^{\mathrm{+}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j) + k(\theta^{2}_i, \theta^{2}_j) \ldots \right ] + \sigma^2  \label{eqn:plus_kernel} \\ 
-    K^{\mathrm{\times}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j) \times k(\theta^{2}_i, \theta^{2}_j) \times \ldots \right ] + \sigma^2 \label{eqn:mult_kernel}
+    K^{\mathrm{+}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j; l_{1}) + k(\theta^{2}_i, \theta^{2}_j; l_{2}) \ldots \right ] + \sigma^2  \label{eqn:plus_kernel} \\ 
+    K^{\mathrm{\times}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j; l_{1}) \times k(\theta^{2}_i, \theta^{2}_j, l_{2}) \times \ldots \right ] + \sigma^2 \label{eqn:mult_kernel}
 \end{align}
 
-where the elements of $\bm{\theta}$ are labelled $\theta^{1}, \theta^{2} \ldots$. Kernel functions can by combined in arbitrary ways to suite the modelling needs, see [duvenand thesis]. 
+where the elements of $\bm{\theta}$ are labelled $\theta^{1}, \theta^{2} \ldots$. The different kernel constructions lead to different interpretations of covariance structures.  Kernel functions can by combined in arbitrary ways to suite the modelling needs, see [duvenand thesis]. 
 
 \subsubsection{Sensitivity analysis}
 
-Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work we conduct a \emph{global sensitivity analysis} which looks at model outputs a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis is based on the work of [bergstra] which models the response of the MSM as Gaussian process.
+Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work we conduct a \emph{global sensitivity analysis} which looks at model outputs a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis is based on the work of [bergstra] which models the response of the MSM as Gaussian process.  
 
-
-
+The sensitivity of the hyperparameters are calculated from the learned parameters of the covariance matrix, specifically the values of $l$ for each term in equations~\ref{eqn:plus_kernel} or \ref{eqn:mult_kernel}.  $l_{i}$  determines how correlated the response is as a function of the distance between two different points of the $i$'th hyperparameters $\theta^{i}$. For a large value of $l_{1}$, two observations $y_{i}, y_{j}$ will be, on average, correlated with one another for a given large values of $|\theta_{i}^{1} - \theta_{j}^{1}|$. This means $y$ does not vary significantly with changes in $\theta^{1}$. The converse will also be true: for small $l_{1}$, $y$ will change significantly for given large value of $|\theta_{i}^{1} - \theta_{j}^{1}|$. Thus, the sensitivity of the response to hyperparameter $i$ can be measured by the \emph{relevance}, $R_{i}$: 
+\begin{equation}\label{eqn:relevance_def}
+    R_{i} = \frac{1}{l_{i}}
+\end{equation}
 
 \section{Methods}
 \subsection{Molecular dynamics}
