@@ -305,15 +305,15 @@ The sensitivity of the hyperparameters are calculated from the learned parameter
 \section{Methods}
 \subsection{Molecular dynamics}
 
-This work used eight of the twelve fast-folding proteins which have become the de-facto benchmark dataset for testing molecular kinetics methods. The methods used to create this data are described elsewhere~\cite{lindorff-larsen_how_2011}. The proteins used, their PDB accession codes, the amount of simulation data, the number of residues and the average folding timescale are shown in table~\ref{tab:data_description}. Each long trajectory was split into sub-trajectories of length \SI{200}{\nano\second}. 
+This work uses simulation data of the fast folding protein, BBA, one of the twelve fast-folding proteins which have become the de-facto benchmark dataset for testing molecular kinetics methods. The methods used to create this data are described elsewhere~\cite{lindorff-larsen_how_2011}. Important information on the data are shown in table~\ref{tab:data_description}. The Average folding time was calculated by the authors~\cite{lindorff-larsen_how_2011}; the sub-trajectory length and number of sub-trajectories correspond to the data splitting used in bootstrapping calculation of the uncertainty in model observables.
 
 \begin{table}
     \caption{\textsc{Description of molecular dynamics data}}
-    \begin{tabularx}{\textwidth}{llXXXX}
+    \begin{tabularx}{\textwidth}{llXXXXX}
     \toprule
-    Name & PDB & Simulation time (\si{\micro\second}) & Average folding time (\si{\micro\second}) & No. Residues & \\
+    Name & PDB & Simulation time (\si{\micro\second}) & Average folding time (\si{\micro\second}) & No. Residues & Sub-trajectory length (\si{\micro\second}) & No. sub-trajectories \\
     \midrule
-    BBA                 & 1FME      & \num{325}     & \num{18}  & 28 & \\
+    BBA                 & 1FME      & \num{325}     & \num{18}  & 28 & \num{2} & 164 \\
     \bottomrule
     \end{tabularx}
     \label{tab:data_description}
@@ -322,36 +322,39 @@ This work used eight of the twelve fast-folding proteins which have become the d
 \subsection{Markov state models}
 MSMs were estimated using PyEMMA version 2.5.7~\cite{schererPyEMMASoftwarePackage2015a} an using a standard pipeline when focusing on the slow relaxation processes~\cite{noe_markov_2019, husic_markov_2018}: 
 \begin{enumerate}
-    \item Project molecular dynamics (MD) trajectories onto a set of features, $\chi$. 
-    \item Reduce the dimension of the feature trajectories using TICA with a lag time $\tau_{\mathrm{TICA}}$ by projecting onto the first $m$ TICA coordinates. The TICA coordinates were scaled by their corresponding eigenvalues so that distances in  TICA space correspond to kinetic distances (known as kinetic mapping)~\cite{noeKineticDistanceKinetic2015}).
+    \item Project molecular dynamics (MD) trajectories onto a set of features. 
+    \item Reduce the dimension of the feature trajectories using TICA with a lag time $\tau_{\mathrm{TICA}}$ by projecting onto the first $m$ TICA coordinates. 
     \item The frames of the TICA trajectories were clustered using the k-means algorithm into $n$ discrete microstates. 
-    \item An reversible, maximum likelihood MSM was then estimated. 
+    \item A reversible, maximum likelihood MSM was then estimated. 
 \end{enumerate}
-To save on memory and compute resources only a proportion of the data was used in parts of the MSM estimation. The MD trajectories were first strided so that each frame corresponded to \SI{1}{\nano\second}. The cluster centers were estimated on frames separated by \SI{10}{\nano\second}, i.e. only the 0th, 10th, etc. frames were used for estimating the cluster centers. 
+To save on memory and compute resources  the data was subset in parts of the MSM estimation. The MD trajectories were first strided so that each frame corresponded to \SI{1}{\nano\second}. The cluster centers were estimated on frames separated by \SI{10}{\nano\second}, i.e. only the 0th, 10th, etc. frames were used for estimating the cluster centers. 
 
-The uncertainty for model derived quantities (e.g., implied timescales, VAMP2 scores etc.) was estimated using the bootstrap with \num{100} bootstrap samples. The point estimate and error-bars  were calculated as the median,   \SI{2.5}{\percent} \& \SI{97.5}{\percent} quantiles of the distribution over the bootstrap samples.
+The uncertainty for model observables (e.g., implied timescales, VAMP2 scores etc.) was estimated using the bootstrap with \num{100} bootstrap samples. The point estimate and error-bars  were calculated as the median,   \SI{2.5}{\percent} \& \SI{97.5}{\percent} quantiles of the distribution over the bootstrap samples.
 
-\subsection{Modelling choices and scoring}
-\num{140} different hyperparameters for estimating the microstates were randomly sampled from the search space described by table~\ref{tab:search_space}. The number of trials was proportional to the number of hyperparameters for each feature: 20 trails for the dihedral feature, 40 for the contact distances (20 for each contact scheme: `closest-heavy` and `alpha-carbon`) and 80 for the logistic transformation of contact distances (which, in addition to the two distance scheme, has the center and steepness of the logistic transformation).  
+\subsection{Hyperparameters and scoring}
+\num{140} different hyperparameters were randomly sampled from the search space described by table~\ref{tab:search_space}. Each set of hyperparameters and their corresponding model observables are known as a \emph{hyperparameter trial} (or just \emph{trial}). Three different features, $f$, were used: dihedrals feature (`dihed.'), contact distance feature (`dist.') and a logitistic transformation of the contact distances (`logit(dist.)').  The number of trials for each feature is dependent on the dimension of the hyperparameters space which will be explained below. 
 
-The dihedral angles feature used all the available residue dihedral angles (except the $\omega$ angle). The definitions of the contact distances ($d$) were either the closest heavy-atom distance, or the $\alpha$-Carbon distance. The un-adjusted distance, $d$ (identity transform) or a  logistic transform $\mathrm{logit}(d) = [1-\exp{(s(d-c))}]^{-1}$ were used. The center, $c$, and steepness $s$, hyperparameters apply to the logistic transform only and have units of \si{\angstrom} and \si{\per\angstrom} respectively. The TICA eigenvectors were scaled by their eigenvalues ($\lambda$).
+The dihedral angles feature used all the available backbone and residue dihedral angles (except the $\omega$ angle). The contact distance (used in the `dist.' and `logit(dist.)' features) is denoted, $d$; the logistic transform $\mathrm{logit}(d) = [1-\exp{(s(d-c))}]^{-1}$, where center, $c$, and steepness $s$,  have units of \si{\angstrom} and \si{\per\angstrom} respectively. The definitions of the contact distances ($d$) were either the closest heavy-atom distance ($X-X$) or the distance between the $\alpha$-Carbons (C$\alpha$-C$\alpha$). The TICA eigenvectors were scaled by their eigenvalues ($\lambda$) so that distances in TICA space correspond to kinetic distances~\cite{noeKineticDistanceKinetic2015}.
 
-For each unique set of hyperparameters, $\mathbf{x} = (\chi, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau_{\mathrm{M}}$: \SI{1}{\nano\second}, \SI{11}{\nano\second}, ..., \SI{101}{\nano\second}. For each combination of $\mathbf{x}$ and  $\tau_{\mathrm{M}}$ the slowest \numrange{2}{21} eigenvectors were scored using the VAMP2 score (this includes the eigenvector corresponding to the stationary distribution). 
+The number of trials was approximately proportional to the number of hyperparameters for each feature: 20 trails for the dihedral feature, 40 for the contact distances (20 for each value of the contact distance scheme: $X-X$,  C$\alpha$-C$\alpha$) and 80 for the logistic transformation of contact distances (which, in addition to the two distance scheme values, has two other hyperparameters, $c$ and $s$). 
+
+For each trial,  $\bm{\theta} = (f, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau_{\mathrm{M}}$: \SI{1}{\nano\second}, \SI{11}{\nano\second}, ..., \SI{101}{\nano\second}. For each combination of $\bm{\theta}$ and  $\tau_{\mathrm{M}}$ the slowest \numrange{2}{21} eigenvectors were scored using the VAMP2(k) and  VAMP2$_{eq}$(k) score, along with their implied timescales.
+
 \begin{table}
     \centering
     \begin{tabularx}{\textwidth}{lXXXX}
     \toprule
-    \textbf{Features}  & & & &\\
+    \textbf{Features}, ($f$)  & & & &\\
     Dihedral angles & \textsc{Which} & & &\\
     & \multicolumn{2}{l}{$dihed.=\phi, \psi, \chi_{1}, \ldots, \chi_{5}$ } & & \\
-    Contact distances &  \textsc{Definition} & \textsc{Transform}& \textsc{Center} ($c$) & \textsc{Steepness} ($s$) \\
+    Contact distances &  \textsc{Definition}, ($d$) & \textsc{Transform}& \textsc{Center} ($c$, \si{\angstrom}) & \textsc{Steepness} ($s$, \si{\per\angstrom}) \\
 
-     & \nextitem $X$-$X$  \nextitem C$\alpha$-C$\alpha$ & \nextitem $\mathrm{logit}(dist.)$ \nextitem $dist.$ &  \numrange{3}{15} & \numrange{0.1}{50} \\
+     & \nextitem $X$-$X$  \nextitem C$\alpha$-C$\alpha$ & \nextitem $\mathrm{logit}(dist.)$ \nextitem $dist.$ &  \numrange{3}{15} & \numrange{0.01}{5} \\
     \midrule
-    \textbf{Decomposition} & \textsc{Eigenvectors}, $m$ & \textsc{Lag-time}, $\tau_{T}$ ($\si{\nano\second}$) & \textsc{Scaling}\\ 
+    \textbf{Decomposition} & \textsc{Eigenvectors}, ($m$) & \textsc{Lag-time}, ($\tau_{T}, \si{\nano\second}$) & \textsc{Scaling}\\ 
     TICA & \numrange{1}{20} & \numrange{1}{100} & $\lambda$\\
     \midrule
-    \textbf{Clustering} & \textsc{Clusters}, $n$ &\\
+    \textbf{Clustering} & \textsc{Clusters}, ($n$) &\\
     k-means & \numrange{10}{1000} & \\
     \bottomrule
     \end{tabularx}
@@ -359,11 +362,10 @@ For each unique set of hyperparameters, $\mathbf{x} = (\chi, \tau_{\mathrm{T}}, 
     \label{tab:search_space}
 \end{table}
 
-The hyperparameter sensitivity data-set consisted of \num{2660000} measurements of the VAMP2 score assembled from the combinations of bootstrap samples, hyperparameters, lag-time and number of scored processes  ($\num{2660000}=100 \times 140 \times 10 \times 19$). This was done for each protein. 
+The hyperparameter trial data-set, $\mathcal{D}$, consisted of: $100$ bootstrap samples of $140$  unique sets of hyperparameters, at $10$ different lag times, with  $20$ measurements of the the implied timescales and $20$ measurements of the VAMP2 score and $20$ measurements of the VAMP2$_{eq}$ score. The total number of observations is therefore: $100 \times 140 \times 10 \times (20 + 20 + 20) = \num{8400000}$. 
 
 \subsection{Markov lag time}
-In order to score each set of hyperparameters, a Markov lag-time and the number of slow processes, or eigenvectors, to score must be determined for each protein. The effect of the number of dominant processes was left as a parameter to be discussed. ere $t_{2}(\tau_{\mathrm{M}})$ is the timescale of the slowest relaxation process measured at Markov lag-time of $\tau_{\mathrm{M}}$. 
-For each $\theta$, the following gradient was calculated:
+The Markov lag time, $\tau_{\mathrm{M}}$, was calculated from the total hyperparameter trial data-set. For each trial the following gradient was calculated:
 \begin{equation}
     g(\tau_{\mathrm{M}}, \theta) = \frac{\Delta \log{\left(t_{2}(\tau_{\mathrm{M}}, \theta)\right)}}{\Delta \tau_{\mathrm{M}}}, 
 \end{equation}\label{eqn:choose_lag_1}
@@ -371,45 +373,48 @@ The selected Markov lag-time, $\tau^{*}_{\mathrm{M}}$ was chosen as:
 \begin{equation}
     \tau^{*}_{\mathrm{M}}  = \argmin_{\tau_{\mathrm{M}}, \theta}\left[g(\tau_{\mathrm{M}}, \theta)\right], \quad 0 < g < \log{1.01}
 \end{equation}\label{eqn:choose_lag_2}
-This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau_{\mathrm{M}}$ are plotted on a log scale and the smallest $\tau_{\mathrm{M}}$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. Plots of $g(\tau_{\mathrm{M}}, \theta)$ for each protein are shown  in figure \sref{fig:its_grad_all}. 
+This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau_{\mathrm{M}}$ are plotted on a log scale and the smallest $\tau_{\mathrm{M}}$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. 
 
-\subsection{Model validation}
+\subsection{Sensitivity analysis}
 
-Markov state models were validated by i) plotting the first \num{10} implied timescale plots as a function of the Markov lag-time and by ii) performing a Chapman-Kolmogorov test (CK test~\cite{noe_projected_2013}). The CK test coarse-grains the MSM into a hidden Markov model and tests the predictions (hidden state-to-hidden state transition probabilities) of the HMM over 10 Markov lag-times, against the same values estimated using the trajectory information directly. The number of hidden states was determined by the inspection of the ratio of successive timescales ($t_{i}/t_{i+1}$). The CK test is said to be successful if the model predictions lie within the confidence intervals of the estimated probabilities. The central values and confidence intervals for both the implied timescales and CK-test were estimated as the median and \SI{95}{\percent} quantiles of \num{100} bootstrap samples. 
+The hyperparameter trial data-set, $\mathcal{D}$, was used to estimate the sensitivity of the dominant timescale, $t_2$, the quasi-continuous hyperparameters (i.e., everything except the type of contact distance scheme, although this was included in the GPR modelling). So for each hyperparameter e.g., $\tau_{\mathrm{T}}$ the TICA lag-time, up to three values of its relevance (equation~\ref{eqn:relevance_def}) were calculated. The relevance was calculated from the characteristic length-scales in a GPR fitted to $\mathcal{D}$.  
 
-\subsection{Hyperparameter relevance}
-
-In order to estimate the sensitivity of both the VAMP2 scores and dominant implied timescales to the hyperparameters, these responses were modelled as a Gaussian process (GP) with additive noise:  
-\begin{equation}
-    \mathbf{y}(\mathbf{x}) \sim \mathcal{N}(\bm{\mu}(\mathbf{x}),\mathbf{K} + \sigma_{n}^{2}\mathbf{I}),   \
-\end{equation}
-where $\mathbf{x}$ is a vector of hyperparameters ($\mathbf{x}=(\tau_{\mathrm{TICA}}, m, \ldots))$; the vector $\bm{\mu}$ contains the predicted mean values of the GP at different values of $\mathbf{x}$;  $K_{ij}$ is the covariance between the VAMP score at two different points (values of $\mathbf{x}$) $i$ and $j$; $\sigma_{n}^{2}$ is the variance of the additive noise;  $\mathbf{y}$ is a vector of the predicted values of VAMP score or implied timescales (including the effects of the noise). The quasi-continuous hyperparameters ($\tau_{\mathrm{TICA}}, m, n, c, s$) were scaled to lie in the range $[0, 1]$. The contact distance scheme ($X$-$X$, C$\alpha$-C$\alpha$) was coded as two separate dummy coded variables. 
-
- The covariance between the observations was modelled with a fully multiplicative and stationary kernel of the form: 
- \begin{align}\label{eqn:kernel_form}
-     K_{i, j} + \delta_{i, j}\sigma_{n}^{2} = & \\
-     k\left(r; \theta\right) = &
-     \eta^{2}\prod_h k_{M}\left(r; \nu\right) + \delta_{i, j}\sigma_{n}^{2},
- \end{align}
- where 
-  \begin{equation}
-     r_{h} = \frac{|x_{h, i}-x_{h, j}|}{l_h}.
- \end{equation}
- The the product $h$ runs over individual elements of $\mathbf{x}$ (i.e., $\tau_{\mathrm{TICA}}, m, \ldots$); and $l_h$, $\eta$ and $\sigma_n$ are parameters to  be learnt from the data. In the parameter estimation process a weakly informative prior was placed over $\eta$, and $\sigma_{n}$ ($\mathrm{half-Cauchy}(\beta=2)$) and the $l_h$  ($\mathrm{Gamma}(\alpha=2, \beta=0.5)$). 
- 
- A GP model was created for each combination of protein, feature and outcome (VAMP2 score of the dominant implied timescales). A number of different modelling options were tried to ensure a good fit to the data, these were: log-transforming the VAMP score, and using different kernels, $k_{M}$. The kernels were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively). So for each protein/feature/response combination, $2\times 4 =8$ different models were fit. The outcome transformation and kernel were selected to ensure a good fit across all the different protein/feature/outcome combinations to ensure models were comparable. All parameters were estimated using the Markov-Chain Monte Carlo, using a No-U-turn sampler. The kernel and outcome transformation which gave rise to i) zero divergent transitions, ii) an R-hat statistic less than 1.01 and,  iii) an effective sample size of at least \SI{25}{\percent} of the total observations,  were selected. The number of tuning steps and the acceptance ratio was also varied to ensure a good fit across all models. The reported models used an acceptance ratio of \SI{90}{\percent}, \num{3000} tuning steps, \num{5000} sampling steps using four independent chains, a log-transform of the VAMP scores and an exponential kernel for each hyperparameters. 
- 
- The relevance of each quasi-continuous hyperparameter for each protein and feature combination was calculated as $R_{h} = \frac{1}{l_{h}}$. 
- All fitting and analysis was performed using the PyMC3 (version 3.9.3)~\cite{salvatierProbabilisticProgrammingPython2016} and ArViz (version 0.11.1)~\cite{arviz_2019} packages. 
- 
- \subsection{Bayesian optimisation}
- 
+A number of different covariance structures were trialled when fitting the GPRs to $\mathcal{D}$. Four different hyperparameter kernels were trialled ($k(\theta_i, \theta_j; l)$, equation~\ref{eqn:plus_kernel}/\ref{eqn:mult_kernel}) in combination with the two different covariance matrix functional forms of a) fully multiplicative (equation~\ref{eqn:mult_kernel}) and b) fully additive (equation~\ref{eqn:mult_kernel}). So for each feature, eight different GPR models were fit. The final form of the covariance matrix elements were chosen by looking at the RMSE of the predictions across all features. The three different kernel functions were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively), these are given by: 
 \begin{align}
- \mathbb{E}[I] &= \mathbb{E}[\max{(0, f-f^{*})}] \label{eqn:ei_def} \\ 
- & = \sigma \left ( z \Phi(z)  + \phi(z) \right) \label{eqn:ei_for_gp}
+k_{\text{Exp}}\left(r; \sfrac{1}{2}\right) &=\exp (-r) \label{eqn:kern_exp}\\
+k_{\text{M3-2}}\left(r; \sfrac{3}{2}\right) &= \exp (-\sqrt{3} r)(1+\sqrt{3} r) \label{eqn:kern_m32} \\
+k_{\text{M5-2}}\left(r; \sfrac{5}{2}\right) &= \exp (-\sqrt{5} r)\left(1+\sqrt{5} r+\frac{5}{3} r^{2}\right) \label{eqn:kern_m52}\\
+k_{\text{RBF}}\left(r; \infty\right) &= \exp \left(-\frac{1}{2} r^{2}\right) \label{eqn:kern_gauss}
 \end{align}
+where $r = \frac{|\theta_i-\theta_j|}{l}$. See chapter 5 of  reference~\cite{rasmussenGaussianProcessesMachine2006} for a full description of the Mat\'{e}rn kernels and their properties.  
 
-where $z = (\mu-\mu^{*})/\sigma$ and $\mu$, $\sigma$ are the mean and standard deviation of Gaussian process at a given point, and $\mu^{*}$ is the largest value of the GP \emph{at an observed set of input hyperparameters} (i.e., it is not necessarily the maximum of the GP). 
+The hyperparameter trial data-set was processed with the following steps prior to modelling (this was done using the data for all features):
+\begin{enumerate}
+    \item The median of $t_2$ across the bootstrap samples was taken as the response variable. 
+    \item The response  was log-transformed and then centred and scaled by its median and inter-quartile range, respectively. This was because of its large range: $t_2$ ($10 < t_2 < \num{20000}$. 
+    \item The input variables ($m$, $\tau_{T}$, \ldots, etc.) were scaled to have the same range as the transformed response. This was done so that the kernel hyperparameters could be comparable to each other. The exception to this was contact distance scheme which was left dummy coded as $1$ (indicates trial used closest-heavy distance) and $0$ (trial used alpha-Carbon distance). 
+\end{enumerate}
+
+The GPR was fit using PyMC v4.0 [need ref] using the marginal likelihood implementation.  The values of the GPR parameters were found by maximizing the marginal likelihood using the `find$\_$MAP()' function. An informative prior was placed over the kernel parameters: a half-Cauchy distribution with a scale parameter of $1$ for $\sigma$ and $\eta$, and a Gamma distribution with $\alpha, \beta$ = $1, 0.5$. The informative priors and the scaling of the response and hyperparameter inputs were done to to ensure the MAP algorithm consistently converged to an answer with a low RMSE. Without these measures the `find$\_$MAP()' frequently predicted the response to be zero or near zero. 
+
+After fitting a GPR model and selecting the best fitting covariance matrix form, the uncertainty in the covariance parameters $\sigma, \eta, l_{1}, l_{2}\ldots$ were determined by bootstrapping with $100$ iterations. 
+
+ 
+\subsection{Bayesian optimisation}
+ 
+Bayesian optimisation was applied to optimise the hyperparameters conditional on a given feature. This was done as follows: 
+
+\begin{enumerate}
+    \item The GPR model used in the sensitivity analysis was used to compute the expected improvement \emph{at the values of $\theta$ in $\mathcal{D}$} according to the following: 
+    \begin{align}
+     \mathbb{E}[I(\bm{\theta})] &= \mathbb{E}[\max{(0, f(\bm{\theta})-f^{*})}] \label{eqn:ei_def} \\ 
+     & = \sigma \left ( z \Phi(z)  + \phi(z) \right) \label{eqn:ei_for_gp}
+    \end{align}
+    where $z = (\mu-\mu^{*})/\sigma$ and $\mu$, $\sigma$ are the mean and standard deviation of the GPR at a given point, and $\mu^{*}$ is the incumbent. 
+    \item The maximum of the expected improvement over whole of the hyperparameter search space would be too computational inefficient to calculate. So we assumed that the maximum would be in the neighbourhood of the incumbent set of hyperparameters (i.e., the maximum $\mathbb{E}[I(\bm{\theta}])]$ restricted to those $\bm{\theta}\in \mathcal{D}$). 
+    \item The neighbourhood of the incumbent was determined as the range of $\bm{\theta}$ which have an $\mathbb{E}[I(\bm{\theta}])]$ within \SI{5}{\percent} of the incumbent. 
+    \item A grid of new hyperparameters was place over this neighbourhood and the expected improvement was calculated at each grid point.  This gave a list of new hyperparameters which were ordered according to their expected improvement.  MSMs using the top 5 unique hyperparameters were then calculated. 
+\end{enumerate}
 
 
 \section{Results and discussion}
