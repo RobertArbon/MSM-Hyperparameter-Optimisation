@@ -333,7 +333,7 @@ The sensitivity of the hyperparameters are calculated from the learned parameter
 \section{Methods}
 \subsection{Molecular dynamics}
 
-This work uses simulation data of the fast folding protein, BBA, one of the twelve fast-folding proteins which have become the de-facto benchmark dataset for testing molecular kinetics methods. The methods used to create this data are described elsewhere~\cite{lindorff-larsen_how_2011}. Important information on the data are shown in table~\ref{tab:data_description}. The Average folding time was calculated by the authors~\cite{lindorff-larsen_how_2011}; the sub-trajectory length and number of sub-trajectories correspond to the data splitting used in bootstrapping calculation of the uncertainty in model observables.
+This work uses simulation data of the fast folding protein, BBA, one of the twelve fast-folding proteins which have become the de-facto benchmark dataset for testing molecular kinetics methods. The methods used to create this data are described elsewhere~\cite{lindorff-larsen_how_2011}. Important information on the data are shown in table~\ref{tab:data_description}. The average folding time was calculated by the authors~\cite{lindorff-larsen_how_2011}; the sub-trajectory length and number of sub-trajectories correspond to the data splitting used in bootstrapping calculation of the uncertainty in model observables.
 
 \begin{table}
     \caption{\textsc{Description of molecular dynamics data}}
@@ -366,7 +366,11 @@ The dihedral angles feature used all the available backbone and residue dihedral
 
 The number of trials was approximately proportional to the number of hyperparameters for each feature: 20 trails for the dihedral feature, 40 for the contact distances (20 for each value of the contact distance scheme: $X-X$,  C$\alpha$-C$\alpha$) and 80 for the logistic transformation of contact distances (which, in addition to the two distance scheme values, has two other hyperparameters, $c$ and $s$). 
 
-For each trial,  $\bm{\theta} = (f, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau_{\mathrm{M}}$: \SI{1}{\nano\second}, \SI{11}{\nano\second}, ..., \SI{101}{\nano\second}. For each combination of $\bm{\theta}$ and  $\tau_{\mathrm{M}}$ the slowest \numrange{2}{21} eigenvectors were scored using the VAMP2(k) and  VAMP2$_{eq}$(k) score, along with their implied timescales.
+For each trial,  $\bm{\theta} = (f, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau_{\mathrm{M}}$: \SI{1}{\nano\second}, \SI{11}{\nano\second}, ..., \SI{101}{\nano\second}. For each combination of $\bm{\theta}$ and  $\tau_{\mathrm{M}}$ the slowest \numrange{2}{21} eigenvectors were scored using the VAMP2(k) (equation~\ref{eqn:vamp_def}) and  VAMP2$_{eq}$(k) score (equation~\ref{eqn:vamp_eq_def}):
+\begin{equation}
+    \operatorname{VAMP2_{eq}}(k) = \sum_{i=1}^{k}\lambda_{i}^{2}, \label{eqn:vamp_eq_def}
+\end{equation}
+along with the implied timescales, $t_i$.  Each of these observations were estimated as the median of $N_b=100$ bootstrapped samples. 
 
 \begin{table}
     \centering
@@ -390,7 +394,7 @@ For each trial,  $\bm{\theta} = (f, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was
     \label{tab:search_space}
 \end{table}
 
-The hyperparameter trial data-set, $\mathcal{D}$, consisted of: $100$ bootstrap samples of $140$  unique sets of hyperparameters, at $10$ different lag times, with  $20$ measurements of the the implied timescales and $20$ measurements of the VAMP2 score and $20$ measurements of the VAMP2$_{eq}$ score. The total number of observations is therefore: $100 \times 140 \times 10 \times (20 + 20 + 20) = \num{8400000}$. 
+The hyperparameter trial data-set, $\mathcal{D}$, consisted of: $100$ bootstrap samples of $140$  unique sets of hyperparameters, at $10$ different lag times, with  $20$ measurements of the the implied timescales and $20$ measurements of the VAMP2 score and $20$ measurements of the VAMP2$_{eq}$ score. The total number of these observations ($t_i$, VAMP2(k), VAMP2$_eq$(k)) is therefore: $100 \times 140 \times 10 \times (20 + 20 + 20) = \num{8400000}$. 
 
 \subsection{Markov lag time}
 The Markov lag time, $\tau_{\mathrm{M}}$, was calculated from the total hyperparameter trial data-set. For each trial the following gradient was calculated:
@@ -405,14 +409,14 @@ This codifies and extends the generally accepted process by which the implied ti
 
 \subsection{Sensitivity analysis}
 
-The hyperparameter trial data-set, $\mathcal{D}$, was used to estimate the sensitivity of the dominant timescale, $t_2$, the quasi-continuous hyperparameters (i.e., everything except the type of contact distance scheme, although this was included in the GPR modelling). So for each hyperparameter e.g., $\tau_{\mathrm{T}}$ the TICA lag-time, up to three values of its relevance (equation~\ref{eqn:relevance_def}) were calculated. The relevance was calculated from the characteristic length-scales in a GPR fitted to $\mathcal{D}$.  
+The hyperparameter trial data-set, $\mathcal{D}$, was used to estimate the sensitivity of the dominant timescale, $t_2$, to the quasi-continuous hyperparameters (i.e., everything except the type of contact distance scheme, although this was included in the GPR modelling), for each feature, $f$, separately. For example, the relevance (equation~\ref{eqn:relevance_def}) of the TICA lag-time, $\tau_{\mathrm{T}}$, in determining $t_2$ was calculated for the `dihed.', `dist.' and `logit(dist.)' feature.  The relevance of each hyperprameter was calculated from the characteristic length-scales in a GPR fitted to $\mathcal{D}$.  
 
-A number of different covariance structures were trialled when fitting the GPRs to $\mathcal{D}$. Four different hyperparameter kernels were trialled ($k(\theta_i, \theta_j; l)$, equation~\ref{eqn:plus_kernel}/\ref{eqn:mult_kernel}) in combination with the two different covariance matrix functional forms of a) fully multiplicative (equation~\ref{eqn:mult_kernel}) and b) fully additive (equation~\ref{eqn:mult_kernel}). So for each feature, eight different GPR models were fit. The final form of the covariance matrix elements were chosen by looking at the RMSE of the predictions across all features. The three different kernel functions were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively), these are given by: 
+A number of different covariance structures were trialled when fitting the GPRs to $\mathcal{D}$. Four different types of kernels over each hyperparameter were trialled (see equations~\ref{eqn:kern_exp} to~\ref{eqn:kern_gauss}, below) and combined in both a fully multiplicative and fully additive covariance matrix (equations~\ref{eqn:mult_kernel} and~\ref{eqn:plus_kernel} respectively).  So for each feature, eight different GPR models were fit. The final form of the covariance matrix elements were chosen by looking at the RMSE of the predictions across all features. The three different kernel functions were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively), these are given by: 
 \begin{align}
 k_{\text{Exp}}\left(r; \sfrac{1}{2}\right) &=\exp (-r) \label{eqn:kern_exp}\\
 k_{\text{M3-2}}\left(r; \sfrac{3}{2}\right) &= \exp (-\sqrt{3} r)(1+\sqrt{3} r) \label{eqn:kern_m32} \\
 k_{\text{M5-2}}\left(r; \sfrac{5}{2}\right) &= \exp (-\sqrt{5} r)\left(1+\sqrt{5} r+\frac{5}{3} r^{2}\right) \label{eqn:kern_m52}\\
-k_{\text{RBF}}\left(r; \infty\right) &= \exp \left(-\frac{1}{2} r^{2}\right) \label{eqn:kern_gauss}
+k_{\text{RBF}}\left(r; \infty\right) &= \exp \left(-\frac{1}{2} r^{2}\right), \label{eqn:kern_gauss}
 \end{align}
 where $r = \frac{|\theta_i-\theta_j|}{l}$. See chapter 5 of  reference~\cite{rasmussenGaussianProcessesMachine2006} for a full description of the Mat\'{e}rn kernels and their properties.  
 
@@ -430,7 +434,7 @@ After fitting a GPR model and selecting the best fitting covariance matrix form,
  
 \subsection{Bayesian optimisation}
  
-Bayesian optimisation was applied to optimise the hyperparameters conditional on a given feature. This was done as follows: 
+Bayesian optimisation was applied to optimize the hyperparameters conditional on a given feature. This was done as follows: 
 
 \begin{enumerate}
     \item The GPR model used in the sensitivity analysis was used to compute the expected improvement \emph{at the values of $\theta$ in $\mathcal{D}$} according to the following: 
@@ -439,11 +443,12 @@ Bayesian optimisation was applied to optimise the hyperparameters conditional on
      & = \sigma \left ( z \Phi(z)  + \phi(z) \right) \label{eqn:ei_for_gp}
     \end{align}
     where $z = (\mu-\mu^{*})/\sigma$ and $\mu$, $\sigma$ are the mean and standard deviation of the GPR at a given point, and $\mu^{*}$ is the incumbent. 
-    \item The maximum of the expected improvement over whole of the hyperparameter search space would be too computational inefficient to calculate. So we assumed that the maximum would be in the neighbourhood of the incumbent set of hyperparameters (i.e., the maximum $\mathbb{E}[I(\bm{\theta}])]$ restricted to those $\bm{\theta}\in \mathcal{D}$). 
+    \item The maximum of the expected improvement over whole of the hyperparameter search space would be too computational inefficient to calculate. So we assumed that the maximum would be in the neighbourhood of the incumbent set of hyperparameters (i.e., the maximum $\mathbb{E}[I(\bm{\theta})]$ restricted to those $\bm{\theta}\in \mathcal{D}$). 
     \item The neighbourhood of the incumbent was determined as the range of $\bm{\theta}$ which have an $\mathbb{E}[I(\bm{\theta}])]$ within \SI{5}{\percent} of the incumbent. 
-    \item A grid of new hyperparameters was place over this neighbourhood and the expected improvement was calculated at each grid point.  This gave a list of new hyperparameters which were ordered according to their expected improvement.  MSMs using the top 5 unique hyperparameters were then calculated. 
+    \item A grid of new hyperparameters was place over this neighborhood and the expected improvement was calculated at each grid point.  This gave a list of new hyperparameters which were ordered according to their expected improvement.  MSMs using the top 5 unique hyperparameters were then calculated. 
 \end{enumerate}
 
+The code used to create the hyperparameter trial dataset, $\mathcal{D}$ can be found at \url{https://github.com/RobertArbon/msm_sensitivity} and the code used to perform all other anlaysis can be found at \url{https://github.com/RobertArbon/msm_sensitivity_analysis}.  
 
 \section{Results and discussion}
 
@@ -500,10 +505,10 @@ In order to check the convergence of the results shown in panel (a) of figure~\r
 The expected improvement is shown in figure~\ref{fig:ei_surface} as a function of the `centre' and the `steepness' hyperparameters (the remaining hyperparameters are held at their values at the peak of expected improvement).  This shows that we expect any values of the `centre' and `steepness' hyperparameters to increase $t_2$ by at least \SI{2}{\micro\second} if the other hyperparameters take on their values in the annotation. However, with $c\simeq \SI{7}{\angstrom}$ and $s\simeq \SI{0.5}{\per\angstrom}$ we can expect an improvement in the timescales of almost $\SI{3}{\micro\second}$. 
 
 
-We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent ($t_2 \simeq \SI{20}{\micro\second}$):  the optimised timescales range up to $t_2 \simeq \SI{24}{\micro\second}$, which are similar to the improvements predicted by the expected improvement function. The optimised hyperparameters differ slightly from the incumbent (except in the choice of distance scheme - all used the $\alpha$-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
+We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent ($t_2 \simeq \SI{20}{\micro\second}$):  the optimized timescales range up to $t_2 \simeq \SI{24}{\micro\second}$, which are similar to the improvements predicted by the expected improvement function. The optimized hyperparameters differ slightly from the incumbent (except in the choice of distance scheme - all used the $\alpha$-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
 
 
-We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimated the response surface and expected improvement and sampled new hyperparameters. The new incumbent in this case was $t_2 = \simeq \SI{10}{\micro\second}$, shown in purple in panel (c) figure~\ref{fig:1fme_timescales}.  The new values of $t_2$,  are all improvements of up to \SI{10}{\micro\second}: the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimise MSM hyperparameters, even when the timescale measurements are noisy and there are no strong dependence on any of hyperparameters.  
+We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimated the response surface and expected improvement and sampled new hyperparameters. The new incumbent in this case was $t_2 = \simeq \SI{10}{\micro\second}$, shown in purple in panel (c) figure~\ref{fig:1fme_timescales}.  The new values of $t_2$,  are all improvements of up to \SI{10}{\micro\second}: the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimize MSM hyperparameters, even when the timescale measurements are noisy and there are no strong dependence on any of hyperparameters.  
 
 \subsection{Are VAMP scores suitable for model selection of reversible MSMs?}
 \begin{figure}
@@ -557,7 +562,7 @@ Figure~\ref{fig:vampeq_rank_vs_n_procs} shows the consistency between model rank
 
   the the the         u    the is    ()thusing the 
 \subsection{Conclusions}
-This work has answered a number of questions pertaining to selecting hyperparameters for discrete MSMs.  We have seen that type of feature is important but that the other hyperparameters need to be chosen carefully to optimise the implied timescales.  The sensitivity of the implied timescales is generally low, meaning small variations in their values do not change the timescales significantly.  However, the relative sensitivity of the non-feature hyperparameters changes depending on type of feature used: e.g., with some features the number of microstates is most important while with others the timescales are not affected.  The VAMP variational scores, which have recently used to perform model selection on reversible MSMs have been shown to give results which are not in line with the variational principle underlying them. 
+This work has answered a number of questions pertaining to selecting hyperparameters for discrete MSMs.  We have seen that type of feature is important but that the other hyperparameters need to be chosen carefully to optimize the implied timescales.  The sensitivity of the implied timescales is generally low, meaning small variations in their values do not change the timescales significantly.  However, the relative sensitivity of the non-feature hyperparameters changes depending on type of feature used: e.g., with some features the number of microstates is most important while with others the timescales are not affected.  The VAMP variational scores, which have recently used to perform model selection on reversible MSMs have been shown to give results which are not in line with the variational principle underlying them. 
 
 Given this relatively complex picture of hyperparameter optimisation we recommend the following for optimising reversible MSMs: 
 
@@ -566,7 +571,7 @@ Given this relatively complex picture of hyperparameter optimisation we recommen
     \item Remaining hyperparameters should be randomly sampled from a suitable search space. Using a grid search method is inefficient and not easily modified to sample more hyperparameter if necessary. 
     \item Scoring models using bootstrapped values of sum of squared eigenvalues is preferable to using the VAMP2 variational score because the latter can lead to contradictory results. 
     \item If the MSM requires significant resources to estimate, Bayesian optimisation may be a useful tool.  This work used a Gaussian process surrogate model but other, more flexible models may perform better (see limitations discussion below). 
-    \item Even if the the MSM does not require significant resources, Bayesian optimisation provides a principled way of checking the convergence the model.  We suggest reporting an optimised model and a set of models which make it clear that the behaviour of model observables is consistent with variation in the hyperparameters. 
+    \item Even if the the MSM does not require significant resources, Bayesian optimisation provides a principled way of checking the convergence the model.  We suggest reporting an optimized model and a set of models which make it clear that the behaviour of model observables is consistent with variation in the hyperparameters. 
     \item When scoring the models use as many eigenvectors as are resolvable. This can be estimated from a selection of models or all processes can be scored and saved in a database (as was performed here).  
     \item For model selection, it is not important to select a `Markovain' lag time although this should be attempted to be estimated from a selection of models.  
 \end{enumerate}
