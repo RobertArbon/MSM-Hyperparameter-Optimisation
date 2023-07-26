@@ -108,6 +108,8 @@
 
 \author{Robert E. Arbon}
 \altaffiliation{ReDesign Science, New York, NY, USA}
+\author{Yanchen Zhu}
+\altaffiliation{EaStCHEM School of Chemistry, David Brewster Road, Joseph Black Building, The King’s Buildings, Edinburgh, EH93FJ, UK}
 \author{Antonia S.J.S. Mey}
 \email{antonia.mey@ed.ac.uk}
 \affiliation[Unknown University]
@@ -310,10 +312,17 @@ The functions $l$ and $g$ are Parzen estimators, otherwise known as kernel densi
 
 
 
-\subsubsection{Sensitivity analysis}
+\subsubsection{Sensitivity Analysis}
+
 Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work, we conduct a \emph{global sensitivity analysis} which looks at model outputs as a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis uses analysis of variance in conjunction with random forests to assess, as developed by Hutter et. al. \cite{hutter_efcient_nodate}.  
 
-[More description once i've understood it. ]
+
+\textbf{Ryan}:
+\begin{itemize}
+    \item Summarise the theory and method for assessing hyperparameter importance in Optunal. 
+    \item reference is: https://proceedings.mlr.press/v32/hutter14.html
+    \item Should be relatively brief (a few paragraphs) 
+\end{itemize}
 
 
 \section{Methods}
@@ -413,18 +422,51 @@ The selected Markov lag-time, $\tau^{*}_{\mathrm{M}}$ was chosen as:
 \end{equation}\label{eqn:choose_lag_2}
 This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau_{\mathrm{M}}$ are plotted on a log scale and the smallest $\tau_{\mathrm{M}}$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. 
 
-\subsection{Sensitivity analysis}
 
-Details about algorithm here. 
- 
+
 \subsection{Optimisation}
  
 
 The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be found at \url{https://github.com/RobertArbon/msm_sensitivity} and the code used to perform all other anlaysis can be found at \url{https://github.com/RobertArbon/msm_sensitivity_analysis}.  
 
+
+\textbf{Ryan}
+
+\begin{itemize}
+    \item Can you put the details about what and how you optimised (include all the various permutations in a table).  
+    \item should include calculation details and refer to the theory in previous section. 
+    \item I would do this first before the theory (so you don't include useless detail in the theory section). 
+\end{itemize}
+
+
+\subsection{Sensitivity analysis}
+
+\textbf{Ryan}
+
+\begin{itemize}
+    \item Can you put the details about how exactly hyperparameter importance was measured.
+    \item should include calculation details and refer to the theory in previous section. 
+    \item I would do this first before the theory (so you don't include useless detail in the theory section). 
+\end{itemize}
+
+ 
+
+
 \section{Results and discussion}
 
 \subsection{Eigenvectors definitions change with hyperparameters}
+
+\textbf{Figure 1}
+\begin{itemize}
+    \item Each panel shows timescales ranked for BBA and Chignolin 
+    \item Two models are highlighted with arrows for BBA and Chignolin.  
+    \item BBA model 1 - highest t2; model 2 - second highest t2 (same feature)
+    \item Cln25 model 1 - highest t2; model 2 - highest t2 with different feature. 
+\end{itemize}
+
+
+\textbf{Figure 2}
+Shows difference between BBA model 1 and model 2 with pymol structures for dominant eignevector process, overlaid on FES in tica space. Put similar Cln25 in SI. 
 
 
 Given our hyperparameter trial dataset our first task was to inspect the models to validate the models beyond the VAMP scores .  For reasons that we shall explain in [VAMP section] we ranked the hyperparameter trials by the median value of $t_2$ rather thanthe VAMP score, which we expected (from previous literature, Schere 2018) to be correlated with the slow, protein folding process.  
@@ -442,7 +484,7 @@ If the two dominant eigenvectors in models 1 and 2 are distinct then one cannot 
 
 \begin{figure}
     \centering
-    \includegraphics{figures/bad_vamp_ranks.pdf}
+    \includegraphics{results2/bad_vamp_ranks.pdf}
     \caption{\textbf{Models with VAMP2$(k)$ scores inversely proportional to timescales}. Panel (a) show the VAMP2$(2)$ scores and panel (b) shows the first five dominant timescales, for a selection of models.  The horizontal axis in both panels is the model rank as judged by the VAMP2$(2)$ score. The selection shows models where the slowest timescale is inversely proportional to the VAMP2$(2)$ score. Models which do not show this correlation are not shown. }
     \label{fig:bad_vamp_scores}
 \end{figure}
@@ -450,7 +492,7 @@ If the two dominant eigenvectors in models 1 and 2 are distinct then one cannot 
 
 \begin{figure}
     \centering
-    \includegraphics{figures/timescale_vs_vamp_vs_evs.pdf}
+    \includegraphics{results2/timescale_vs_vamp_vs_evs.pdf}
     \caption{\textbf{Relationship between implied timescales, t$_2$, VAMP2$(2)$, VAMP2$_{eq}(2)$ scores}.  Each of the \num{1000} blue points is calculated from an MSM estimated from a distinct simulated trajectory of 20 time steps. The trajectories were generated from the same three-state reference transition matrix (taken from Trendelkamp-Schroer et. al.~\cite{trendelkamp-schroerEstimationUncertaintyReversible2015b}). The estimated transition matrices were all estimated ensuring reversibility. Panel (a) shows $t_2$ as a function of VAMP2$(2)$ scores while panel (b) shows  $t_2$ as a function of VAMP2$_{eq}(2)$. The black points labelled `Inverse' are example subsets of MSMs where the relationship between the implied timescale and VAMP2$(2)$ score are inverted.}
     \label{fig:bad_vamps_examples}
 \end{figure}
@@ -527,6 +569,16 @@ Due to the problems problem of consistency between the matrices in equation~\ref
 
 \subsection{Bayesian optimization does not improve timescales}
 
+Figure 5
+\textbf{Ryan}
+\begin{itemize}
+    \item One column for BBA, one for CLN. 
+    \item One panel for t2 and t2 + t2/t3; one panel for VAMPeq2, and VAMPeq2 + VAMPeq2/VAMPeq3 (so axes are sensible) 
+    \item add Random results in one shape and colour. t2 results in another shape and colour. t2 + t2/t3 in another shape in colour (i.e., three different optimisations).
+    \item Do same again but for VAMPeq optimisation.
+\end{itemize}
+
+
 \begin{enumerate}
     \item We also tested whether Bayesian optimisation under two situations: 
     \begin{enumerate}
@@ -571,7 +623,7 @@ Due to the problems problem of consistency between the matrices in equation~\ref
 
 \begin{figure}
     \centering
-    \includegraphics{figures/vampeq_rank_vs_lag.pdf}
+    \includegraphics{results4/vampeq_rank_vs_lag.pdf}
     \caption{Consistency of $\operatorname{VAMP2}_{\mathrm{eq}}(k)$ rank with Markov lag time, $\tau$. The $i, j$'th cell in panel (a) shows the Spearman's rank correlation coefficient of $\operatorname{VAMP2}_{\mathrm{eq}}(2)$ for each trial measured at the $i$'th lag time, with  $\operatorname{VAMP2}_{eq}(2)$  measured at the $j$'th lag time.   Panel (b) show the same measurements with $\operatorname{VAMP2}_{\mathrm{eq}}(10)$ score respectively. }
     \label{fig:vamp_rank_vs_lag}
 \end{figure}
@@ -583,7 +635,7 @@ Figure~\ref{fig:vamp_rank_vs_lag} shows the consistency between model rankings a
 
 \begin{figure}
     \centering
-    \includegraphics{figures/vampeq_rank_vs_proc.pdf}
+    \includegraphics{results4/vampeq_rank_vs_proc.pdf}
     \caption{\textsc{Consistency of $\operatorname{VAMP2}_{eq}(k)$ rank with number of scored eigenvectors}. The ranks of trials in the row $k$ are compared to their rank at the column $k$ using the Spearman's rank correlation coefficient at a lag time of \SI{41}{\nano\second}}
     \label{fig:vampeq_rank_vs_n_procs}
 \end{figure}
