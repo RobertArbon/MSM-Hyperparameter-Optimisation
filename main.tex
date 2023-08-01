@@ -349,7 +349,7 @@ This work uses simulation data of the fast folding protein, BBA, one of the twel
     Name & PDB & Simulation time (\si{\micro\second}) & Average folding time (\si{\micro\second}) & No. Residues & Sub-trajectory length (\si{\micro\second}) & No. sub-trajectories \\
     \midrule
     BBA                 & 1FME      & \num{325}     & \num{18}  & 28 & \num{2} & 164 \\
-    Chignolin           & cln025    & \num{106}     & \num{0.6}  & 10 & ?? & ?? \\ 
+    Chignolin           & 5AWL    & \num{106}     & \num{0.6}  & 10 & 2 & 53 \\ 
     \bottomrule
     \end{tabularx}
     \label{tab:data_description}
@@ -438,6 +438,27 @@ The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be 
     \item I would do this first before the theory (so you don't include useless detail in the theory section). 
 \end{itemize}
 
+\begin{table}
+    \caption{\textbf{Hyperparameter optimisation tasks}}
+    \begin{tabularx}{\textwidth}{llXXXXX}
+    \toprule
+    \textbf{Protein} & \textbf{Objective} & \textbf{Feature} & \textbf{Initial Data} & \textbf{No. Trials} & \textbf{Gamma} \\ 
+    
+    \midrule
+    Chignolin & t2        & All & 136 & 95 & 25 \\
+    Chignolin & t2, t2/t3 & All & 55 & 141 & 25 \\
+    Chignolin & VAMPeq(2) & All & 136 & 100 & 25 \\
+%%    Chignolin & VAMPeq(2), t2/t3 & All & 55 & 150 & 25 \\
+    Chignolin & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & All & 55 & 150 & 25 \\
+
+    BBA & t2        & All & 136 & 100 & 25 \\
+    BBA & t2, t2/t3 & All & 136 & 100 & 25 \\
+    BBA & VAMPeq(2) & All & 136 & 100 & 25 \\
+    BBA & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & All & 136 & 100 & 25 \\
+    \bottomrule
+    \end{tabularx}
+    \label{tab:data_description}
+\end{table}
 
 \subsection{Sensitivity analysis}
 
