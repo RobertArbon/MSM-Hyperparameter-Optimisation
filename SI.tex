@@ -30,96 +30,85 @@
 \begin{document}
 \maketitle
 
+\section{Model summaries}
 
-\section{Model summaries} 
+    % \begin{tabularx}{\textwidth}{llXXXXX}
+    % \toprule
+    % Name & PDB & Simulation time (\si{\micro\second}) & Average folding time (\si{\micro\second}) & No. Residues & Sub-trajectory length (\si{\micro\second}) & No. sub-trajectories \\
+    % \midrule
+    % BBA                 & 1FME      & \num{325}     & \num{18}  & 28 & \num{2} & 164 \\
+    % Chignolin           & 5AWL    & \num{106}     & \num{0.6}  & 10 & 2 & 53 \\ 
+    % \bottomrule
+    % \end{tabularx}
 
-\begin{comment}
+
+\begin{table}[h]
+    \centering
+    \caption{\textsc{Model summaries.} A summary of the models discussed in the main text.}
+    \begin{tabularx}{\textwidth}{XXXXXXXXXXX}
+    \toprule
+    Protein & No. & Lag time & Feature & \# cluster centers & TICA lag & TICA dim. & Optimisation method & \# initialization trials & \# optimisation trials & Objective  \\
+    \midrule
+     Chignolin    & 1 & ? & dist. & 488 & 71 & 15 & Random & NA & 140 & $t_{2}$ \\
+     Chignolin    & 2 & ? & dist. & 469 & 3 & 15 & Bayesian & ? & ? & $t_{2}$ \\
+     BBA    & 1 & 41 & logit(dist., 0.22, 6.08) & 471 & 60 & 20 & Random & NA & 140 & $t_{2}$ \\
+     BBA    & 2 & 41 & dihed. & 471 & 99 & 13 & Random & NA & 140 & $t_{2}$ \\
+     BBA    & 3 & ? & dist. & 485 & 52 & 19 & Random & NA & 140 & $t_{2}$ \\
+     BBA    & 4 & ? & logit(dist., 0.77, 3.29) & 444 & 53 & 20 & Bayesian & ? & ? & $t_{2}$ \\
+    \bottomrule
+    \end{tabularx}
+    \label{si_tab:modelsummaries}
+\end{table}
+
+\section{Detailed model summaries} 
     
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/CLN_52_SI-1.png}
-    \caption{\textsc{Chignolin model with the best t2.} }
+    \includegraphics[width=\columnwidth]{SI_figures/CLN_52_SI-1.pdf}
+    \caption{\textsc{Chignolin, model 1.}  This model has the largest median $t_{2}$ after random sampling.}
     \label{si_fig:CLN_52_1}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/CLN_52_SI-2.png}
-    \caption{\textsc{Chignolin model with the best t2.}}
-    \label{si_fig:CLN_52_2}
-\end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/CLN_218_SI-1.png}
-    \caption{\textsc{Chignolin model with the best t2 after t2 optimisation.}}
+    \includegraphics[width=\columnwidth]{SI_figures/CLN_218_SI-1.pdf}
+    \caption{\textsc{Chignolin model 2.} This model has the largest median $t_{2}$ after $t_{2}$ optimisation.}
     \label{si_fig:CLN_218_1}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/CLN_218_SI-2.png}
-    \caption{\textsc{Chignolin model with the best t2 after t2 optimisation.}}
-    \label{si_fig:CLN_218_2}
-\end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_24_SI-1.png}
-    \caption{\textsc{BBA model with the best t2 using logit(dist.).}}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_24_SI-1.pdf}
+    \caption{\textsc{BBA model 1.}  This model has the largest median $t_{2}$.}
     \label{si_fig:BBA_24_1}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_24_SI-2.png}
-    \caption{\textsc{BBA model with the best t2 using logit(dist.).}}
-    \label{si_fig:BBA_24_2}
-\end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-1.png}
-    \caption{\textsc{BBA model with the best t2 using the dihed.}}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-1.pdf}
+    \caption{\textsc{BBA model 2.} This model has the largest median $t_{2}$ with the dihedrals feature.}
     \label{si_fig:BBA_6_1}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-2.png}
-    \caption{\textsc{BBA model with the best t2 using dihed.}}
-    \label{si_fig:BBA_6_2}
-\end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_58_SI-1.png}
-    \caption{\textsc{BBA model with the best t2 using the dist.}}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_58_SI-1.pdf}
+    \caption{\textsc{BBA model 3.} This model has the largest median $t_{2}$ with the distances feature.}
     \label{si_fig:BBA_58_1}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_58_SI-1.png}
-    \caption{\textsc{BBA model with the best t2 using dist.}}
-    \label{si_fig:BBA_58_2}
-\end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_227_SI-1.png}
-    \caption{\textsc{BBA model with the best t2 after t2 optimisation.}}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_227_SI-1.pdf}
+    \caption{\textsc{BBA model 4.} This model has the largest $t_2$ after optimisation of $t_{2}$.}
     \label{si_fig:BBA_227_2}
 \end{figure}
 
-\begin{figure}
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_227_SI-2.png}
-    \caption{\textsc{BBA model with the best t2 after t2 optimisation.}}
-    \label{si_fig:BBA_227_2}
-\end{figure}
-
-\end{comment}
 
 
 % % \section{Summary of trial results}
