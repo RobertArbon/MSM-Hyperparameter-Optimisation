@@ -453,6 +453,13 @@ The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be 
 
 \subsection{Eigenvectors definitions change with hyperparameters}
 
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\columnwidth]{missing.pdf}
+    \caption{\textsc{Timescales of hyperparameter trials.} Panel (a) refers to BBA, panel (b) refers to Chignolin. The vertical axis is the dominant timescale ($t_2$), the horizontal axis is the trial rank. The solid disc and error bars are the median and \SI{95}{\percent} bootstrapped confidence intervals.   }
+    \label{fig:random_trials}
+\end{figure}
+
 \textbf{Figure 1}
 \begin{itemize}
     \item Each panel shows timescales ranked for BBA and Chignolin 
@@ -461,9 +468,15 @@ The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be 
     \item Cln25 model 1 - highest t2; model 2 - highest t2 with different feature. 
 \end{itemize}
 
-
 \textbf{Figure 2}
-Shows difference between BBA model 1 and model 2 with pymol structures for dominant eignevector process, overlaid on FES in tica space. Put similar Cln25 in SI. 
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.7\columnwidth]{missing.pdf}
+    \caption{\textsc{BBA MSMs with different relaxation processes.} Panel (a) shows the optimi}
+    \label{fig:bba_differences}
+\end{figure}
+
 
 
 Given our hyperparameter trial dataset our first task was to inspect the models to validate the models beyond the VAMP scores .  For reasons that we shall explain in [VAMP section] we ranked the hyperparameter trials by the median value of $t_2$ rather thanthe VAMP score, which we expected (from previous literature, Schere 2018) to be correlated with the slow, protein folding process.  
@@ -564,17 +577,14 @@ Due to the problems problem of consistency between the matrices in equation~\ref
 % Why is the hyperparameter sensitivity important? First, as has been  previously shown~\cite{bergstra_jamesbergstra_random_2012}, if all hyperparameters have a large relevance ($R \gg 1$), then to finding the maximum of the response surface (i.e., the hyperparameters which give rise to the maximum $t_2$) is hard. In this case, it is important to try all combinations of hyperparameters i.e., a  grid-search strategy, or to employ an active learning approach~\cite{snoekAbstractBayesianOptimization2013}.  However, if only a small proportion of the hyperparameters have a high relevance then randomly sampling hyperparameters is the more efficient strategy.  Second, the lack of pattern in the relevance of hyperparameters indicates that it is not possible to draw general conclusions about hyperparameters, indicating that default values of hyperparameters may not be useful and that each system must optimized individually. 
 
 
-\subsection{Bayesian optimization does not improve timescales}
+\subsection{Bayesian optimisation improves timescales}
 
-Figure 5
-\textbf{Ryan}
-\begin{itemize}
-    \item One column for BBA, one for CLN. 
-    \item One panel for t2 and t2 + t2/t3; one panel for VAMPeq2, and VAMPeq2 + VAMPeq2/VAMPeq3 (so axes are sensible) 
-    \item add Random results in one shape and colour. t2 results in another shape and colour. t2 + t2/t3 in another shape in colour (i.e., three different optimisations).
-    \item Do same again but for VAMPeq optimisation.
-\end{itemize}
-
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{results3/optimisation_summary.pdf}
+    \caption{\textsc{Optimisation of MSMs of Chignolin and BBA}. The vertical axis is optimisation objective, the horizontal axis is the trial number. The thin line refers to the incumbent over the initialization data (`init.'), the squares are the incumbent at each trial number. Panels (a) and (c) refer to Chignolin, (b) and (d) to BBA. Panels (a) and (b) refer to Bayesian optimisation with either $t_{2}$  (red), or multivariate optimisation of both $t_{2}$ and the timescale gap, $t_{2}/t_{3}$.  Panels (c) and (d) refer to optimisation of  $\mathrm{VAMP}_{eq}(2)$ (red) and multivariate optimisation of both  $\mathrm{VAMP}_{eq}(2)$ and $\mathrm{VAMP}_{eq}(2)/\mathrm{VAMP}_{eq}(3)$. The optimised values of $t_2$ are shown as labels. }
+    \label{fig:optimisation_trials}
+\end{figure}
 
 \begin{enumerate}
     \item We also tested whether Bayesian optimisation under two situations: 
