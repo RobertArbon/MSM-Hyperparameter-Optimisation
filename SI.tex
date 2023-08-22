@@ -49,13 +49,14 @@
 
 
 \begin{enumerate}
-    \item Chignolin 1 - best from random sampling
-    \item Chignolin 2 - best from Bayesian optimisation
-    \item BBA 1 - best overall from random sampling. Shows misfolding as t2 (folded -> misfolded)
-    \item BBA 2 - best dihedrals from random sampling  
-    \item BBA 3 - best distances from random sampling
-    \item BBA 4 - best from Bayesian optimisaiton (of just the logit(dist)?)
-    \item BBA 5 - second best overall.   
+    \item Chignolin 1 - best from random sampling. Hpix = 52/74 
+    \item Chignolin 2 - best overall from Bayesian optimisation. Hpix = 218/NA
+    \item Chignolin 3 - best logit(dist) from random sampling (and overall). Hpix = 23/24
+    \item BBA 1 - best overall from random sampling. Shows misfolding as t2 (folded -> misfolded). Hpix = 24/24
+    \item BBA 2 - best dihedrals from random sampling. Hpix = 6/6
+    \item BBA 3 - best distances from random sampling. Hpix = 58/85
+    \item BBA 4 - best from Bayesian optimisaiton (of just the logit(dist)?). 227/NA
+    \item BBA 5 - second best overall.  124/262
 \end{enumerate}
 
 
@@ -66,15 +67,16 @@
     \caption{\textsc{Model summaries.} A summary of the models discussed in the main text. The logistic transform of contact distances is specified below in terms of the center, c, and steepness, s, as: `logit(dist.)' with `(c, s)' underneath, in units of \si{\angstrom} and \si{\per\angstrom}}
     \begin{tabularx}{\hsize}{llclccclcccc}
     \toprule
-    Protein & No. & \thead{Lag time \\ (\si{\nano\second})} & Feature & \thead{\# cluster \\ centers} & \thead{TICA lag \\ (\si{\nano\second})} & TICA dim. & \thead{Optimisation \\ method } & \thead{\# initialization \\ trials} & \thead{\# optimisation \\ trials }& Objective & $t_2$ \\
+    Protein & No. & \thead{Lag time \\ (\si{\nano\second})} & Feature & \thead{\# cluster \\ centers} & \thead{TICA lag \\ (\si{\nano\second})} & TICA dim. & \thead{Optimisation \\ method } & \thead{\# initialization \\ trials} & \thead{\# optimisation \\ trials }& Objective & \thead{$t_2$ \\ (\si{\micro\second})} \\
     \midrule
-     Chignolin    & 1 & 31 & dist. & 488 & 71 & 15 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{\SI{379.4}{\nano\second}\\ (\SIrange{296.5}{469.7}{\nano\second})}\\
-     Chignolin    & 2 & 31 & dist. & 469 & 3 & 15 & Bayesian & 131 & 100 & $t_{2}$ & \SI{388.2}{\nano\second}  \\
-     BBA    & 1 & 41 & \makecell[tl]{logit(dist.)\\( 2.2, 0.61)} & 471 & 60 & 20 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{\SI{20.4}{\micro\second} \\ (\SIrange{2.3}{176.2}{\micro\second})}\\
-     BBA    & 2 & 41 & dihed. & 471 & 99 & 13 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{2.1 \\ (1.8, 20.6)} \\
-     BBA    & 3 & 41 & dist. & 485 & 52 & 19 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{6.6 \\ (2.4, 150.4)}  \\
-     BBA    & 4 & 41 & \makecell[tl]{logit(dist.,)\\(7.7, 0.33)} & 444 & 53 & 20 & Bayesian & 136 & 100 & $t_{2}$ & \SI{46.6}{\micro\second} \\
-     BBA    & 5 & 41 & \makecell[tl]{logit(dist.) \\(8.0, 2.9)} & 289 & 67 & 18 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{\SI{9.7}{\micro\second}\\ (\SIrange{2.1}{18.9}{\micro\second})}  \\
+     Chignolin    & 1 & 31 & dist. & 488 & 71 & 15 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{0.379 \\ (0.296, 0.470)} \\
+     Chignolin    & 2 & 31 & \makecell[tl]{logit(dist.)\\(2.2, 0.61)} & 471 & 60 & 20 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{0.377 \\ (0.294, 0.466)}  \\
+     Chignolin    & 3 & 31 & dist. & 469 & 3 & 15 & Bayesian & 131 & 100 & $t_{2}$ & \makecell[tc]{0.383 \\ (0.316, 0.463)}  \\
+     BBA          & 1 & 41 & \makecell[tl]{logit(dist.)\\(2.2, 0.61)} & 471 & 60 & 20 & Random & NA & 140 & $t_{2}$ &\makecell[tc]{20.4 \\ (2.3, 176.2)} \\
+     BBA          & 2 & 41 & \makecell[tl]{logit(dist.) \\(8.0, 2.9)} & 289 & 67 & 18 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{9.7 \\ (2.1, 188.7)}  \\
+     BBA          & 3 & 41 & dist. & 485 & 52 & 19 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{6.6 \\ (2.4, 150.4)}  \\
+     BBA          & 4 & 41 & dihed. & 471 & 99 & 13 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{2.1 \\ (1.8, 20.6)} \\
+     BBA          & 5 & 41 & \makecell[tl]{logit(dist.,)\\(7.7, 0.33)} & 444 & 53 & 20 & Bayesian & 136 & 100 & $t_{2}$ &\makecell[tc]{42.8 \\ (4.7, 286.3)}  \\
     \bottomrule
     \end{tabularx}
     \label{si_tab:modelsummaries}
@@ -83,6 +85,12 @@
 
 \end{landscape}
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=0.25\textheight]{SI_figures/transforms.pdf}
+    \caption{\textsc{Logistic transforms in select models.} The horizontal axis is the contact distance in \si{\angstrom}, the vertical axis shows the logistic transform of that distance for BBA model 1 (blue), model 4 (orange) and model 5 (green). }
+    \label{fig:transforms}
+\end{figure}
 
 \section{Detailed model summaries} 
 
@@ -107,15 +115,43 @@ This model has the largest median $t_{2}$ after random sampling optimisation.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[height=0.25\textheight]{SI_figures/CLN_52_its.pdf}
-    \caption{\textsc{Chignolin, model 1 validation}. Panel (a) shows the implied timescales as a function of the lag-time. Blue, red, and green lines correspond to the slowest, second slowest, and third slowest process respectively. The solid lines correspond to the timescales from the maximum likelihood MSM. The dashed lines correspond to the mean of Bayesian MSMs. The coloured regions refer to the 0.95 confidence interval. The shaded region shows when the Markov lag time becomes equal to or longer than the implied timescale.}
+    \includegraphics[height=0.15\textheight]{SI_figures/CLN_52_its.pdf}
+    \caption{\textsc{Chignolin, model 1 validation}. The implied timescales plotted as a function of the lag-time. Blue, red, and green lines correspond to the slowest, second slowest, and third slowest process respectively. The solid lines correspond to the timescales from the maximum likelihood MSM. The dashed lines correspond to the mean of Bayesian MSMs. The coloured regions refer to the 0.95 confidence interval. The shaded region shows when the Markov lag time becomes equal to or longer than the implied timescale.}
     \label{si_fig:CLN_52_3}
 \end{figure}
 
 \FloatBarrier
-
 \clearpage
+
 \subsection{Chignolin model 2}
+
+This model has the largest median $t_{2}$ using the logistic distance feature.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{missing.pdf}
+    \caption{\textsc{Chignolin,  model 3 timescales}.  See the caption for figure \ref{si_fig:CLN_52_1}. }
+    \label{si_fig:CLN_24_1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{missing.pdf}
+    \caption{\textsc{Chignolin,  model 3 free energy surface}. See the caption for figure \ref{si_fig:CLN_52_2}.}
+    \label{si_fig:CLN_24_2}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\columnwidth]{missing.pdf}
+    \caption{\textsc{Chignolin, model 3 validation}. See the caption for figure \ref{si_fig:CLN_52_3}.}
+    \label{si_fig:CLN_24_3}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+
+\subsection{Chignolin model 3}
 
 This model has the largest median $t_{2}$ after Bayesian optimisation of $t_{2}$.
 
@@ -135,10 +171,12 @@ This model has the largest median $t_{2}$ after Bayesian optimisation of $t_{2}$
 
 \begin{figure}[h]
     \centering
-    \includegraphics[height=0.25\textheight]{SI_figures/CLN_218_its.pdf}
-    \caption{\textsc{Chignolin, model 2 validation}. Panel (a) shows the implied timescales as a function of the lag-time.}
+    \includegraphics[height=0.15\textheight]{SI_figures/CLN_218_its.pdf}
+    \caption{\textsc{Chignolin, model 2 validation}. See the caption for figure \ref{si_fig:CLN_52_3}.}
     \label{si_fig:CLN_218_3}
 \end{figure}
+
+
 
 \FloatBarrier
 \clearpage
@@ -162,38 +200,43 @@ This model has the largest median $t_{2}$ after random sampling.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[height=0.25\textheight]{missing.pdf}
-    \caption{\textsc{BBA, model 1 validation}.  Panel (a) shows the implied timescales as a function of the lag-time. }
+    \includegraphics[height=0.15\textheight]{SI_figures/BBA_24_its.pdf}
+    \caption{\textsc{BBA, model 1 validation}. The implied timescales plotted as a function of the lag-time. Blue, red, and green lines correspond to the slowest, second slowest, and third slowest process respectively. The solid lines correspond to the timescales from the maximum likelihood MSM. The dashed lines correspond to the mean of Bayesian MSMs. The coloured regions refer to the 0.95 confidence interval. The shaded region shows when the Markov lag time becomes equal to or longer than the implied timescale.}
     \label{si_fig:BBA_24_3}
 \end{figure}
 
 \FloatBarrier
 \clearpage
+
 \subsection{BBA model 2}
 
+This model has the second largest median $t_{2}$ after random sampling. 
+
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-1.pdf}
-    \caption{\textsc{BBA,  model 2 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
-    \label{si_fig:BBA_6_1}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI1.pdf}
+    \caption{\textsc{BBA, model 5 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
+    \label{si_fig:BBA_000_1}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-2.png}
-    \caption{\textsc{BBA,  model 2 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_1}.}
-    \label{si_fig:BBA_6_2}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI2.png}
+    \caption{\textsc{BBA,  model 5 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
+    \label{si_fig:BBA_000_2}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[height=0.25\textheight]{missing.pdf}
-    \caption{\textsc{BBA, model 2 validation}.  See the caption for figure \ref{si_fig:BBA_24_3}.}
-    \label{si_fig:BBA_6_3}
+    \includegraphics[height=0.15\textheight]{SI_figures/BBA_124_its.pdf}
+    \caption{\textsc{BBA, model 5 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
+    \label{si_fig:BBA_000_3}
 \end{figure}
+
+
+
 
 \FloatBarrier
-
 \clearpage
 
 \subsection{BBA model 3}
@@ -216,7 +259,7 @@ This model has the largest median $t_{2}$ after random sampling.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[height=0.25\textheight]{missing.pdf}
+    \includegraphics[height=0.15\textheight]{SI_figures/BBA_58_its.pdf}
     \caption{\textsc{BBA, model 3 validation}.  See the caption for figure \ref{si_fig:BBA_24_3}.}
     \label{si_fig:BBA_58_3}
 \end{figure}
@@ -225,6 +268,32 @@ This model has the largest median $t_{2}$ after random sampling.
 \clearpage
 
 \subsection{BBA model 4}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-1.pdf}
+    \caption{\textsc{BBA,  model 2 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
+    \label{si_fig:BBA_6_1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-2.png}
+    \caption{\textsc{BBA,  model 2 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
+    \label{si_fig:BBA_6_2}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=0.15\textheight]{SI_figures/BBA_6_its.pdf}
+    \caption{\textsc{BBA, model 2 validation}.  See the caption for figure \ref{si_fig:BBA_24_3}.}
+    \label{si_fig:BBA_6_3}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+
+\subsection{BBA model 5}
 This model has the largest median $t_{2}$ after Bayesian optimisation of $t_2$.
 
 \begin{figure}[h]
@@ -243,34 +312,11 @@ This model has the largest median $t_{2}$ after Bayesian optimisation of $t_2$.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[height=0.25\textheight]{SI_figures/BBA_227_its.pdf}
+    \includegraphics[height=0.15\textheight]{SI_figures/BBA_227_its.pdf}
     \caption{\textsc{BBA, model 4 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
     \label{si_fig:BBA_227_3}
 \end{figure}
 
-\subsection{BBA model 5}
-This model has the second largest median $t_{2}$ after random sampling. 
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI1.pdf}
-    \caption{\textsc{BBA, model 5 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
-    \label{si_fig:BBA_000_1}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI2.png}
-    \caption{\textsc{BBA,  model 5 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
-    \label{si_fig:BBA_000_2}
-\end{figure}
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[height=0.25\textheight]{SI_figures/BBA_124_its.pdf}
-    \caption{\textsc{BBA, model 5 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
-    \label{si_fig:BBA_000_3}
-\end{figure}
 
 % % \section{Summary of trial results}
 

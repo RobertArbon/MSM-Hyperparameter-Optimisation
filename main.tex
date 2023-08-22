@@ -287,30 +287,10 @@ The functions $l$ and $g$ are Parzen estimators, otherwise known as kernel densi
 
 
 
-
-\subsubsection{Sensitivity Analysis}
-
-Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work, we conduct a \emph{global sensitivity analysis} which looks at model outputs as a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis uses analysis of variance in conjunction with random forests to assess, as developed by Hutter et. al. \cite{hutter_efcient_nodate}.  
-
-
-\textbf{Ryan}:
-\begin{itemize}
-    \item Summarise the theory and method for assessing hyperparameter importance in Optunal. 
-    \item reference is: https://proceedings.mlr.press/v32/hutter14.html
-    \item Should be relatively brief (a few paragraphs) 
-\end{itemize}
-
-
 \section{Methods}
 
-The methods and intended logic of this paper can be summarised as follows: 
-\begin{enumerate}
-    \item We looked at two standard protein folding benhcmark systems: Chignolin and BBA, using the same data as in many other previous studies.  
-    \item We created a random set of hyperparameters which covered a range of values also used in many previous similar studies [refs]. 
-    \item For each set of hyperparameters (a \emph{trial}) we fit an MSM and estimated bootstrapped values the eigenvalues, implied timescales and VAMP scores for a range of different MSM lag-times and scored eigenvectors. This consituted our \emph{hyperparameter trial dataset}.  
-    \item using this dataset we can test whether Bayesian optimisation can produce 'better' models. 
-    \item in addition we hoped to use statistical regresion to quantify how the each hyperparameter affects the model quality. 
-\end{enumerate}
+The workflow may be summarised as follows.  We used existing molecular dynamics trajectories of Chignolin and BBA and fit 140 MSMs with randomly sampled hyperparameters (\emph{hyperparamter trials}) and recorded implied timescales, eigenvalues, VAMP2 scores for a range of different lag times ($\tau$). Each observable was estimated with confidence intervals using bootstrapping. This data constituted our \emph{hyperparameter trial dataset} and was analysed in sections \ref{sec:evs_change} and \ref{sec:lag_evs_selection}. A `toy' three-state MSM model was used discuss the problems with the VAMP2 score, discussed in section \ref{sec:vamps_inconsistent}. We then performed Bayesian optimisation with a TPE surrogate function, with a variety of different objective functions, and using the hyperparameter trial dataset to initialise the surrogate function. These results are discussed in  section \ref{sec:bayes}. 
+
 
 
 
@@ -348,7 +328,7 @@ The uncertainty for model observables (e.g., implied timescales, VAMP scores etc
 \begin{enumerate}
     \item dihedrals feature (`dihed.'): the $\phi$, $\psi$ and $\chi_{1-5}$ angles of the amino acid residues;
     \item contact distance feature (`dist.'): the distance between all pairs of residues separated by three or more residues; \label{itm:cont_dist_feat}
-    \item logistic distance feature (`logit(dist.)'): the same as item~\ref{itm:cont_dist_feat} but with a logistic transform applied to the distance ($d$): $\mathrm{logit}(d) = [1-\exp{(s(d-c))}]^{-1}$, where center, $c$, and steepness $s$,  have units of \si{\angstrom} and \si{\per\angstrom} respectively.
+    \item logistic distance feature (`logit(dist.)'): the same as item~\ref{itm:cont_dist_feat} but with a logistic transform applied to the distance ($d$): $\mathrm{logit}(d) = [1+\exp{(s(d-c))}]^{-1}$, where center, $c$, and steepness $s$,  have units of \si{\angstrom} and \si{\per\angstrom} respectively.
 \end{enumerate}
 The logistic distance feature may be described as a `soft' or `fuzzy' contact map: it takes on the value $0$ for $d \ll c$ and a value of $1$ for $d\gg c$; and varies between these two extremes in the neighbourhood of $c$ with a steepness determined by $s$. The definitions of the contact distances ($d$) were either the closest heavy-atom distance ($X-X$) or the distance between the $\alpha$-Carbons (C$\alpha$-C$\alpha$). The TICA eigenvectors were scaled by their eigenvalues ($\lambda$) so that distances in TICA space correspond to kinetic distances~\cite{noeKineticDistanceKinetic2015}.
 
@@ -399,76 +379,56 @@ The selected Markov lag-time, $\tau^{*}_{\mathrm{M}}$ was chosen as:
 This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau_{\mathrm{M}}$ are plotted on a log scale and the smallest $\tau_{\mathrm{M}}$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. 
 
 
-
 \subsection{Optimisation}
- 
 
-The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be found at \url{https://github.com/RobertArbon/msm_sensitivity} and the code used to perform all other anlaysis can be found at \url{https://github.com/RobertArbon/msm_sensitivity_analysis}.  
+We used Bayesian optimisation to optimise the full hyperparameter feature space, table \ref{tab:search_space}. We used the tree-structured Parzen estimator as the surrogate function, as implemented in the python package \textit{Optuna} version 3.0.3 \cite{akiba_optuna_2019} to perform the optimisations. The optimisation runs were initialized with data from the randomly sampled hyperparameter trial dataset. Four different objective functions were used for each protein, two single objective and two multi-objective functions, these were 
+\begin{enumerate}
+    \item $t_2$: the timescale dominant process, 
+    \item VAMP$_{eq}(2) = 1+\lambda^{2}$: the `equilibrium' VAMP2 score of the dominant process
+    \item $t_2$ and $t_{2}/t_{3}$: a multi-objective function of the timescale of the dominant process and the gap between the dominant and 3rd timescale. 
+    \item VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$: a multi-objective function of the `equilibrium' VAMP2 score of the dominant process and the gap between the dominant and 3rd process. 
+\end{enumerate}
 
+The acquisition function for the single objective functions was the expected improvement and for the multi-objective functions it was the expected hypervolume improvement. The quantile for splitting observations into `good' and `bad' trials was set at \SI{25}{\percent}. This information is summarised in table \ref{tab:opt_description}. 
 
-\textbf{Ryan}
-
-\begin{itemize}
-    \item Can you put the details about what and how you optimised (include all the various permutations in a table).  
-    \item should include calculation details and refer to the theory in previous section. 
-    \item I would do this first before the theory (so you don't include useless detail in the theory section). 
-\end{itemize}
-
-\begin{table}
-    \caption{\textbf{Hyperparameter optimisation tasks}}
-    \begin{tabularx}{\textwidth}{llXXXXX}
+\begin{table}[h]
+    \caption{\textsc{Hyperparameter optimisation tasks.}}
+    \begin{tabularx}{\textwidth}{llXXX}
     \toprule
-    \textbf{Protein} & \textbf{Objective} & \textbf{Feature} & \textbf{Initial Data} & \textbf{No. Trials} & \textbf{Gamma} \\ 
+    \textbf{Protein} & \textbf{Objective Functions} & \textbf{Initial Data} & \textbf{No. Trials} \\ 
     
     \midrule
-    Chignolin & t2        & All & 136 & 95 & 25 \\
-    Chignolin & t2, t2/t3 & All & 55 & 141 & 25 \\
-    Chignolin & VAMPeq(2) & All & 136 & 100 & 25 \\
-%%    Chignolin & VAMPeq(2), t2/t3 & All & 55 & 150 & 25 \\
-    Chignolin & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & All & 55 & 150 & 25 \\
+    Chignolin & t2        & 136 & 95 \\
+    Chignolin & t2, t2/t3 & 55 & 141 \\
+    Chignolin & VAMPeq(2) & 136 & 100 \\
 
-    BBA & t2        & All & 136 & 100 & 25 \\
-    BBA & t2, t2/t3 & All & 136 & 100 & 25 \\
-    BBA & VAMPeq(2) & All & 136 & 100 & 25 \\
-    BBA & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & All & 136 & 100 & 25 \\
+    Chignolin & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & 55 & 150 \\
+
+    BBA & t2        & 136 & 100 \\
+    BBA & t2, t2/t3 & 136 & 100 \\
+    BBA & VAMPeq(2) & 136 & 100 \\
+    BBA & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & 136 & 100 \\
     \bottomrule
     \end{tabularx}
-    \label{tab:data_description}
+    \label{tab:opt_description}
 \end{table}
 
-\subsection{Sensitivity analysis}
+The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be found at \url{https://github.com/RobertArbon/msm_sensitivity} and the code used to perform all other analysis can be found at \url{https://github.com/RobertArbon/msm_sensitivity_analysis}.  
 
-\textbf{Ryan}
 
-\begin{itemize}
-    \item Can you put the details about how exactly hyperparameter importance was measured.
-    \item should include calculation details and refer to the theory in previous section. 
-    \item I would do this first before the theory (so you don't include useless detail in the theory section). 
-\end{itemize}
-
- 
 
 
 \section{Results and discussion}
 
-\subsection{Eigenvectors definitions change with hyperparameters}
+\subsection{Eigenvector may change definition with change in hyperparameters}\label{sec:evs_change}
 
 \begin{figure}
     \centering
-    \includegraphics[width=0.7\columnwidth]{missing.pdf}
-    \caption{\textsc{Timescales of hyperparameter trials.} Panel (a) refers to BBA, panel (b) refers to Chignolin. The vertical axis is the dominant timescale ($t_2$), the horizontal axis is the trial rank. The solid disc and error bars are the median and \SI{95}{\percent} bootstrapped confidence intervals.   }
+    \includegraphics[width=0.7\columnwidth]{results1/timescale_distributions.pdf}
+    \caption{\textsc{Timescales of randomly sampled hyperparameter trials.} Panel (a) refers to BBA, panel (b) refers to Chignolin. The vertical axis is the dominant timescale ($t_2$), the horizontal axis is the trial rank. The solid disc and error bars are the median and \SI{95}{\percent} bootstrapped confidence intervals.  }
     \label{fig:random_trials}
 \end{figure}
 
-\textbf{Figure 1}
-\begin{itemize}
-    \item Each panel shows timescales ranked for BBA and Chignolin 
-    \item Two models are highlighted with arrows for BBA and Chignolin.  
-    \item BBA model 1 - highest t2; model 2 - second highest t2 (same feature)
-    \item Cln25 model 1 - highest t2; model 2 - highest t2 with different feature. 
-\end{itemize}
-
-\textbf{Figure 2}
 
 \begin{figure}
     \centering
@@ -477,19 +437,20 @@ The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be 
     \label{fig:bba_differences}
 \end{figure}
 
+Figure \ref{fig:random_trials} shows the distribution of the timescale of the dominant process ($t_2$) for each MSM of BBA (panel (a)) and Chignolin (panel (b)) ordered left to right with highest value of $t_2$ on the left. Each point is colored according to the feature used. According to previous research~\cite{scherer_variational_2019} we expect in both cases that the dominant relaxation process refer to the folded / unfolded transition.  According to the variational theorem the most accurate models (and therefore the `best' set of hyperparameters) are the ones with the largest implied timescales. We would therefore expect that the `best' model would be the model with the highest value of $t_2$. However, implicit in this decision is that the implied timescale represents the same underlying relaxation process. In the case of Chignolin this is the case, as is shown by inspection of the models ranked 1 and 4 (labelled models 1 and 2, see table S1 and sections S2.1 and S2.2).  Despite using different features (distances and logistic distances, respectively) the dominant relaxation processes in both models are similar: figure S3 (c) and figure S6 (c) show conformational ensembles of the extremes of the dominant relaxation process which clearly show similar transitions.  [THIS NEEDS CHECKING].  Given the similarity of $t_2$ for each trial, we expect this observation to generalize to the other hyperparameter trials. 
+
+In the case of BBA, the situation is different. We compared the top two best performing models (ranked 1 and 2 in figure \ref{fig:random_trials}, labeled model 1 and 2 in table S1 and sections S2.4 and S2.5) and the best performing models with the other features: model rank X with the dihedrals feature (model 3, section S2.6) and model rank Y with the distances feature (model 4, section S2.7). 
+
+When comparing model 1 and 2 we see a similar folded-to-unfolded or partially-folded transition represented by the dominant eigenvector (figure \ref{fig:bba_differences} panel (a) and (b)), albeit with different values of $t_2$ (\SIci{20.4}{2.3}{176.2}{\micro\second} cf. \SIci{9.7}{2.1}{188.7}{\micro\second}). The accords with differences in the hyperparameters: model 1 and 2 use the logistic distances features, but model 1 has a logistic transform which is more sensitive to changes in contact distances between \SIrange[range-phrase=---]{0.1}{10}{\angstrom} (see figure S1) and more discrete basis functions (471 cf. 289, see table S1).  
+
+However, inspection of models 3 and 4 show markedly different transitions (figures S18(c) and S21(c) respectively) represented by the dominant eigenvector: both represent different folded-misfolded transitions.  This is to be expected as the features used are different and so we would expect them to pick out different conformational transitions. 
+
+Thus, when optimising MSMs the objective function ($t_2$ in this case) may change definition across the search space and one is not comparing like-with-like when looking at \emph{just} the objective function.  As the largest change in $t_2$ is due to the different features, pre-selecting the feature to use, by for example using the method of Scherer et. al.~\cite{scherer_variational_2019} will be useful. But we also note that one must still select a VAMP lag-time, the differences in the VAMP scores may be small and there may be problems when scoring models using the VAMP2 with equilibrium constraints. 
+
+We therefore suggest that model selection of MSMs by ranking of a single observable be supplemented with inspection of the character of the eigenvectors and other observables, to ensure that one is optimising the intended process. 
 
 
-Given our hyperparameter trial dataset our first task was to inspect the models to validate the models beyond the VAMP scores .  For reasons that we shall explain in [VAMP section] we ranked the hyperparameter trials by the median value of $t_2$ rather thanthe VAMP score, which we expected (from previous literature, Schere 2018) to be correlated with the slow, protein folding process.  
-
-Figure 1 shows $t_2$ for chignolin (panel a) and BBA (panel b) on the vertical axis, running left to right, highest value of $t_2$ on the left. As you can see, the range of values of Chignolin are small, with a few trials with small values of $t_2$.  The dominant eigenvector of the model with the largest value of $t_2$ descibes two metastable states (figure A1), folded and unfolded. The narrow range of values and relative insensitivity of $t_2$ with chaning hyepraparmeter values suggest this model is highly robust. 
-
-The situation for BBA is different.  Here we see a large (2-3X) difference in $t_2$ across the whole trial dataset,  with the 'best'  trial (model 1) with a $t_2$ twice as large as the next trial (model 2). Inspection of the two eigenvectors reveal that they describe two different processes.  In model 2, one extreme of the dominant eigenvector corresponds to the folded protein, while in model 1, the extremes of the dominant  eigenvector show two distinct mis-folded states.  
-
-If the two dominant eigenvectors in models 1 and 2 are distinct then one cannot be said to be 'better' or more optimised that the other as they correspond to two different processes.  this then reveals the first problem with optimising a single metric based on the eigenvectors of the transition matrix: the \emph{definition of the eigenvectors can change with hyperaparameters, not just accuracy.}
-
-
-
-\subsection{VAMP2$(k)$ scores of reversible MSMs give inconsistent results}
+\subsection{VAMP2$(k)$ scores of reversible MSMs give inconsistent results}\label{sec:vamps_inconsistent}
 
 
 \begin{figure}
@@ -524,60 +485,7 @@ Due to the problems problem of consistency between the matrices in equation~\ref
 
 
 
-% We start from a position of limited information on appropriate modelling choices for creating an MSM of the fast folding proteins BBA and Chignolin.  We assume that the
-% relevant hyperparameters are contained in the  hyperparameter search space, table~\ref{tab:search_space} and set out to answer our motivating questions: 
-
-% \begin{itemize}
-%     \item How do MSM timescales vary with the hyperparameters? 
-%     \item How sensitive are timescales to the hyperparameters? 
-%     \item Is Bayesian optimisation a useful tool to optimise hyperparameters of an MSM? 
-%     \item Are the current variational scores (VAMP, GMRQ) appropriate for optimising hyperparameters? 
-%     \item How does model selection depend on choices in the variational score? 
-% \end{itemize}
-
-
-% Our aim in answering these questions is ensure that an MSM analysis (or indeed any statistical analysis of MD data) is robust and reproducible.  
-
-% Unless otherwise stated, the Markov lag time, $\tau_{\mathrm{M}}$ was set at \SI{41}{\nano\second} and [Ryan] which was the smallest lag time across the whole hyperparameter trial data-set which gave rise to a Markovian model.  
-
-
-% [figure 1 shows timescales of BBA and Chinolin, arranged in decreasing values for each set of hyperparameters]
-
-% \begin{itemize}
-%     \item Previous analysis of BBA and CLN using the MSM approach have shown that the slowest timescale process $t_{2}$ is well correlated with the folding of the protein into its native state [sherere 2018] 
-%     \item We optimised MSMs using random search using a the metric of a bootstrapped $t_{2}$, these are shown in figure 1.
-%     \item In order for th optimisation to be valid the definition, in terms of the exact molecular process, needs to remain consistent across each each trial.
-%     \item For chignolin, the timescales are similar, see figure 1 panel (a) and the definition of $\psi_2$ remains similar, see figure A1 and A2 [model summary plot for best and middle best models.]. thus the objective is consistent and optimisation valid. 
-%     \item However, for BBA, there is a wide range timescales  of the `best' performing set of hyperparameters (model 1), $t_2 \simeq \SI{18}{\micro\second} $ and the second `best' performing set of hyperparameters (model 2) correspond to two different relaxation processes.  
-%     \item In model 1 we see two distinct partially folded 
-    
-    
-%     See figure A1 in the appendix for a description of the two models. 
-%     \item Thus, the sampled trials for BBA actually refer to two, or possibly more, distinct relaxation processes.  
-%     \item I don't know what else to say about this. 
-    
-% \end{itemize}
-
-
-% \subsection{Sensitivity to hyperparameters is low but varies by feature}\label{sec:sensitivity}
-
-% % \begin{figure}
-% %     \centering
-% %     \includegraphics[width=0.8\textwidth]{figures/sensitivity.pdf}
-% %     \caption{\textbf{Relevance of hyperparameters to the implied timescales and expected improvement.} The hyperparameter relevance ($R$) to the timescales ($y=\log{t_{2}}$) for the three different features,  and the expected improvement ($y=\log{\mathbb{E}[I]}$) for the logistic-distances feature. The larger the relevance, the more sensitive the outcome is to each hyperparameter.  The relevance is calculated from the learned kernel parameters of the relevant Gaussian process. Box plots show the distribution of values from \num{100} bootstrap samples. The relevance $R$ is the inverse of the characteristic length-scale of the exponential kernel in equation~\ref{eqn:kern_exp}. }
-% %     \label{fig:sensitivity}
-% % \end{figure}
-
-% In order to understand the timescale distribution we estimate the sensitivity of the timescales to the hyperparameters. Previous work has shown that the type of feature used is important in determining the eigenvector accuracy. This is consistent with figure~\ref{fig:1fme_timescales}  where the majority of the best hyperparameters use the `logit(dist.)' feature.  However, figure~\ref{fig:ts_distribution} also shows that a) there is significant overlap of the timescale distributions for each feature, and b) the best performing feature also gives rise to the worst performing models. The type of feature is therefore a necessary but not sufficient hyperparameter to tune in order to maximize the timescales. It is important, therefore, to consider the remaining hyperparameters (e.g., the TICA lag time, TICA dimension etc.) and how they affect the timescales.  
-
-% We estimate the sensitivity of the remaining hyperparameters for each feature by modelling $\log{t_{2}}$ as a Gaussian process as a function of the MSM hyperparameters. This model of the response of the $t_2$ to variation in the hyperparameters we call a \emph{response surface}. The covariance function that gave the best fitting model used the fully additive structure, equation~\ref{eqn:plus_kernel}, with an exponential kernel over each hyperparameters, equation~\ref{eqn:kern_exp}. 
-
-% Figure~\ref{fig:sensitivity} plots the  the relevance of hyperparameters, $R$, in determining $t_{2}$. It shows that the hyperparameters vary in how important they are in determining $t_2$ for each different feature.  For the `dihed.' feature it shows that the TICA dimension, lag time and number of microstates are all equally relevant in determining $t_2$, however $t_2$ does not vary greatly with changes in any of these hyperparameters (as $R\simeq 1$). For the `dist.' feature the number of microstates is the most relevant in determining $t_2$. For the `logit(dist.)' feature the location of the centre of the logistic function (as this feature is a continuous approximation to a contact map, the `centre' corresponds  to the contact map cut-off) is the most important hyperparameter. The fitted Gaussian process regression models which give rise these values are shown in the supplementary material figures~\ref{fig:repsonse_diheds}, \ref{fig:repsonse_dist}, and \ref{fig:repsonse_logistic}. 
-
-% Why is the hyperparameter sensitivity important? First, as has been  previously shown~\cite{bergstra_jamesbergstra_random_2012}, if all hyperparameters have a large relevance ($R \gg 1$), then to finding the maximum of the response surface (i.e., the hyperparameters which give rise to the maximum $t_2$) is hard. In this case, it is important to try all combinations of hyperparameters i.e., a  grid-search strategy, or to employ an active learning approach~\cite{snoekAbstractBayesianOptimization2013}.  However, if only a small proportion of the hyperparameters have a high relevance then randomly sampling hyperparameters is the more efficient strategy.  Second, the lack of pattern in the relevance of hyperparameters indicates that it is not possible to draw general conclusions about hyperparameters, indicating that default values of hyperparameters may not be useful and that each system must optimized individually. 
-
-
-\subsection{Bayesian optimisation improves timescales}
+\subsection{Bayesian optimisation improves timescales}\label{sec:bayes}
 
 \begin{figure}[h]
     \centering
@@ -599,34 +507,12 @@ Due to the problems problem of consistency between the matrices in equation~\ref
     \item this is consisten with poor optimiation performance. 
 \end{enumerate}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics{figures/surface_distances_logistic_ei.pdf}
-%     \caption{\textbf{Expected improvement as a function of the two most relevant hyperparameters - the logistic center ($c$) and steepness ($s$)}. The remaining hyperparameters take on the values shown in the annotation. These were chosen so as to maximize the expected improvement, i.e., the figure plots $y=f(s, c, d^{*}, m^{*}, \tau^{*}, n^{*})$ where $s^{*}, c^{*}, d^{*}, m^{*}, \tau^{*}, n^{*} = \argmax \left [f(s, c, d, m, \tau,n)\right]$. }
-%     \label{fig:ei_surface}
-% \end{figure}
-
-
-
-
-% In order to check the convergence of the results shown in panel (a) of figure~\ref{fig:1fme_timescales} and to potentially improve the $t_2$ estimate,  we use a single round of Bayesian optimisation. To this end, we first calculate the expected improvement, $\mathbb{E}[I]$,  using the response surface calculated in the sensitivity analysis and  equation~\ref{eqn:ei_for_gp}. As the `logit(dist.)' feature has the best performing trials we optimise only this feature. 
-
-
-% The expected improvement is shown in figure~\ref{fig:ei_surface} as a function of the `centre' and the `steepness' hyperparameters (the remaining hyperparameters are held at their values at the peak of expected improvement).  This shows that we expect any values of the `centre' and `steepness' hyperparameters to increase $t_2$ by at least \SI{2}{\micro\second} if the other hyperparameters take on their values in the annotation. However, with $c\simeq \SI{7}{\angstrom}$ and $s\simeq \SI{0.5}{\per\angstrom}$ we can expect an improvement in the timescales of almost $\SI{3}{\micro\second}$. 
-
-
-% We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent ($t_2 \simeq \SI{20}{\micro\second}$):  the optimized timescales range up to $t_2 \simeq \SI{24}{\micro\second}$, which are similar to the improvements predicted by the expected improvement function. The optimized hyperparameters differ slightly from the incumbent (except in the choice of distance scheme - all used the $\alpha$-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
-
-% In order to check the validity of the optimized models, figure xx shows the metastable states of (a) the second ranked model from the unoptimized set (the second model in figure~\ref{fig:1fme_timescales}(a), $t_2 simeq \SI{9}{\micro\second}$), (b) the first ranked model from the unoptimized set (the first model in figure~\ref{fig:1fme_timescales}(a), $t_2 simeq \SI{20}{\micro\second}$) and (c) the optimized model (the first ranked model from the optimized set (the first model in figure~\ref{fig:1fme_timescales}(b), $t_2 simeq \SI{24}{\micro\second}$). 
-
-% We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this, we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimated the response surface and expected improvement and sampled new hyperparameters. The new incumbent in this case was $t_2 = \simeq \SI{10}{\micro\second}$, shown in purple in panel (c) figure~\ref{fig:1fme_timescales}.  The new values of $t_2$,  are all improvements of up to \SI{10}{\micro\second}: the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimize MSM hyperparameters, even when the timescale measurements are noisy and there are no strong dependence on any of hyperparameters.  
 
 
 
 
 
-
-\subsection{The lag time and number of scored eigenvectors do not affect model selection.}
+\subsection{The lag time and number of scored eigenvectors do not affect model selection.}\label{sec:lag_evs_selection}
 
 \begin{figure}
     \centering
@@ -717,6 +603,7 @@ authors would like to thank \ldots''.
 %% and also names the section correctly.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \bibliography{references.bib}
+%\bibliography{bibliography.bib}
 
 \end{document}
 
@@ -892,3 +779,113 @@ Bayesian optimisation was applied to optimize the hyperparameters conditional on
     \item The neighbourhood of the incumbent was determined as the range of $\bm{\theta}$ which have an $\mathbb{E}[I(\bm{\theta}])]$ within \SI{5}{\percent} of the incumbent. 
     \item A grid of new hyperparameters was place over this neighborhood and the expected improvement was calculated at each grid point.  This gave a list of new hyperparameters which were ordered according to their expected improvement.  MSMs using the top 5 unique hyperparameters were then calculated. 
 \end{enumerate}
+
+
+
+
+% We start from a position of limited information on appropriate modelling choices for creating an MSM of the fast folding proteins BBA and Chignolin.  We assume that the
+% relevant hyperparameters are contained in the  hyperparameter search space, table~\ref{tab:search_space} and set out to answer our motivating questions: 
+
+% \begin{itemize}
+%     \item How do MSM timescales vary with the hyperparameters? 
+%     \item How sensitive are timescales to the hyperparameters? 
+%     \item Is Bayesian optimisation a useful tool to optimise hyperparameters of an MSM? 
+%     \item Are the current variational scores (VAMP, GMRQ) appropriate for optimising hyperparameters? 
+%     \item How does model selection depend on choices in the variational score? 
+% \end{itemize}
+
+
+% Our aim in answering these questions is ensure that an MSM analysis (or indeed any statistical analysis of MD data) is robust and reproducible.  
+
+% Unless otherwise stated, the Markov lag time, $\tau_{\mathrm{M}}$ was set at \SI{41}{\nano\second} and [Ryan] which was the smallest lag time across the whole hyperparameter trial data-set which gave rise to a Markovian model.  
+
+
+% [figure 1 shows timescales of BBA and Chinolin, arranged in decreasing values for each set of hyperparameters]
+
+% \begin{itemize}
+%     \item Previous analysis of BBA and CLN using the MSM approach have shown that the slowest timescale process $t_{2}$ is well correlated with the folding of the protein into its native state [sherere 2018] 
+%     \item We optimised MSMs using random search using a the metric of a bootstrapped $t_{2}$, these are shown in figure 1.
+%     \item In order for th optimisation to be valid the definition, in terms of the exact molecular process, needs to remain consistent across each each trial.
+%     \item For chignolin, the timescales are similar, see figure 1 panel (a) and the definition of $\psi_2$ remains similar, see figure A1 and A2 [model summary plot for best and middle best models.]. thus the objective is consistent and optimisation valid. 
+%     \item However, for BBA, there is a wide range timescales  of the `best' performing set of hyperparameters (model 1), $t_2 \simeq \SI{18}{\micro\second} $ and the second `best' performing set of hyperparameters (model 2) correspond to two different relaxation processes.  
+%     \item In model 1 we see two distinct partially folded 
+    
+    
+%     See figure A1 in the appendix for a description of the two models. 
+%     \item Thus, the sampled trials for BBA actually refer to two, or possibly more, distinct relaxation processes.  
+%     \item I don't know what else to say about this. 
+    
+% \end{itemize}
+
+
+% \subsection{Sensitivity to hyperparameters is low but varies by feature}\label{sec:sensitivity}
+
+% % \begin{figure}
+% %     \centering
+% %     \includegraphics[width=0.8\textwidth]{figures/sensitivity.pdf}
+% %     \caption{\textbf{Relevance of hyperparameters to the implied timescales and expected improvement.} The hyperparameter relevance ($R$) to the timescales ($y=\log{t_{2}}$) for the three different features,  and the expected improvement ($y=\log{\mathbb{E}[I]}$) for the logistic-distances feature. The larger the relevance, the more sensitive the outcome is to each hyperparameter.  The relevance is calculated from the learned kernel parameters of the relevant Gaussian process. Box plots show the distribution of values from \num{100} bootstrap samples. The relevance $R$ is the inverse of the characteristic length-scale of the exponential kernel in equation~\ref{eqn:kern_exp}. }
+% %     \label{fig:sensitivity}
+% % \end{figure}
+
+% In order to understand the timescale distribution we estimate the sensitivity of the timescales to the hyperparameters. Previous work has shown that the type of feature used is important in determining the eigenvector accuracy. This is consistent with figure~\ref{fig:1fme_timescales}  where the majority of the best hyperparameters use the `logit(dist.)' feature.  However, figure~\ref{fig:ts_distribution} also shows that a) there is significant overlap of the timescale distributions for each feature, and b) the best performing feature also gives rise to the worst performing models. The type of feature is therefore a necessary but not sufficient hyperparameter to tune in order to maximize the timescales. It is important, therefore, to consider the remaining hyperparameters (e.g., the TICA lag time, TICA dimension etc.) and how they affect the timescales.  
+
+% We estimate the sensitivity of the remaining hyperparameters for each feature by modelling $\log{t_{2}}$ as a Gaussian process as a function of the MSM hyperparameters. This model of the response of the $t_2$ to variation in the hyperparameters we call a \emph{response surface}. The covariance function that gave the best fitting model used the fully additive structure, equation~\ref{eqn:plus_kernel}, with an exponential kernel over each hyperparameters, equation~\ref{eqn:kern_exp}. 
+
+% Figure~\ref{fig:sensitivity} plots the  the relevance of hyperparameters, $R$, in determining $t_{2}$. It shows that the hyperparameters vary in how important they are in determining $t_2$ for each different feature.  For the `dihed.' feature it shows that the TICA dimension, lag time and number of microstates are all equally relevant in determining $t_2$, however $t_2$ does not vary greatly with changes in any of these hyperparameters (as $R\simeq 1$). For the `dist.' feature the number of microstates is the most relevant in determining $t_2$. For the `logit(dist.)' feature the location of the centre of the logistic function (as this feature is a continuous approximation to a contact map, the `centre' corresponds  to the contact map cut-off) is the most important hyperparameter. The fitted Gaussian process regression models which give rise these values are shown in the supplementary material figures~\ref{fig:repsonse_diheds}, \ref{fig:repsonse_dist}, and \ref{fig:repsonse_logistic}. 
+
+% Why is the hyperparameter sensitivity important? First, as has been  previously shown~\cite{bergstra_jamesbergstra_random_2012}, if all hyperparameters have a large relevance ($R \gg 1$), then to finding the maximum of the response surface (i.e., the hyperparameters which give rise to the maximum $t_2$) is hard. In this case, it is important to try all combinations of hyperparameters i.e., a  grid-search strategy, or to employ an active learning approach~\cite{snoekAbstractBayesianOptimization2013}.  However, if only a small proportion of the hyperparameters have a high relevance then randomly sampling hyperparameters is the more efficient strategy.  Second, the lack of pattern in the relevance of hyperparameters indicates that it is not possible to draw general conclusions about hyperparameters, indicating that default values of hyperparameters may not be useful and that each system must optimized individually. 
+
+
+
+
+% \begin{figure}
+%     \centering
+%     \includegraphics{figures/surface_distances_logistic_ei.pdf}
+%     \caption{\textbf{Expected improvement as a function of the two most relevant hyperparameters - the logistic center ($c$) and steepness ($s$)}. The remaining hyperparameters take on the values shown in the annotation. These were chosen so as to maximize the expected improvement, i.e., the figure plots $y=f(s, c, d^{*}, m^{*}, \tau^{*}, n^{*})$ where $s^{*}, c^{*}, d^{*}, m^{*}, \tau^{*}, n^{*} = \argmax \left [f(s, c, d, m, \tau,n)\right]$. }
+%     \label{fig:ei_surface}
+% \end{figure}
+
+
+
+
+% In order to check the convergence of the results shown in panel (a) of figure~\ref{fig:1fme_timescales} and to potentially improve the $t_2$ estimate,  we use a single round of Bayesian optimisation. To this end, we first calculate the expected improvement, $\mathbb{E}[I]$,  using the response surface calculated in the sensitivity analysis and  equation~\ref{eqn:ei_for_gp}. As the `logit(dist.)' feature has the best performing trials we optimise only this feature. 
+
+
+% The expected improvement is shown in figure~\ref{fig:ei_surface} as a function of the `centre' and the `steepness' hyperparameters (the remaining hyperparameters are held at their values at the peak of expected improvement).  This shows that we expect any values of the `centre' and `steepness' hyperparameters to increase $t_2$ by at least \SI{2}{\micro\second} if the other hyperparameters take on their values in the annotation. However, with $c\simeq \SI{7}{\angstrom}$ and $s\simeq \SI{0.5}{\per\angstrom}$ we can expect an improvement in the timescales of almost $\SI{3}{\micro\second}$. 
+
+
+% We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent ($t_2 \simeq \SI{20}{\micro\second}$):  the optimized timescales range up to $t_2 \simeq \SI{24}{\micro\second}$, which are similar to the improvements predicted by the expected improvement function. The optimized hyperparameters differ slightly from the incumbent (except in the choice of distance scheme - all used the $\alpha$-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
+
+% In order to check the validity of the optimized models, figure xx shows the metastable states of (a) the second ranked model from the unoptimized set (the second model in figure~\ref{fig:1fme_timescales}(a), $t_2 simeq \SI{9}{\micro\second}$), (b) the first ranked model from the unoptimized set (the first model in figure~\ref{fig:1fme_timescales}(a), $t_2 simeq \SI{20}{\micro\second}$) and (c) the optimized model (the first ranked model from the optimized set (the first model in figure~\ref{fig:1fme_timescales}(b), $t_2 simeq \SI{24}{\micro\second}$). 
+
+% We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimisation with less data. This is relevant if estimating the models is expensive. To answer this, we remove the incumbent in panel (b) from the hyperparameter trial data-set, re-estimated the response surface and expected improvement and sampled new hyperparameters. The new incumbent in this case was $t_2 = \simeq \SI{10}{\micro\second}$, shown in purple in panel (c) figure~\ref{fig:1fme_timescales}.  The new values of $t_2$,  are all improvements of up to \SI{10}{\micro\second}: the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimisation to optimize MSM hyperparameters, even when the timescale measurements are noisy and there are no strong dependence on any of hyperparameters.  
+
+
+
+% \subsection{Sensitivity analysis}
+
+% \textbf{Ryan}
+
+% \begin{itemize}
+%     \item Can you put the details about how exactly hyperparameter importance was measured.
+%     \item should include calculation details and refer to the theory in previous section. 
+%     \item I would do this first before the theory (so you don't include useless detail in the theory section). 
+% \end{itemize}
+
+
+
+
+ 
+
+% \subsubsection{Sensitivity Analysis}
+
+% Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work, we conduct a \emph{global sensitivity analysis} which looks at model outputs as a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis uses analysis of variance in conjunction with random forests to assess, as developed by Hutter et. al. \cite{hutter_efcient_nodate}.  
+
+
+% \textbf{Ryan}:
+% \begin{itemize}
+%     \item Summarise the theory and method for assessing hyperparameter importance in Optunal. 
+%     \item reference is: https://proceedings.mlr.press/v32/hutter14.html
+%     \item Should be relatively brief (a few paragraphs) 
+% \end{itemize}
+
