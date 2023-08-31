@@ -50,13 +50,15 @@
 
 \begin{enumerate}
     \item Chignolin 1 - best from random sampling. Hpix = 52/74 
-    \item Chignolin 2 - best overall from Bayesian optimisation. Hpix = 218/NA
-    \item Chignolin 3 - best logit(dist) from random sampling (and overall). Hpix = 23/24
+    \item Chignolin 2 - best logit(dist) from random sampling (and overall). Hpix = 23/24
+    \item Chignolin 3 - best overall from Bayesian optimisation of t2. Hpix = 218/NA
+    \item Chignolin 4 - best overall from multiobjective optimization of VAMPeq(2) and VAMPeq gap.
     \item BBA 1 - best overall from random sampling. Shows misfolding as t2 (folded -> misfolded). Hpix = 24/24
-    \item BBA 2 - best dihedrals from random sampling. Hpix = 6/6
+    \item BBA 2 - second best overall from random sampling. Hpix = 124/262
     \item BBA 3 - best distances from random sampling. Hpix = 58/85
-    \item BBA 4 - best from Bayesian optimisaiton (of just the logit(dist)?). 227/NA
-    \item BBA 5 - second best overall.  124/262
+    \item BBA 4 - best dihedrals from random sampling. Hpix = 6/6
+    \item BBA 5 - best from Bayesian optimisaiton of t2 (of just the logit(dist)?). Hpix = 227/NA
+    \item BBA 6 - best overall from multiobjective optimization of VAMPeq(2) and VAMPeq gap. 
 \end{enumerate}
 
 
@@ -72,11 +74,22 @@
      Chignolin    & 1 & 31 & dist. & 488 & 71 & 15 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{0.379 \\ (0.296, 0.470)} \\
      Chignolin    & 2 & 31 & \makecell[tl]{logit(dist.)\\(2.2, 0.61)} & 471 & 60 & 20 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{0.377 \\ (0.294, 0.466)}  \\
      Chignolin    & 3 & 31 & dist. & 469 & 3 & 15 & Bayesian & 131 & 100 & $t_{2}$ & \makecell[tc]{0.383 \\ (0.316, 0.463)}  \\
+     
+     Chignolin    & 4 & 31 & dist. & 986 & 15 & 18 & Bayesian & 55 & 150 & \makecell[tc]{V$_{eq}(2)$ \\+ V$_{eq}(2)$/V$_{eq}(3)$} & \makecell[tc]{0.396 \\ (0.326, 0.477)}  \\
+     
      BBA          & 1 & 41 & \makecell[tl]{logit(dist.)\\(2.2, 0.61)} & 471 & 60 & 20 & Random & NA & 140 & $t_{2}$ &\makecell[tc]{20.4 \\ (2.3, 176.2)} \\
-     BBA          & 2 & 41 & \makecell[tl]{logit(dist.) \\(8.0, 2.9)} & 289 & 67 & 18 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{9.7 \\ (2.1, 188.7)}  \\
+     BBA          & 2 
+     
+     
+     
+     
+     & 41 & \makecell[tl]{logit(dist.) \\(8.0, 2.9)} & 289 & 67 & 18 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{9.7 \\ (2.1, 188.7)}  \\
      BBA          & 3 & 41 & dist. & 485 & 52 & 19 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{6.6 \\ (2.4, 150.4)}  \\
      BBA          & 4 & 41 & dihed. & 471 & 99 & 13 & Random & NA & 140 & $t_{2}$ & \makecell[tc]{2.1 \\ (1.8, 20.6)} \\
-     BBA          & 5 & 41 & \makecell[tl]{logit(dist.,)\\(7.7, 0.33)} & 444 & 53 & 20 & Bayesian & 136 & 100 & $t_{2}$ &\makecell[tc]{42.8 \\ (4.7, 286.3)}  \\
+     BBA          & 5 & 41 & \makecell[tl]{logit(dist.,)\\(7.96, 0.33)} & 444 & 53 & 20 & Bayesian & 136 & 100 & $t_{2}$ &\makecell[tc]{42.8 \\ (4.7, 286.3)}  \\
+    
+     BBA          & 6 & 41 & \makecell[tl]{logit(dist.,)\\(7.7, 0.74)} & 957 & 71 & 15 & Bayesian & 136 & 100 & V$_{eq}(2)$ &\makecell[tc]{54.2 \\ (4.0, 448.2)}  \\
+     
     \bottomrule
     \end{tabularx}
     \label{si_tab:modelsummaries}
@@ -125,7 +138,7 @@ This model has the largest median $t_{2}$ after random sampling optimisation.
 
 \subsection{Chignolin model 2}
 
-This model has the largest median $t_{2}$ using the logistic distance feature.
+This model has the largest median $t_{2}$ using the logistic distance feature from random sampling.
 
 \begin{figure}[h]
     \centering
@@ -176,10 +189,35 @@ This model has the largest median $t_{2}$ after Bayesian optimisation of $t_{2}$
     \label{si_fig:CLN_218_3}
 \end{figure}
 
+\subsection{Chignolin model 4}
 
+This model has the largest median $t_{2}$ after Bayesian optimisation of VAMPeq(2) and VAMPeq gap.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{SI_figures/CLN_93_SI1.pdf}
+    \caption{\textsc{Chignolin,  model 2 timescales}.  See the caption for figure \ref{si_fig:CLN_52_1}. }
+    \label{si_fig:CLN_93_1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{SI_figures/CLN_93_SI2.png}
+    \caption{\textsc{Chignolin,  model 2 free energy surface}. See the caption for figure \ref{si_fig:CLN_52_2}.}
+    \label{si_fig:CLN_93_2}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=0.15\textheight]{SI_figures/CLN_93_its.pdf}
+    \caption{\textsc{Chignolin, model 2 validation}. See the caption for figure \ref{si_fig:CLN_52_3}.}
+    \label{si_fig:CLN_93_3}
+\end{figure}
 
 \FloatBarrier
 \clearpage
+
+
 \subsection{BBA model 1}
 
 This model has the largest median $t_{2}$ after random sampling.
@@ -208,39 +246,39 @@ This model has the largest median $t_{2}$ after random sampling.
 \FloatBarrier
 \clearpage
 
+
 \subsection{BBA model 2}
 
 This model has the second largest median $t_{2}$ after random sampling. 
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI1.pdf}
-    \caption{\textsc{BBA, model 5 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI-1.pdf}
+    \caption{\textsc{BBA, model 2 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
     \label{si_fig:BBA_000_1}
 \end{figure}
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI2.png}
-    \caption{\textsc{BBA,  model 5 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_124_SI-2.png}
+    \caption{\textsc{BBA,  model 2 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
     \label{si_fig:BBA_000_2}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[height=0.15\textheight]{SI_figures/BBA_124_its.pdf}
-    \caption{\textsc{BBA, model 5 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
+    \caption{\textsc{BBA, model 2 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
     \label{si_fig:BBA_000_3}
 \end{figure}
-
-
-
 
 \FloatBarrier
 \clearpage
 
+
 \subsection{BBA model 3}
 
+This model has the largest median $t_{2}$ using the distance feature after random sampling. 
 
 \begin{figure}[h]
     \centering
@@ -248,7 +286,6 @@ This model has the second largest median $t_{2}$ after random sampling.
     \caption{\textsc{BBA, model 3 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}. }
     \label{si_fig:BBA_58_1}
 \end{figure}
-
 
 \begin{figure}[h]
     \centering
@@ -267,55 +304,94 @@ This model has the second largest median $t_{2}$ after random sampling.
 \FloatBarrier
 \clearpage
 
+
 \subsection{BBA model 4}
+
+This model has the largest median $t_{2}$ using the dihedral feature after random sampling.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-1.pdf}
-    \caption{\textsc{BBA,  model 2 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
+    \caption{\textsc{BBA,  model 4 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
     \label{si_fig:BBA_6_1}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{SI_figures/BBA_6_SI-2.png}
-    \caption{\textsc{BBA,  model 2 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
+    \caption{\textsc{BBA,  model 4 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
     \label{si_fig:BBA_6_2}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[height=0.15\textheight]{SI_figures/BBA_6_its.pdf}
-    \caption{\textsc{BBA, model 2 validation}.  See the caption for figure \ref{si_fig:BBA_24_3}.}
+    \caption{\textsc{BBA, model 4 validation}.  See the caption for figure \ref{si_fig:BBA_24_3}.}
     \label{si_fig:BBA_6_3}
 \end{figure}
 
 \FloatBarrier
 \clearpage
 
+
+
 \subsection{BBA model 5}
+
 This model has the largest median $t_{2}$ after Bayesian optimisation of $t_2$.
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{SI_figures/BBA_227_SI-1.pdf}
-    \caption{\textsc{BBA,  model 4 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
+    \caption{\textsc{BBA,  model 5 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
     \label{si_fig:BBA_227_1}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[width=\columnwidth]{SI_figures/BBA_227_SI-2.png}
-    \caption{\textsc{BBA,  model 4 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
+    \caption{\textsc{BBA,  model 5 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
     \label{si_fig:BBA_227_2}
 \end{figure}
 
 \begin{figure}[h]
     \centering
     \includegraphics[height=0.15\textheight]{SI_figures/BBA_227_its.pdf}
-    \caption{\textsc{BBA, model 4 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
+    \caption{\textsc{BBA, model 5 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
     \label{si_fig:BBA_227_3}
 \end{figure}
+
+\FloatBarrier
+\clearpage
+
+
+\subsection{BBA model 6}
+
+This model has the largest median $t_{2}$ after Bayesian optimisation of VAMPeq(2).
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_185_SI-1.pdf}
+    \caption{\textsc{BBA,  model 6 timescales}. See the caption for figure \ref{si_fig:BBA_24_1}.}
+    \label{si_fig:BBA_185_1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\columnwidth]{SI_figures/BBA_185_SI-2.png}
+    \caption{\textsc{BBA,  model 6 free energy surface}. See the caption for figure \ref{si_fig:BBA_24_2}.}
+    \label{si_fig:BBA_185_2}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[height=0.15\textheight]{SI_figures/BBA_185_its.pdf}
+    \caption{\textsc{BBA, model 6 validation}. See the caption for  figure \ref{si_fig:BBA_24_3}.}
+    \label{si_fig:BBA_185_3}
+\end{figure}
+
+\FloatBarrier
+\clearpage
+
 
 \subsection{Multi-objective optimisation}
 
@@ -325,6 +401,8 @@ This model has the largest median $t_{2}$ after Bayesian optimisation of $t_2$.
     \caption{\textsc{Optimisation of the timescale and VAMP$_{eq}$ gap.} The blue dots show the incumbent gap during optimisation (shown only for the multi-objective optimisation). Panels (a) and (b) refer to the timescale gap $t_2/t_3$ while panels (c) and (d) refer to the VAMP$_{eq}(2)$/VAMP$_eq(3)$. Panels (a) and (c) are for Chignolin optimisation while the panels (b) and (d) refer to BBA.}
     \label{fig:gap_optimiation}
 \end{figure}
+
+
 % % \section{Summary of trial results}
 
 % % \begin{table}[h]

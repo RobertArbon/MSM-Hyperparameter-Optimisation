@@ -25,6 +25,8 @@
 \usepackage{bm}
 \usepackage{xfrac}
 \usepackage{graphicx}
+\usepackage[section]{placeins}
+
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
 \newcommand{\SIci}[4]{\SI{#1}{#4},\ \SI{95}{\percent}C.I.\ [\numrange[range-phrase=---]{#2}{#3} \si{#4}]}
@@ -437,13 +439,14 @@ The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be 
     \label{fig:bba_differences}
 \end{figure}
 
-Figure \ref{fig:random_trials} shows the distribution of the timescale of the dominant process ($t_2$) for each MSM of BBA (panel (a)) and Chignolin (panel (b)) ordered left to right with highest value of $t_2$ on the left. Each point is colored according to the feature used. According to previous research~\cite{scherer_variational_2019} we expect in both cases that the dominant relaxation process refer to the folded / unfolded transition.  According to the variational theorem the most accurate models (and therefore the `best' set of hyperparameters) are the ones with the largest implied timescales. We would therefore expect that the `best' model would be the model with the highest value of $t_2$. However, implicit in this decision is that the implied timescale represents the same underlying relaxation process. In the case of Chignolin this is the case, as is shown by inspection of the models ranked 1 and 4 (labelled models 1 and 2, see table S1 and sections S2.1 and S2.2).  Despite using different features (distances and logistic distances, respectively) the dominant relaxation processes in both models are similar: figure S3 (c) and figure S6 (c) show conformational ensembles of the extremes of the dominant relaxation process which clearly show similar transitions.  [THIS NEEDS CHECKING].  Given the similarity of $t_2$ for each trial, we expect this observation to generalize to the other hyperparameter trials. 
+Figure \ref{fig:random_trials} shows the distribution of the timescale of the dominant process ($t_2$) for each MSM of BBA (panel (a)) and Chignolin (panel (b)) ordered left to right with highest value of $t_2$ on the left. Each point is colored according to the feature used. According to previous research~\cite{scherer_variational_2019} we expect in both cases that the dominant relaxation process (the second right eigenvector, $\psi_2$) correlate with the folded-unfolded transition.  According to the variational theorem the most accurate models (and therefore the `best' set of hyperparameters) are the ones with the largest implied timescales. We would therefore expect that the `best' model would be the model with the highest value of $t_2$. However, implicit in this decision is that the implied timescale represents the same underlying relaxation process. 
 
-In the case of BBA, the situation is different. We compared the top two best performing models (ranked 1 and 2 in figure \ref{fig:random_trials}, labeled model 1 and 2 in table S1 and sections S2.4 and S2.5) and the best performing models with the other features: model rank X with the dihedrals feature (model 3, section S2.6) and model rank Y with the distances feature (model 4, section S2.7). 
+In the case of Chignolin this is the case, as is shown by inspection of the models 1 and (ranked 1 and 4 respectively in figure~\ref{fig:random_trials}, see table S1 and sections S2.1 and S2.2 for more detailed information on each model).  Despite using different features (distances and logistic distances, respectively) $\psi_2$ in both models are similar. In model 1, figure S3 (c), shows $\psi_2$ as a unfolded-folded transition.  In model 2, figure S6 (c) shows $\psi_2$ as transitioning between a structure with a single, non-native contact and the folded state. 
 
-When comparing model 1 and 2 we see a similar folded-to-unfolded or partially-folded transition represented by the dominant eigenvector (figure \ref{fig:bba_differences} panel (a) and (b)), albeit with different values of $t_2$ (\SIci{20.4}{2.3}{176.2}{\micro\second} cf. \SIci{9.7}{2.1}{188.7}{\micro\second}). The accords with differences in the hyperparameters: model 1 and 2 use the logistic distances features, but model 1 has a logistic transform which is more sensitive to changes in contact distances between \SIrange[range-phrase=---]{0.1}{10}{\angstrom} (see figure S1) and more discrete basis functions (471 cf. 289, see table S1).  
 
-However, inspection of models 3 and 4 show markedly different transitions (figures S18(c) and S21(c) respectively) represented by the dominant eigenvector: both represent different folded-misfolded transitions.  This is to be expected as the features used are different and so we would expect them to pick out different conformational transitions. 
+In the case of BBA, the situation is different. The top two best performing models, models 1 and 2 (ranked 1 and 2 respectively in figure \ref{fig:random_trials}, see table S1 and sections S2.4 and S2.5) show evidence of optimising a similar $\psi_2$.   Comparing model 1 and 2 we see a similar folded-unfolded transition (figure \ref{fig:bba_differences} panel (a) and (b)). Model 1 is more accurate, as the values of $t_2$ show: \SIci{20.4}{2.3}{176.2}{\micro\second} cf. \SIci{9.7}{2.1}{188.7}{\micro\second}. The accords with differences in the hyperparameters: model 1 and 2 use the logistic distances features, but model 1 has a logistic transform which is more sensitive to changes in contact distances between \SIrange[range-phrase=---]{0.1}{10}{\angstrom} (see figure S1) and more discrete basis functions (471 cf. 289, see table S1).  
+
+However, the  best performing models with the other features have markedly different $\psi_2$ which do not correspond to the same transition as models 1 and 2.  Model 3 is the best model with the dihedrals feature (rank 7 in figure~\ref{fig:random_trials}, see table S1 and section S2.6) and model 4 is the best model with the distances feature (rank 54 in figure~\ref{fig:random_trials}, see table S1 and section S2.7). Both of these show markedly different transitions for $\psi_2$, see figures S18(c) and S21(c) respectively. 
 
 Thus, when optimising MSMs the objective function ($t_2$ in this case) may change definition across the search space and one is not comparing like-with-like when looking at \emph{just} the objective function.  As the largest change in $t_2$ is due to the different features, pre-selecting the feature to use, by for example using the method of Scherer et. al.~\cite{scherer_variational_2019} will be useful. But we also note that one must still select a VAMP lag-time, the differences in the VAMP scores may be small and there may be problems when scoring models using the VAMP2 with equilibrium constraints. 
 
@@ -481,8 +484,10 @@ The reason for writing the VAMP2$(k)$ score as the product of count matrices and
 
 Due to the problems problem of consistency between the matrices in equation~\ref{eqn:vamp_score_def} arising from a) enforcing reversibility and b) data splitting for cross-validation,  \emph{we recommend that VAMP2$(k)$ scores, either cross-validated or bootstrapped, should not used for reversible and stationary MSMs}. Instead we recommend bootstrapping the sum of the squared eigenvalues (VAMP$_{eq}(k)$) directly from the reversible transition matrix. This has the same theoretical properties of the VAMP2$(k)$ score (i.e., represents captured kinetic variance, and link to variational theorem) while not a) wasting data due to data splitting and b) perfect correlation with the implied timescales.
 
+\FloatBarrier
+\clearpage
 
-\subsection{Bayesian optimisation can improve timescales}\label{sec:bayes}
+\subsection{Bayesian optimisation may optimise different processes}\label{sec:bayes}
 
 \begin{figure}[h]
     \centering
@@ -491,22 +496,17 @@ Due to the problems problem of consistency between the matrices in equation~\ref
     \label{fig:optimisation_trials}
 \end{figure}
 
-We tested whether Bayesian optimisation could increase $t_2$ by selecting better hyperparameters.  We optimised the search space in~\ref{tab:search_space} using both single objective and multi-objective optimisation, with objectives based on the timescales, $t_{2/3}$ and the VAMP$_{eq}(2/3)$ scores, see~\ref{tab:opt_description} for a complete description.  The optimisation using dual objectives of $t_2$ with $t_2/t_3$ (and the VAMP$_{eq}$ equivalent) was prompted by the observation from the randomly sampled hyperparameter trial dataset there were many models with similar values of $t_2$ but with wide range of $t_2/t_3$. A large timescale gap gives rise to models which are more accurate when truncated and coarse grained into a two state model. The results are shown in figure~\ref{fig:optimisation_trials}.  
+We tested whether Bayesian optimisation could increase $t_2$ by selecting better hyperparameters.  We optimised the search space in table~\ref{tab:search_space} using both single objective and multi-objective optimisation, with objectives based on the timescales, $t_{2/3}$ and the VAMP$_{eq}(2/3)$ scores, see table~\ref{tab:opt_description} for a list of optimisation experiments.  The optimisation using dual objectives of $t_2$ with $t_2/t_3$ (and the VAMP$_{eq}$ equivalent) was prompted by the observation that from the randomly sampled hyperparameter trial dataset there were many models with similar values of $t_2$ but with wide range of timescale gaps $t_2/t_3$. A large timescale gap gives rise to models which are more accurate when truncated and coarse grained into a two state model. Our hope was therefore to bias the optimisation results in favour of both large $t_2$ and a large separation of timescales. The results are shown in figure~\ref{fig:optimisation_trials}.  
 
-Single objective optimisation of both $t_2$ and VAMP$_{eq}(2)$ increased $t_2$ for Chignolin and BBA.  For Chignolin the increase was modest, between \SIrange[range-phrase=---]{2.4}{5.5}{\percent} for all four objective functions.  The single objective optimisation of $t_2$ had the smallest increase (panel (a) red squares) while the multi-objective optimisation of the VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$ gave the largest increase in $t_2$ (panel (c) blue squares). 
+Single objective optimisation of both $t_2$ and VAMP$_{eq}(2)$ increased $t_2$ for Chignolin and BBA.  For Chignolin the increase was modest, between \SIrange[range-phrase=---]{2.4}{5.5}{\percent} for all four objective functions.  The single objective optimisation of $t_2$ had the smallest increase (panel (a) red squares) while the multi-objective optimisation of the VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$ gave the largest increase in $t_2$ (panel (c) blue squares), although the increase in the gap was modest (see figure S32 (c)). 
  
-The overall model increase is unsurprising given the consistency of $t_2$ across the randomly sampled hyperparameter trials.  The $t_2$ optimised MSM, model 3 (see table S1 and section S2.3) shows a partially folded to folded transition in figure S9(c) rather than the fully disordered to folded transition in the incumbent.  In terms of the values of the hyperparameters the optimisation has changed the TICA lag-time significantly (the other hyperparameters have remained largely unchanged). 
+The overall $t_2$ increase is unsurprising given the consistency of $t_2$ across the randomly sampled hyperparameter trials.  However, the $t_2$ optimised MSM, model 3 (see table S1 and section S2.3) shows a partially folded to folded transition in figure S9(c) rather than the fully unfolded to folded transition in the incumbent.  In terms of the values of the hyperparameters the optimisation has changed the TICA lag-time significantly (the other hyperparameters have remained largely unchanged). The VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$ optimised MSM, model 4 (see table S1 and section S2.4) shows the same unfolded - folded transition as model 1 (see figure S12(c). Both the dual-objective optimisations ($t_2$ with $t_2/t_3$ and the VAMP equivalent) increased both the $t_2$ and the separation of timescales (see figure S26). 
 
-The VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$ optimised MSM, model 4 (see table S1 and section S2.4) [Something about the MO optimised result.]
+For BBA the single objective optimisation of $t_2$ and VAMP$_{eq}(2)$ increased $t_2$ by \SI{128}{\percent} and \SI{135}{\percent} respectively.  However, these models have not `optimised' the same relaxation process as the incumbent, model 1. The $t_2$ optimised MSM, model 5 (see table S1 and section S2.8), denotes a transition between two mis-folded structures (see figure S24(c)).  This is perhaps surprising given that the main difference between the two model specification is that change in the logistic transform (see figure S1 for the difference between model 1 and model 5's logistic transform).  In contrast the VAMP$_{eq}(2)$ optimised model shows a similar transition to models 1 and 2 (see figure S15(c)).  Both the dual objective optimisation runs did not improve $t_2$ significantly, although in the case of optimiztion of $t_2$ with $t_2/t_3$ the gap increased significantly (see figure S26(b)). 
 
-Both the dual-objective optimisations ($t_2$ with $t_2/t_3$ and the VAMP equivalent) increased both the $t_2$ and the separation of timescales (see figure S26). 
 
-For BBA the single objective optimisation of $t_2$ and VAMP$_{eq}(2)$ increased $t_2$ by \SI{128}{\percent} and \SI{135}{\percent} respectively.  However, these models have not `optimised' the same relaxation process as the incumbent, model 1. The $t_2$ optimised MSM, model 5 (see table S1 and section S2.8), denotes a transition between two mis-folded structures (see figure S24(c)).  This is perhaps surprising given that the main difference between the two model specification is that change in the logistic transform (see figure S1 for the difference between model 1 and model 5's logistic transform).  
-
-[Something about the V2 + gap optimised model]
-
-Both the dual-objective optimisations ($t_2$ with $t_2/t_3$ and the VAMP equivalent) increased both the $t_2$ and the separation of timescales (see figure S26). 
-
+\FloatBarrier
+\clearpage
 
 \subsection{The lag time and number of scored eigenvectors do not affect model selection.}\label{sec:lag_evs_selection}
 
@@ -533,22 +533,19 @@ Figure~\ref{fig:vampeq_rank_vs_n_procs} shows the consistency between model rank
 
 \section{Conclusions}
 
-This work has shown that automated MSM optimisation should be approached with caution.  Changing they hyperparameters, even slightly, can give rise to different processes, making comparison between functions of the eigenvalues (e.g., timescales, VAMP/GMRQ scores) meaningless.  
+This work has drawn a complex picture of MSM optimisation which suggests that model selection of MSM hyperparameters by inspection of a single objective measure (e.g., $t_2$) is not advisable as changes in hyperparameters can change the physical meaning of the MSM eigenvectors.  The commonly used VAMP2 metric when used with the assumption of reversibility can give rise to rankings of MSMs which are inconsistent ordering of implied timescales. We suggest that this is due to a numerical, rather than theoretical problem. In its place we suggest using the sum of the square eigenvalues, or other model observables, e.g., $t_2$, with bootstrapping in order to estimate uncertainty.  
 
-Using VAMP scores for reversible MSMs should be also be approached with caution.  Other options, such as bootstrapped observables ($t_2$) relate more directly to model observables and can also be used to rank models.  
+Bayesian optimisation of MSM hyperparameters is possible using Tree Parzen Estimators for the surrogate function.  TPEs are able to easily model the different types of hyperparameter (continuous, integer and discrete) and do improve the implied timescales. Multi-objective optimization can be used but does not give a clear advantage over optimizing a single objective.  Caution must again be exercised as this can give rise to models in which the meaning of the eigenvectors can change. 
 
-Given these to observations, it is imperative the a range of different hyperparameters should be trialled and the results reported, in line with good statistical practice.  
+We also showed that selecting lag-times and number of scored eigenvectors in the objective function does not drastically change the the ranking of the hyperparameters as long as both are sufficiently large.  
 
-Bayesian optimisation  works? Doesn't work? 
-
-however, the lag time and the number of scored eigenvectors does not appear to change the ranking of the models (according to the VAMPeq).  
-
-Taken together these observations suggest a nubmer of recommendations: 
+Taken together these observations suggest a number of recommendations: 
 
 \begin{enumerate}
-    \item Random sample a range of hyeparmaeetes and inspect the results for the consistency of the eigenvectors.  
-    \item Use the VAMPeq or $t_2$ to rank hyperparameters. 
-    \item The lag time and the number of scored eigenvectors in VAMPeq do not affect model ranking, so it is not as important to test these in the range of models tested. 
+    \item Randomly sample a range of hyper-parameters and use the VAMP$_{eq}$ or $t_2$ (or the timescale of interest) to rank hyperparameters. 
+    \item Use a small (2 - 5) subset of models with different lag times ($\tau$) and score with a range of eigenvectors ($k$) and choose $\tau$ and $k$ such that VAMP$_{eq}$ is independent of both.  
+    \item Inspect eigenvectors to check for consistency of eigenvectors. 
+    \item Bayesian optimisation of $t_2$ or VAMP$_{eq}$ can be used to optimise hyperparameters but the eigenvectors must be inspected for  consistency.  
 \end{enumerate}
 
 
