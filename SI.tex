@@ -48,18 +48,18 @@
     % \end{tabularx}
 
 
-\begin{enumerate}
-    \item Chignolin 1 - best from random sampling. Hpix = 52/74 
-    \item Chignolin 2 - best logit(dist) from random sampling (and overall). Hpix = 23/24
-    \item Chignolin 3 - best overall from Bayesian optimisation of t2. Hpix = 218/NA
-    \item Chignolin 4 - best overall from multiobjective optimization of VAMPeq(2) and VAMPeq gap.
-    \item BBA 1 - best overall from random sampling. Shows misfolding as t2 (folded -> misfolded). Hpix = 24/24
-    \item BBA 2 - second best overall from random sampling. Hpix = 124/262
-    \item BBA 3 - best distances from random sampling. Hpix = 58/85
-    \item BBA 4 - best dihedrals from random sampling. Hpix = 6/6
-    \item BBA 5 - best from Bayesian optimisaiton of t2 (of just the logit(dist)?). Hpix = 227/NA
-    \item BBA 6 - best overall from multiobjective optimization of VAMPeq(2) and VAMPeq gap. 
-\end{enumerate}
+% \begin{enumerate}
+%     \item Chignolin 1 - best from random sampling. Hpix = 52/74 
+%     \item Chignolin 2 - best logit(dist) from random sampling (and overall). Hpix = 23/24
+%     \item Chignolin 3 - best overall from Bayesian optimisation of t2. Hpix = 218/NA
+%     \item Chignolin 4 - best overall from multiobjective optimization of VAMPeq(2) and VAMPeq gap.
+%     \item BBA 1 - best overall from random sampling. Shows misfolding as t2 (folded -> misfolded). Hpix = 24/24
+%     \item BBA 2 - second best overall from random sampling. Hpix = 124/262
+%     \item BBA 3 - best distances from random sampling. Hpix = 58/85
+%     \item BBA 4 - best dihedrals from random sampling. Hpix = 6/6
+%     \item BBA 5 - best from Bayesian optimisaiton of t2 (of just the logit(dist)?). Hpix = 227/NA
+%     \item BBA 6 - best overall from multiobjective optimization of VAMPeq(2) and VAMPeq gap. 
+% \end{enumerate}
 
 
 \begin{landscape}
@@ -395,13 +395,15 @@ This model has the largest median $t_{2}$ after Bayesian optimisation of VAMPeq(
 
 \subsection{Multi-objective optimisation}
 
-\begin{figure}
+\begin{figure}[ht]
     \centering
     \includegraphics[width=0.8\textwidth]{SI_figures/optimisation_gap_summary.pdf}
     \caption{\textsc{Optimisation of the timescale and VAMP$_{eq}$ gap.} The blue dots show the incumbent gap during optimisation (shown only for the multi-objective optimisation). Panels (a) and (b) refer to the timescale gap $t_2/t_3$ while panels (c) and (d) refer to the VAMP$_{eq}(2)$/VAMP$_eq(3)$. Panels (a) and (c) are for Chignolin optimisation while the panels (b) and (d) refer to BBA.}
     \label{fig:gap_optimiation}
 \end{figure}
 
+\FloatBarrier
+\clearpage
 
 % % \section{Summary of trial results}
 
@@ -476,36 +478,36 @@ This model has the largest median $t_{2}$ after Bayesian optimisation of VAMPeq(
 %     \label{fig:vampeq_rank_vs_proc_pairplot}
 % \end{figure}
 
-% \section{How does the lag time affect model selection?}
+\subsection{VAMP$_{eq}$ vs Lag time.}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=1.0\textwidth]{figures/vampeq_rank_vs_lag_pairplot_k2.pdf}
-%     \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=2)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
-%     \label{fig:vampeq2_rank_vs_lag_pairplot}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{SI_figures/1fme_vampeq_rank_vs_lag_pairplot_k2.pdf}
+    \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=2)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
+    \label{fig:vampeq2_rank_vs_lag_pairplot}
+\end{figure}
 
 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=1.0\textwidth]{figures/vampeq_rank_vs_lag_pairplot_k3.pdf}
-%     \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=3)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
-%     \label{fig:vampeq3_rank_vs_lag_pairplot}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{SI_figures/1fme_vampeq_rank_vs_lag_pairplot_k3.pdf}
+    \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=3)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
+    \label{fig:vampeq3_rank_vs_lag_pairplot}
+\end{figure}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=1.0\textwidth]{figures/vampeq_rank_vs_lag_pairplot_k5.pdf}
-%     \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=5)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
-%     \label{fig:vampeq5_rank_vs_lag_pairplot}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{SI_figures/1fme_vampeq_rank_vs_lag_pairplot_k5.pdf}
+    \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=5)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
+    \label{fig:vampeq5_rank_vs_lag_pairplot}
+\end{figure}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics[width=1.0\textwidth]{figures/vampeq_rank_vs_lag_pairplot_k10.pdf}
-%     \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=5)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
-%     \label{fig:vampeq10_rank_vs_lag_pairplot}
-% \end{figure}
+\begin{figure}
+    \centering
+    \includegraphics[width=1.0\textwidth]{SI_figures/1fme_vampeq_rank_vs_lag_pairplot_k10.pdf}
+    \caption{\textsc{Pair plot of $\operatorname{VAMP2}_{eq}(k=5)$ rank with different lag times.} The panel at position $(0,1)$ plots the rank according to$\operatorname{VAMP2}_{eq}(2)$ against the  rank according to$\operatorname{VAMP2}_{eq}(3)$, and similarly for other positions. This }
+    \label{fig:vampeq10_rank_vs_lag_pairplot}
+\end{figure}
 
 % \section{Modelling the hyperparameter response surface}\label{sec:response_surface_fitting}
 
