@@ -695,3 +695,142 @@ Millisecond-scale molecular dynamics simulations of 12 proteins reveal a set of 
   abstract = {Markov state models (MSMs) are a powerful framework for analyzing protein dynamics. MSMs require the decomposition of conformation space into states via clustering, which can be cross-validated when a prediction method is available for the clustering method. We present an algorithm for predicting cluster assignments of new data points with Ward's minimum variance method. We then show that clustering with Ward's method produces better or equivalent cross-validated MSMs for protein folding than other clustering algorithms.},
   file = {/Users/robertarbon/Zotero/storage/J5TC3P5L/Husic and Pande - 2017 - Ward Clustering Improves Cross-Validated Markov St.pdf;/Users/robertarbon/Zotero/storage/UT7Y5PCX/acs.jctc.html}
 }
+
+@article{A_Minimum_2018,
+  title = {A {{Minimum Variance Clustering Approach Produces Robust}} and {{Interpretable Coarse-Grained Models}}},
+  author = {Husic, Brooke E. and McKiernan, Keri A. and {Wayment-Steele}, Hannah K. and Sultan, Mohammad M. and Pande, Vijay S.},
+  year = {2018},
+  month = feb,
+  journal = {Journal of Chemical Theory and Computation},
+  volume = {14},
+  number = {2},
+  pages = {1071--1082},
+  issn = {1549-9618, 1549-9626},
+  doi = {10.1021/acs.jctc.7b01004},
+  urldate = {2020-08-22},
+  abstract = {Markov state models (MSMs) are a powerful framework for the analysis of molecular dynamics data sets, such as protein folding simulations, because of their straightforward construction and statistical rigor. The coarsegraining of MSMs into an interpretable number of macrostates is a crucial step for connecting theoretical results with experimental observables. Here we present the minimum variance clustering approach (MVCA) for the coarse-graining of MSMs into macrostate models. The method utilizes agglomerative clustering with Ward's minimum variance objective function, and the similarity of the microstate dynamics is determined using the Jensen-Shannon divergence between the corresponding rows in the MSM transition probability matrix. We first show that MVCA produces intuitive results for a simple tripeptide system and is robust toward long-duration statistical artifacts. MVCA is then applied to two protein folding simulations of the same protein in different force fields to demonstrate that a different number of macrostates is appropriate for each model, revealing a misfolded state present in only one of the simulations. Finally, we show that the same method can be used to analyze a data set containing many MSMs from simulations in different force fields by aggregating them into groups and quantifying their dynamical similarity in the context of force field parameter choices. The minimum variance clustering approach with the Jensen-Shannon divergence provides a powerful tool to group dynamics by similarity, both among model states and among dynamical models themselves.},
+  langid = {english},
+  file = {/Users/robertarbon/Zotero/storage/3KS69RAV/Husic et al. - 2018 - A Minimum Variance Clustering Approach Produces Ro.pdf}
+}
+
+@article{Adaptive_M2020,
+  title = {Adaptive {{Markov}} State Model Estimation Using Short Reseeding Trajectories},
+  author = {Wan, Hongbin and Voelz, Vincent A.},
+  year = {2020},
+  month = jan,
+  journal = {The Journal of Chemical Physics},
+  volume = {152},
+  number = {2},
+  pages = {024103},
+  publisher = {{American Institute of Physics}},
+  issn = {0021-9606},
+  doi = {10.1063/1.5142457},
+  urldate = {2021-12-07},
+  abstract = {In the last decade, advances in molecular dynamics (MD) and Markov State Model (MSM) methodologies have made possible accurate and efficient estimation of kinetic rates and reactive pathways for complex biomolecular dynamics occurring on slow time scales. A promising approach to enhanced sampling of MSMs is to use ``adaptive'' methods, in which new MD trajectories are ``seeded'' preferentially from previously identified states. Here, we investigate the performance of various MSM estimators applied to reseeding trajectory data, for both a simple 1D free energy landscape and mini-protein folding MSMs of WW domain and NTL9(1\textendash 39). Our results reveal the practical challenges of reseeding simulations and suggest a simple way to reweight seeding trajectory data to better estimate both thermodynamic and kinetic quantities.},
+  file = {/Users/robertarbon/Zotero/storage/CE3Q6IGU/Wan and Voelz - 2020 - Adaptive Markov state model estimation using short.pdf}
+}
+
+@article{High-Resol2019,
+  title = {High-{{Resolution Markov State Models}} for the {{Dynamics}} of {{Trp-Cage Miniprotein Constructed Over Slow Folding Modes Identified}} by {{State-Free Reversible VAMPnets}}},
+  author = {Sidky, Hythem and Chen, Wei and Ferguson, Andrew L.},
+  year = {2019},
+  month = sep,
+  journal = {The Journal of Physical Chemistry B},
+  volume = {123},
+  number = {38},
+  pages = {7999--8009},
+  publisher = {{American Chemical Society}},
+  issn = {1520-6106},
+  doi = {10.1021/acs.jpcb.9b05578},
+  urldate = {2021-10-27},
+  abstract = {State-free reversible VAMPnets (SRVs) are a neural network-based framework capable of learning the leading eigenfunctions of the transfer operator of a dynamical system from trajectory data. In molecular dynamics simulations, these data-driven collective variables capture the slowest modes of the dynamics and are useful for enhanced sampling and free energy estimation. In this work, we employ SRV coordinates as a feature set for Markov state model (MSM) construction. Compared to the current state-of-the-art, MSMs constructed from SRV coordinates are more robust to the choice of input features, exhibit faster implied time scale convergence, and permit the use of shorter lagtimes to construct higher kinetic resolution models. We apply this methodology to study the folding kinetics and conformational landscape of the Trp-cage miniprotein. Folding and unfolding mean first passage times are in good agreement with the prior literature, and a nine macrostate model is presented. The unfolded ensemble comprises a central kinetic hub with interconversions to several metastable unfolded conformations and which serves as the gateway to the folded ensemble. The folded ensemble comprises the native state, a partially unfolded intermediate ``loop'' state, and a previously unreported short-lived intermediate that we were able to resolve due to the high time resolution of the SRV-MSM. We propose SRVs as an excellent candidate for integration into modern MSM construction pipelines.},
+  file = {/Users/robertarbon/Zotero/storage/CWAQJDNC/Sidky et al. - 2019 - High-Resolution Markov State Models for the Dynami.pdf}
+}
+
+@article{Maximizing2018,
+  title = {Maximizing {{Kinetic Information Gain}} of {{Markov State Models}} for {{Optimal Design}} of {{Spectroscopy Experiments}}},
+  author = {Mittal, Shriyaa and Shukla, Diwakar},
+  year = {2018},
+  month = dec,
+  journal = {The Journal of Physical Chemistry B},
+  volume = {122},
+  number = {48},
+  pages = {10793--10805},
+  publisher = {{American Chemical Society}},
+  issn = {1520-6106},
+  doi = {10.1021/acs.jpcb.8b07076},
+  urldate = {2021-12-07},
+  abstract = {Spectroscopic techniques such as Trp\textendash Tyr quenching, luminescence resonance energy transfer, and triplet\textendash triplet energy transfer are widely used for understanding the dynamic behavior of proteins. These experiments measure the relaxation of a particular labeled set of residue pairs, and the choice of residue pairs requires careful thought. As a result, experimentalists must pick residue pairs from a large pool of possibilities. In the current work, we show that molecular simulation datasets of protein dynamics can be used to systematically select an optimal set of residue positions to place probes for conducting spectroscopic experiments. The method described in this work, called Optimal Probes, can be used to rank trial sets of residue pairs in terms of their ability to capture the conformational dynamics of the protein. Optimal probes ensures two conditions: residue pairs capture the slow dynamics of the protein and their dynamics is not correlated for maximum information gain to score each trial set. Eventually, the highest scored set can be used for biophysical experiments to study the kinetics of the protein. The scoring methodology is based on kinetic network models of protein dynamics and a variational principle for molecular kinetics to optimize the hyperparameters used for the model. We also discuss that the scoring strategy used by Optimal Probes is the best possible way to ensure the ideal choice of residue pairs for experiments. We predict the best experimental probe positions for proteins {$\lambda$}-repressor, {$\beta$}2-adrenergic receptor, and villin headpiece domain. These proteins have been well-studied and allow for a rigorous comparison of Optimal Probes predictions with already available experiments. Additionally, we also illustrate that our method can be used to predict the best choice for experiments by including any previous experiment choices available from other studies on the same protein. We consistently find that the best choice cannot be based on intuition or structural information such as distance difference between few known stable structures of the protein. Therefore, we show that incorporating protein dynamics could be used to maximize the information gain from experiments.}
+}
+
+@article{Modeling_t2017,
+  title = {Modeling the Mechanism of {{CLN025}} Beta-Hairpin Formation},
+  author = {McKiernan, Keri A. and Husic, Brooke E. and Pande, Vijay S.},
+  year = {2017},
+  month = sep,
+  journal = {The Journal of Chemical Physics},
+  volume = {147},
+  number = {10},
+  pages = {104107},
+  publisher = {{American Institute of Physics}},
+  issn = {0021-9606},
+  doi = {10.1063/1.4993207},
+  urldate = {2021-12-07},
+  abstract = {Beta-hairpins are substructures found in proteins that can lend insight into more complex systems. Furthermore, the folding of beta-hairpins is a valuable test case for benchmarking experimental and theoretical methods. Here, we simulate the folding of CLN025, a miniprotein with a beta-hairpin structure, at its experimental melting temperature using a range of state-of-the-art protein force fields. We construct Markov state models in order to examine the thermodynamics, kinetics, mechanism, and rate-determining step of folding. Mechanistically, we find the folding process is rate-limited by the formation of the turn region hydrogen bonds, which occurs following the downhill hydrophobic collapse of the extended denatured protein. These results are presented in the context of established and contradictory theories of the beta-hairpin folding process. Furthermore, our analysis suggests that the AMBER-FB15 force field, at this temperature, best describes the characteristics of the full experimental CLN025 conformational ensemble, while the AMBER ff99SB-ILDN and CHARMM22* force fields display a tendency to overstabilize the native state.},
+  file = {/Users/robertarbon/Zotero/storage/56PFZSNV/McKiernan et al. - 2017 - Modeling the mechanism of CLN025 beta-hairpin form.pdf}
+}
+
+@article{Quantitati2018,
+  title = {Quantitative Comparison of Adaptive Sampling Methods for Protein Dynamics},
+  author = {Hruska, Eugen and Abella, Jayvee R. and N{\"u}ske, Feliks and Kavraki, Lydia E. and Clementi, Cecilia},
+  year = {2018},
+  month = dec,
+  journal = {The Journal of Chemical Physics},
+  volume = {149},
+  number = {24},
+  pages = {244119},
+  publisher = {{American Institute of Physics}},
+  issn = {0021-9606},
+  doi = {10.1063/1.5053582},
+  urldate = {2020-09-26},
+  abstract = {Adaptive sampling methods, often used in combination with Markov state models, are becoming increasingly popular for speeding up rare events in simulation such as molecular dynamics (MD) without biasing the system dynamics. Several adaptive sampling strategies have been proposed, but it is not clear which methods perform better for different physical systems. In this work, we present a systematic evaluation of selected adaptive sampling strategies on a wide selection of fast folding proteins. The adaptive sampling strategies were emulated using models constructed on already existing MD trajectories. We provide theoretical limits for the sampling speed-up and compare the performance of different strategies with and without using some a priori knowledge of the system. The results show that for different goals, different adaptive sampling strategies are optimal. In order to sample slow dynamical processes such as protein folding without a priori knowledge of the system, a strategy based on the identification of a set of metastable regions is consistently the most efficient, while a strategy based on the identification of microstates performs better if the goal is to explore newer regions of the conformational space. Interestingly, the maximum speed-up achievable for the adaptive sampling of slow processes increases for proteins with longer folding times, encouraging the application of these methods for the characterization of slower processes, beyond the fast-folding proteins considered here.},
+  file = {/Users/robertarbon/Zotero/storage/NX8CI73M/Hruska et al. - 2018 - Quantitative comparison of adaptive sampling metho.pdf;/Users/robertarbon/Zotero/storage/FMADI7XU/1.html}
+}
+
+@article{VAMPnets_f2018,
+  title = {{{VAMPnets}} for Deep Learning of Molecular Kinetics},
+  author = {Mardt, Andreas and Pasquali, Luca and Wu, Hao and No{\'e}, Frank},
+  year = {2018},
+  month = jan,
+  journal = {Nature Communications},
+  volume = {9},
+  number = {1},
+  pages = {5},
+  publisher = {{Nature Publishing Group}},
+  issn = {2041-1723},
+  doi = {10.1038/s41467-017-02388-1},
+  urldate = {2021-07-18},
+  abstract = {There is an increasing demand for computing the relevant structures, equilibria, and long-timescale kinetics of biomolecular processes, such as protein-drug binding, from high-throughput molecular dynamics simulations. Current methods employ transformation of simulated coordinates into structural features, dimension reduction, clustering the dimension-reduced data, and estimation of a Markov state model or related model of the interconversion rates between molecular structures. This handcrafted approach demands a substantial amount of modeling expertise, as poor decisions at any step will lead to large modeling errors. Here we employ the variational approach for Markov processes (VAMP) to develop a deep learning framework for molecular kinetics using neural networks, dubbed VAMPnets. A VAMPnet encodes the entire mapping from molecular coordinates to Markov states, thus combining the whole data processing pipeline in a single end-to-end framework. Our method performs equally or better than state-of-the-art Markov modeling methods and provides easily interpretable few-state kinetic models.},
+  copyright = {2018 The Author(s)},
+  langid = {english},
+  annotation = {Bandiera\_abtest: a Cc\_license\_type: cc\_by Cg\_type: Nature Research Journals Primary\_atype: Research Subject\_term: Machine learning;Molecular modelling;Theoretical chemistry Subject\_term\_id: machine-learning;molecular-modelling;theoretical-chemistry},
+  file = {/Users/robertarbon/Zotero/storage/ZYKXDCL5/Mardt et al. - 2018 - VAMPnets for deep learning of molecular kinetics.pdf;/Users/robertarbon/Zotero/storage/GQ6QBRC5/s41467-017-02388-1.html}
+}
+
+@article{Variationa2018,
+  title = {Variational Encoding of Complex Dynamics},
+  author = {Hern{\'a}ndez, Carlos X. and {Wayment-Steele}, Hannah K. and Sultan, Mohammad M. and Husic, Brooke E. and Pande, Vijay S.},
+  year = {2018},
+  month = jun,
+  journal = {Physical Review E},
+  volume = {97},
+  number = {6},
+  pages = {062412},
+  publisher = {{American Physical Society}},
+  doi = {10.1103/PhysRevE.97.062412},
+  urldate = {2021-12-07},
+  abstract = {Often the analysis of time-dependent chemical and biophysical systems produces high-dimensional time-series data for which it can be difficult to interpret which individual features are most salient. While recent work from our group and others has demonstrated the utility of time-lagged covariate models to study such systems, linearity assumptions can limit the compression of inherently nonlinear dynamics into just a few characteristic components. Recent work in the field of deep learning has led to the development of the variational autoencoder (VAE), which is able to compress complex datasets into simpler manifolds. We present the use of a time-lagged VAE, or variational dynamics encoder (VDE), to reduce complex, nonlinear processes to a single embedding with high fidelity to the underlying dynamics. We demonstrate how the VDE is able to capture nontrivial dynamics in a variety of examples, including Brownian dynamics and atomistic protein folding. Additionally, we demonstrate a method for analyzing the VDE model, inspired by saliency mapping, to determine what features are selected by the VDE model to describe dynamics. The VDE presents an important step in applying techniques from deep learning to more accurately model and interpret complex biophysics.},
+  file = {/Users/robertarbon/Zotero/storage/D2TKK59J/Hernández et al. - 2018 - Variational encoding of complex dynamics.pdf;/Users/robertarbon/Zotero/storage/2QDEK3VV/PhysRevE.97.html}
+}
+
+
