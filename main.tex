@@ -181,16 +181,16 @@ Markov state models (MSMs) are a popular model for extracting kinetic informatio
 The entire process of transforming MD frames into a transition matrix involves making a number of modeling choices called \emph{hyperparameters}. Hyperparameters are differentiated from the \emph{parameters} of the model because the latter are calculated from the data via the optimization of a loss function (e.g., the log-likelihood), while the hyperparameters are chosen via expert judgment, or via some summary metric of the model\cite{feurer2019hyperparameter}. 
 For MSMs, the important hyperparameters~\cite{Optimized_2016, scherer_variational_2019, husic_markov_2018} are which subset of atoms from the simulation to include (e.g., a protein loop, pocket, or other substructure of interest); the transformation of these coordinates into important features (e.g., residue-residue distances, backbone dihedral angles); dimensionality reduction onto a set of important collective variables (typically time-lagged independent component analysis, TICA~\cite{perez-hernandezIdentificationSlowMolecular2013a}, is used for this purpose); and finally how to define discrete states from these collective variables (via some clustering algorithm such as K-Means). Therefore, the parameters of an MSM are the conditional probabilities in the transition matrix, $T_{i, j}$, whereas the hyperparameters are all the choices (choice of features, clustering algorithm, etc.) that gave us the specific state definitions used in the likelihood maximization step.   
 
-Hyperparameter optimization is an important part of modern statistical, and especially machine learning (ML), analysis pipelines~\cite{feurer2019hyperparameter, bergstra_jamesbergstra_random_2012, bergstra_making_2013, bergstraAlgorithmsHyperParameterOptimizationa} as hyperparameters can have a strong impact of the performance of a model. There are several methods to find the optimal set of hyperparameters, from exhaustively searching a uniformly spaced grid of choices~\cite{c1997montgomery} or randomly selected from a predefined search space~\cite{bergstra_jamesbergstra_random_2012}, evolutionary and population algorithms~\cite{simon2013evolutionary, kennedyParticleSwarmOptimization1995, eberhart1998comparison, hansenCMAEvolutionStrategy2016} to active learning approaches such as Bayesian optimization~\cite{hutterSequentialModelbasedOptimization2011, bergstraAlgorithmsHyperParameterOptimizationa, NIPS2012_4522, bergstraMakingScienceModel2013}.
+Hyperparameter optimization is an important part of modern statistical and machine learning (ML) analysis pipelines~\cite{feurer2019hyperparameter, bergstra_jamesbergstra_random_2012, bergstra_making_2013, bergstraAlgorithmsHyperParameterOptimizationa} as hyperparameters can have a strong impact of the performance of a model. There are several methods to find the optimal set of hyperparameters, from exhaustively searching a uniformly spaced grid of choices~\cite{c1997montgomery} or randomly selected from a predefined search space~\cite{bergstra_jamesbergstra_random_2012}, evolutionary and population algorithms~\cite{simon2013evolutionary, kennedyParticleSwarmOptimization1995, eberhart1998comparison, hansenCMAEvolutionStrategy2016} to active learning approaches such as Bayesian optimization~\cite{hutterSequentialModelbasedOptimization2011, bergstraAlgorithmsHyperParameterOptimizationa, NIPS2012_4522, bergstraMakingScienceModel2013}.
 
-Variational scores for assessing the accuracy of MSMs have provided a means to perform hyperparameter optimization. The first score to be developed was the cross-validated generalized matrix Rayleigh quotient~\cite{mcgibbonVariationalCrossvalidationSlow2015}, GRMQ, which pertains to reversible MSMs; while the variational approach to Markov processes (VAMP) scores~\cite{wuVariationalApproachLearning2020c,scherer_variational_2019} extended these ideas to both reversible, non-reversible and non-stationary models. These scores measure how well the eigenvectors of the transition matrix (singular vectors in the case of non-reversible models) approximate the `true' eigenvectors in a variational sense i.e., the higher the score, the better the approximation. Thus, optimization of eigenvectors can proceed without the need for a `ground truth` to compare to.   
+No `ground truth' data exist for MSMs, so the accuracy of the eigenvectors cannot be judged absolutely. However, a family of variational scores exist which provide a means to compare the relative accuracy of MSMs and thus allow hyperparameter optimisation to be performed. The first score to be developed was the cross-validated generalized matrix Rayleigh quotient~\cite{mcgibbonVariationalCrossvalidationSlow2015}, GRMQ, which pertains to reversible MSMs; while the variational approach to Markov processes (VAMP) scores~\cite{wuVariationalApproachLearning2020c,scherer_variational_2019} extended these ideas to both reversible, non-reversible and non-stationary models. These scores measure how well the eigenvectors of the transition matrix (singular vectors in the case of non-reversible models) approximate the `true' eigenvectors in a variational sense i.e., the higher the score, the better the approximation. Thus, optimization of eigenvectors can proceed without the need for a `ground truth` to compare to.   
 
-To use a variational score, it is necessary to specify the temporal resolution of the MSM (a lag time, $\tau$) and the number of slow relaxation modes to optimize ($k$), and then estimate the MSM with different hyperparameters. The `best' set of hyperparameters is the one with the highest variational score. In the case of the VAMP-E score, one may also add $k$ to the list of hyperparameters to optimize. 
+To use a variational score, it is necessary to specify the lag time of the MSM and the number of slow relaxation modes to optimize ($k$), and then estimate the MSM with different hyperparameters. The `best' set of hyperparameters is the one with the highest variational score. In the case of the VAMP-E score, one may also add $k$ to the list of hyperparameters to optimize. 
 
 This selection method removes the need for potentially arbitrary selection with the concomitant risk of findings that are not robust to changes in modeling assumptions. This method has been used in a number of different studies~\cite{A_Minimum_2018, Adaptive_M2020, High-Resol2019, Maximizing2018, Modeling_t2017, Optimized_2016, Quantitati2018, VAMPnets_f2018, Variationa2018, Ward_Clust2017}. In addition, it has given rise to investigations into the roles of various hyperparameters and other methods for hyperparameter selection. In Husic et. al.~
 \cite{Ward_Clust2017} the authors used the GMRQ to show that the Ward and K-means methods are optimal for clustering conformations for MSM; in Husic et al.~\cite{Optimized_2016} the authors performed a sensitivity analysis of the GMRQ  in order to determine the sensitivity of hyperparameters in describing protein folding.  An extension of the VAMP score by Scherer et al.~\cite{scherer_variational_2019} showed that the optimal set of features could be selected before going through the full MSM creation and scoring pipeline.  
 
-It is tempting to think that with a single model metric and state-of-the-art ML optimization software, it should be possible to form an automatic pipeline wherein simulation data are fed in, and a single optimized MSM describing the kinetics and thermodynamics of the system comes out. However, many detailed questions need to be answered before such a pipeline is possible. First, do variational scores refer to the same relaxation mode across all possible combinations of hyperparameters?  It is possible that with certain combinations of hyperparameters, the eigenvectors could describe different relaxation modes. It is therefore possible that the variational scores do not compare the same set of processes across different sets of hyperparameters. Second, the MSM temporal resolution and number of scored processes interest will affect the variational scores - does this have any material effect on how we rank different sets of hyperparameters? Third, do we need variational scores to optimize models at all?  Will model observables, such as the implied timescales suffice to optimize MSMs?  Finally, does hyperparameter optimization work for MSMs compared to randomly sampling hyperparameters?  Here, we use a common method (Bayesian optimization with Tree Parzen Estimators) for optimizing machine learning models to find optimal hyperparameters. 
+It is tempting to think that with a single model metric and state-of-the-art ML optimization software, it should be possible to form an automatic pipeline wherein simulation data are fed in, and a single optimized MSM describing the kinetics and thermodynamics of the system comes out. However, many detailed questions need to be answered before such a pipeline is possible. First, do variational scores refer to the same relaxation mode across all possible combinations of hyperparameters?  It is possible that with certain combinations of hyperparameters, the eigenvectors could describe different relaxation modes. It is therefore possible that the variational scores do not compare the same set of processes across different sets of hyperparameters. Second, the MSM lag time and number of scored processes interest will affect the variational scores - does this have any material effect on how we rank different sets of hyperparameters? Third, do we need variational scores to optimize models at all?  Will model observables, such as the implied timescales suffice to optimize MSMs?  Finally, does hyperparameter optimization work for MSMs compared to randomly sampling hyperparameters?  Here, we use a common method (Bayesian optimization with Tree Parzen Estimators) for optimizing machine learning models to find optimal hyperparameters. 
 
 
 The remainder of this work is structured as follows.  In section 2, we cover the necessary theory to understand MSMs and Bayesian optimization of hyperparameters; section 3 describes the methods; section 4 discusses the results and section 5 concludes with some recommendations. 
@@ -199,7 +199,7 @@ The remainder of this work is structured as follows.  In section 2, we cover the
 \subsection{Markov state models}
 \subsubsection{Overview of MSMs}
 
-What follows is a brief overview of the theory of MSMs, for a more detailed picture see some of the many good references~\cite{prinzMarkovModelsMolecular2011, trendelkamp-schroer_estimation_2015,husic_markov_2018}. Markov state models describe the first-order conformational kinetics of a system by specifying the conditional probability of transitioning from a state $i$ at a time $t$ to a state $j$ at a time $t+\tau$  later. This information is summarized in the transition matrix $T_{i, j}(\tau) = P(j, t+\tau | i, t)$. Each state, $i$, is a collection of conformations centered around a point in a relevant feature space, e.g., conformations with similar values of backbone dihedral angles. The transition matrix is a finite and discrete representation of the underlying Markovian transfer operator, $\mathcal{T}(\tau)$, which describes the dynamics of the system. The first left eigenvector $\phi_1$ (in descending eigenvalue order, with $\lambda_{1} = 1$) corresponds to the stationary or equilibrium distribution, which we also label $\pi$; the second left eigenvectors, $\phi_2$ corresponds to the slowest conformational relaxation process (e.g., protein folding); the third is the next slowest relaxation process and so on. The eigenvalues are related to the timescales of these relaxation processes by: $ts_{i} = -\tau/\log{\lambda_i}$.  The transition matrix is said to be reversible if it obeys detailed balance $\pi_i T_{i, j}=\pi_j T_{j, i}$. 
+What follows is a brief overview of the theory of MSMs, for a more detailed picture see some of the many good references~\cite{prinzMarkovModelsMolecular2011, trendelkamp-schroer_estimation_2015,husic_markov_2018}. Markov state models describe the first-order conformational kinetics of a system by specifying the conditional probability of transitioning from a state $i$ at a time $t$ to a state $j$ at a time $t+\tau$  later. This information is summarized in the transition matrix $T_{i, j}(\tau) = P(j, t+\tau | i, t)$. Each state, $i$, is a collection of conformations which have similar kinetic properties. The transition matrix is a finite and discrete representation of the underlying Markovian transfer operator, $\mathcal{T}(\tau)$, which describes the dynamics of the system. The first left eigenvector $\phi_1$ (in descending eigenvalue order, with $\lambda_{1} = 1$) corresponds to the stationary or equilibrium distribution, which we also label $\pi$; the second left eigenvectors, $\phi_2$ corresponds to the slowest conformational relaxation process (e.g., protein folding); the third is the next slowest relaxation process and so on. The eigenvalues are related to the timescales of these relaxation processes by: $ts_{i} = -\tau/\log{\lambda_i}$.  The transition matrix is said to be reversible if it obeys detailed balance $\pi_i T_{ij}=\pi_j T_{ji}$. 
 
 The transition matrix is specified with respect to a set of $p$ basis states, $\chi_1, \chi_2, ..., \chi_p$ which we denote as a vector $\bm{\chi}$. In what follows, the basis states are assumed to be discrete and orthonormal and each one corresponds to a small region of conformational space (although this is not necessary).  Each frame of an MD trajectory can be mapped to one of these basis states and these discretized MD trajectories form the data from which the transition matrix is estimated.
 
@@ -217,7 +217,7 @@ The key idea behind variational scores is that approximations to the true eigenv
 \end{equation}
 where $\hat{\lambda}$ are the eigenvalues estimated from an approximate basis set $\bm{\chi}$ and $\lambda$ are the true eigenvalues. The sum runs over the first $k$ eigenvalues, which are typically the dominant slow relaxation processes that one is interested in approximating; while $r$ is some arbitrary positive integer~\cite{wuVariationalApproachLearning2020c}.
 
-When $r=1$ and the model is assumed to be stationary~\cite{mcgibbonVariationalCrossvalidationSlow2015}, the left-hand side of equation~\ref{eqn:var_principle} is known as the Generalized Matrix Rayleigh Quotient (GMRQ):
+When $r=1$ and the model is assumed to be stationary~\cite{mcgibbonVariationalCrossvalidationSlow2015}, the left-hand side of Equation~\ref{eqn:var_principle} is known as the Generalized Matrix Rayleigh Quotient (GMRQ):
 
 \begin{equation}
     \operatorname{GMRQ}(\bm{\theta}) = \operatorname{Tr}\left[(\mathbf{U}^{T}\mathbf{C}_{01}\mathbf{U})(\mathbf{U}^{T}\mathbf{C}_{00}^\mathbf{U})^{-1}\right], \label{eqn:gmrq_def}
@@ -247,7 +247,7 @@ As timescales are monotonic functions of the eigenvalues, maximizing the sum of 
 
 Hyperparameters should be chosen to maximize the performance of a model on unseen data. Simply maximizing the variational score on the data used to fit the model (training data) may result in eigenvectors which describe this data well but do not generalize to new data generated by the same system. This is known as over-fitting and is a well-documented phenomenon~\cite{friedman2001elements}. To overcome this problem the estimated VAMP scores should be close to those attained on unseen data. One estimation method is to withhold a portion of the data (test set) and calculate the variational scores on this set. While accurate, it requires ignoring a large proportion of the data for training purposes, which may be wasteful when there are only a handful of observed transitions which we are interested in modeling. 
 
-Two other popular methods, which make more efficient use of the available data,  are cross-validation~\cite{arlotSurveyCrossvalidationProcedures2009} and bootstrapping~\cite{efronIntroductionBootstrap1993}. The estimators for the variational scores (equations~\ref{eqn:gmrq_def} and \ref{eqn:vamp_def}) were both adapted to be used with cross-validation\cite{wuVariationalApproachLearning2020c, mcgibbonVariationalCrossvalidationSlow2015}: data is randomly split into two equally sized subsets. The eigenvectors $\mathbf{U}/\mathbf{V}$ are calculated on one set, while the count matrices $\mathbf{C}_{00/0t/tt}$ are calculated on the other set.  This is repeated $N_c$ times (e.g., $N_c =50$~\cite{scherer_variational_2019}) and an average of the VAMP scores taken.
+Two other popular methods, which make more efficient use of the available data,  are cross-validation~\cite{arlotSurveyCrossvalidationProcedures2009} and bootstrapping~\cite{efronIntroductionBootstrap1993}. The estimators for the variational scores (Equations~\ref{eqn:gmrq_def} and \ref{eqn:vamp_def}) were both adapted to be used with cross-validation\cite{wuVariationalApproachLearning2020c, mcgibbonVariationalCrossvalidationSlow2015}: data is randomly split into two equally sized subsets. The eigenvectors $\mathbf{U}/\mathbf{V}$ are calculated on one set, while the count matrices $\mathbf{C}_{00/0t/tt}$ are calculated on the other set.  This is repeated $N_c$ times (e.g., $N_c =50$~\cite{scherer_variational_2019}) and an average of the VAMP scores taken.
 
 The bootstrap does not require a reformulation of estimators. Instead, a number, $N_b$, of new data sets are created from the original data set ($N_b = 100 - 1000$~\cite{efronIntroductionBootstrap1993}) and the mean or median of variational scores on each of these data sets used. To create the bootstrapped data sets, 
 trajectories are split into small independent subtrajectories. The subtrajectories are sampled \emph{with replacement} to create a new bootstrapped data set of the same size as the original. 
@@ -262,7 +262,7 @@ Finding the best set of hyperparameters $\bm{\theta}$ using either the VAMP scor
 
 Examples of exhaustive searching are grid search where hyperparameters are taken from a uniformly placed grid over the hyperparameter search space, and random search, where hyperparameters are randomly sampled from the search space. 
 
-Grid search is an effective strategy when the response is sensitive to all the hyperparameters.  However, it has poor scaling with the number of hyperparameters ($N^d$, where $N$ is the number of grid points per hyperparameter and $d$ is a number of hyperparameters), so when only a small subset of hyperparameters are relevant, random search is more efficient~\cite{bergstra_jamesbergstra_random_2012}.  
+Grid search is an effective strategy when the response is sensitive to all the hyperparameters.  However, it has poor scaling with the number of hyperparameters ($N^d$, where $N$ is the number of grid points per hyperparameter and $d$ is the number of hyperparameters), so when only a small subset of hyperparameters are relevant, random search is more efficient~\cite{bergstra_jamesbergstra_random_2012}.  
 
 Model-based search algorithms construct surrogate models of the mapping between the hyperparameters and the model response which are cheap to evaluate and optimize, and use these models to guide hyperparameters to test. Examples include Bayesian optimization with either a Gaussian process or a  Tree Parzen Estimator (TPE) as the surrogate model~\cite{bergstraAlgorithmsHyperParameterOptimizationa}.  The third class of optimization algorithms is population algorithms, which include evolutionary algorithms~\cite{simon2013evolutionary,eberhart1998comparison}, particle swarm optimization~\cite{kennedyParticleSwarmOptimization1995,eberhart1998comparison} and covariance matrix adaption~\cite{hansenCMAEvolutionStrategy2016}, these will not be explored here further. 
 
@@ -283,18 +283,18 @@ Bayesian Optimization with TPE optimization proceeds as follows.
     
 \end{enumerate}
 
-The functions $l$ and $g$ are Parzen estimators, otherwise known as kernel density estimators. These model the probability density of $\bm{\theta}$ by placing truncated Gaussian distributions over each observation of a continuous hyperparameter, and a categorical distribution proportional to the observed counts of each level for each discrete hyperparameter. More details can be found in \cite{bergstraAlgorithmsHyperParameterOptimizationa, bergstraMakingScienceModel2013}. 
+The functions $l$ and $g$ are Parzen estimators, otherwise known as kernel density estimators. These model the probability density of $\bm{\theta}$ by placing truncated Gaussian distributions over each observation of a continuous hyperparameter, and a categorical distribution proportional to the observed counts of each level for each discrete hyperparameter. More details can be found in Bergstra et al.~\cite{bergstraAlgorithmsHyperParameterOptimizationa, bergstraMakingScienceModel2013}. 
 
 
 
 \section{Methods}
-
-The workflow may be summarized as follows.  We used existing molecular dynamics trajectories of Chignolin and BBA and fit an MSMs with 140 randomly sampled hyperparameters (\emph{hyperparameter trials}) and recorded implied timescales, eigenvalues, VAMP2 scores for a range of different lag times ($\tau$). Each observable was estimated with confidence intervals using bootstrapping. This data constituted our \emph{hyperparameter trial data set} and was analyzed in sections first and last results subsection. A `toy' three-state MSM model was used to discuss the problems with the VAMP2 score, discussed in the second results section. We then performed Bayesian optimization with a TPE surrogate function, with a variety of different objective functions, and using the hyperparameter trial data set to initialize the surrogate function. These results are discussed in the third results section. 
+To answer our research questions we created a large data set of Markov state models and analysed the results. 
+The workflow may be summarized as follows.  We used existing molecular dynamics trajectories of Chignolin and BBA and fit an MSMs with 140 randomly sampled hyperparameters (\emph{hyperparameter trials}) and recorded implied timescales, eigenvalues, VAMP-2 scores for a range of different lag times ($\tau$). Each observable was estimated with confidence intervals using bootstrapping. This data constituted our \emph{hyperparameter trial data set} and was analyzed in the second and last results subsections. A `toy' three-state MSM model was used to discuss the problems with the VAMP-2 score, discussed in the second results section. We then performed Bayesian optimization with a TPE surrogate function, with a variety of different objective functions, and using the hyperparameter trial data set to initialize the surrogate function. These results are discussed in the third results section. 
 
 
 \subsection{Molecular dynamics}
 
-We use simulation data of the fast-folding proteins Chignolin and BBA, two of the twelve fast-folding proteins which have become the de facto benchmark data set for testing molecular kinetics methods. The methods used to create this data are described elsewhere~\cite{lindorff-larsen_how_2011}. The average folding time was calculated by the authors~\cite{lindorff-larsen_how_2011}; the sub-trajectory length and number of sub-trajectories correspond to the data splitting used in the bootstrapping procedure. Important information on the data is shown in table~\ref{tab:data_description}. 
+We use simulation data of the fast-folding proteins Chignolin and BBA, two of the twelve fast-folding proteins which have become the de facto benchmark data set for testing molecular kinetics methods. The methods used to create this data are described elsewhere~\cite{lindorff-larsen_how_2011}. The average folding time was calculated by the authors~\cite{lindorff-larsen_how_2011}; the sub-trajectory length and number of sub-trajectories correspond to the data splitting used in the bootstrapping procedure. Important information on the data is shown in Table~\ref{tab:data_description}. 
 
 \begin{table}
     \caption{\textbf{Description of molecular dynamics data}}
@@ -317,14 +317,14 @@ MSMs were estimated using PyEMMA version 2.5.7~\cite{schererPyEMMASoftwarePackag
     \item The frames of the TICA trajectories were clustered using the k-means algorithm into $n$ discrete microstates. 
     \item A reversible, maximum likelihood MSM was then estimated. 
 \end{enumerate}
-To save on memory and compute resources the data was subset in parts of the MSM estimation. The MD trajectories were first strided so that the time between each frame was\SI{1}{\nano\second}. The cluster centers were estimated on frames separated by \SI{10} {\nano\second}, i.e. only the 0'th, 10'th, etc. frames were used for estimating the cluster centers. 
+To save on memory and compute resources the data was subset in parts of the MSM estimation. The MD trajectories were first strided so that the time between each frame was\SI{1}{\nano\second}. The cluster centers were estimated on frames separated by \SI{10} {\nano\second}, i.e. only the 0th, 10th, etc. frames were used for estimating the cluster centers. 
 
 The uncertainty for model observables was estimated using the bootstrap with \num{100} bootstrap samples. The point estimate and error bars were calculated as the median,   \SI{2.5}{\percent} \& \SI{97.5}{\percent} quantiles of the distribution over the bootstrap samples.
 
 \subsection{Hyperparameters and scoring}
-\num{140} different hyperparameters were randomly sampled from the search space described by table~\ref{tab:search_space}. Each set of hyperparameters and their corresponding model observables are known as a \emph{hyperparameter trial} (or just \emph{trial}). Three different features, $f$, were used: 
+\num{140} different hyperparameters were randomly sampled from the search space described by Table~\ref{tab:search_space}. Each set of hyperparameters and their corresponding model observables are known as a \emph{hyperparameter trial} (or just \emph{trial}). Three different features, $f$, were used: 
 \begin{enumerate}
-    \item dihedrals feature (`dihed.'): the $\phi$, $\psi$ and $\chi_{1-5}$ angles of the amino acid residues;
+    \item dihedrals feature (`dihed.'): the sine and cosine of the $\phi$, $\psi$ and $\chi_{1-5}$ angles of the amino acid residues;
     \item contact distance feature (`dist.'): the distance between all pairs of residues separated by three or more residues; \label{itm:cont_dist_feat}
     \item logistic distance feature (`logit(dist.)'): the same as item~\ref{itm:cont_dist_feat} but with a logistic transform applied to the distance ($d$): $\mathrm{logit}(d) = [1+\exp{(s(d-c))}]^{-1}$, where center, $c$, and steepness $s$,  have units of \si{\angstrom} and \si{\per\angstrom} respectively.
 \end{enumerate}
@@ -332,13 +332,13 @@ The logistic distance feature may be described as a `soft' or `fuzzy' contact ma
 
 The number of trials was approximately proportional to the number of hyperparameters for each feature: 20 trials for the dihedral feature, 40 for the contact distances (20 for each value of the contact distance scheme: $X$-$X$,  C$\alpha$-C$\alpha$), and 80 for the logistic transformation of contact distances (which, in addition to the two distance scheme values, has two other hyperparameters, $c$ and $s$). 
 
-For each trial,  $\bm{\theta} = (f, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau$: \SI{1}{\nano\second}, \SI{11}{\nano\second}, ..., \SI{101}{\nano\second}. For each combination of $\bm{\theta}$ and  $\tau$ the slowest \numrange{2}{21} eigenvectors were scored using the VAMP-2$(k, \bm{\theta})$ (equation~\ref{eqn:vamp_def}) and  VAMP-2$_{eq}(k, \bm{\theta})$ score (equation~\ref{eqn:vamp_eq_def}):
+For each trial,  $\bm{\theta} = (f, \tau_{\mathrm{T}}, m, n, c, s)$,  an MSM was estimated using the procedure above with a range of Markov lag-times, $\tau$: \SI{1}{\nano\second}, \SI{11}{\nano\second}, ..., \SI{101}{\nano\second}. For each combination of $\bm{\theta}$ and  $\tau$ the slowest \numrange{2}{21} eigenvectors were scored using the VAMP-2$(k, \bm{\theta})$ (Equation~\ref{eqn:vamp_def}) and  VAMP-2$_{eq}(k, \bm{\theta})$ score (Equation~\ref{eqn:vamp_eq_def}):
 \begin{equation}
     \operatorname{VAMP-2_{eq}}(k, \bm{\theta}) = \sum_{i=1}^{k}\lambda_{i}^{2}, \label{eqn:vamp_eq_def}
 \end{equation}
 where $\lambda$ are the eigenvalues of the MSM transition matrix which obey detailed balance, along with the implied timescales, $t_i$.  Each of these observations was estimated as the median of $N_b=100$ bootstrapped samples. 
 
-VAMP-2$(k, \bm{\theta})$ and VAMP-2$_{eq}(k, \bm{\theta})$ will be abbreviated as VAMP$(k)$ and VAMP$_{eq}(k)$ from here on, the dependence on $\bm{\theta}$ and $r=2$ being assumed. 
+VAMP-2$(k, \bm{\theta})$ and VAMP-2$_{eq}(k, \bm{\theta})$ will be abbreviated as VAMP2$(k)$ and VAMP2$_{eq}(k)$ from here on, the dependence on $\bm{\theta}$ and $r=2$ being assumed. 
 
 
 \begin{table}
@@ -359,13 +359,19 @@ VAMP-2$(k, \bm{\theta})$ and VAMP-2$_{eq}(k, \bm{\theta})$ will be abbreviated a
     k-means & \numrange{10}{1000} & \\
     \bottomrule
     \end{tabularx}
-    \caption{\textbf{Hyperparameter search space}. $X$-$X$ and C$\alpha$-C$\alpha$  refer to the closest heavy atom and $\alpha$-Carbon scheme respectively, for measuring the contact distance ($dist.$).  }
+    \caption{\textbf{Hyperparameter search space}. $X$-$X$ and C$\alpha$-C$\alpha$  refer to the closest heavy atom and $\alpha$-Carbon scheme respectively, for measuring the contact distance ($dist.$). The sine and cosine of dihedral angles were used as features.}
     \label{tab:search_space}
 \end{table}
 
 The hyperparameter trial data set, $\mathcal{D}$, consisted of $100$ bootstrap samples of $140$  unique sets of hyperparameters, at $10$ different lag times, with  $20$ measurements of the implied timescales and $20$ measurements of the VAMP2$(k)$ score and $20$ measurements of the VAMP2$_{eq}(k)$ score. The total number of these observations ($t_i$, VAMP2$(k)$, VAMP2$_{eq}(k)$) is therefore: $100 \times 140 \times 10 \times (20 + 20 + 20) = \num{8400000}$. 
 
 \subsection{Markov lag time}
+\begin{figure}
+    \centering
+    \includegraphics{figures/timescale_selection.pdf}
+    \caption{\textsc{Markov lag time selection}. Each blue line is the median of the gradient defined in Equation~\ref{eqn:choose_lag_1} taken over the bootstrapped samples. The black horizontal line is the threshold for convergence.  The green vertical line is the selected lag time. The data represented here is from BBA, the same method applies for Chignolin.}
+    \label{fig:lag_selection}
+\end{figure}
 The Markov lag time, $\tau$, was calculated from the total hyperparameter trial data set. For each trial the following gradient was calculated:
 \begin{equation}
     g(\tau, \theta) = \frac{\Delta \log{\left(t_{2}(\tau, \theta)\right)}}{\Delta \tau}, 
@@ -374,20 +380,23 @@ The selected Markov lag-time, $\tau^{*}$ was chosen as:
 \begin{equation}
     \tau^{*}  = \argmin_{\tau, \theta}\left[g(\tau, \theta)\right], \quad 0 < g < \log{1.01}
 \end{equation}\label{eqn:choose_lag_2}
+
+A graphical representation of this process is shown in Figure~\ref{fig:choose_lag}. 
+
 This codifies and extends the generally accepted process by which the implied timescales $t_{i}$ as a function of $\tau$ are plotted on a log scale and the smallest $\tau$ for which $t_{2}$ is constant is chosen. Our extension is that we consider a range of different values of $\theta$. 
 
 
 \subsection{Optimization}
 
-We used Bayesian optimization to optimize the full hyperparameter feature space described in table \ref{tab:search_space}. We used the tree-structured Parzen estimator as the surrogate function, as implemented in the Python package \textit{Optuna} version 3.0.3 \cite{akiba_optuna_2019} to perform the optimizations. The optimization runs were initialized with data from the randomly sampled hyperparameter trial data set. Four different objective functions were used for each protein, two single objective and two dual-objective functions, these were 
+We used Bayesian optimization to optimize the full hyperparameter feature space described in Table \ref{tab:search_space}. We used the tree-structured Parzen estimator as the surrogate function, as implemented in the Python package \textit{Optuna} version 3.0.3 \cite{akiba_optuna_2019} to perform the optimizations. The optimization runs were initialized with data from the randomly sampled hyperparameter trial data set. Four different objective functions were used for each protein, two single objective and two dual-objective functions, these were 
 \begin{enumerate}
     \item $t_2$: the timescale dominant process, 
-    \item VAMP$_{eq}(2) = 1+\lambda_{2}^{2}$: the `equilibrium' VAMP2 score of the 2'nd (dominant) process
-    \item $t_2$ and $t_{2}/t_{3}$: a multi-objective function of the timescale of the dominant process and the gap between the 2nd and 3rd timescale. 
-    \item VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$: a multi-objective function of the equilibrium VAMP2 score of the 2'nd process and the gap between the 2'nd and 3'rd process. 
+    \item VAMP2$_{eq}(2) = 1+\lambda_{2}^{2}$: the `equilibrium' VAMP2 score of the 2\textsuperscript{nd} (dominant) process
+    \item $t_2$ and $t_{2}/t_{3}$: a multi-objective function of the timescale of the dominant process and the gap between the 2\textsuperscript{nd} and 3\textsuperscript{rd} timescale. 
+    \item VAMP2$_{eq}(2)$ and VAMP2$_{eq}(2)$/VAMP$_{eq}(3)$: a multi-objective function of the equilibrium VAMP2$_{eq}(k)$ score of the 2\textsuperscript{nd} process and the gap between the 2\textsuperscript{nd} and 3\textsuperscript{rd} process. 
 \end{enumerate}
 
-The acquisition function for the single objective functions was the expected improvement and for the multi-objective functions, it was the expected hyper-volume improvement~\cite{ozaki_multitpe_2022}. The quantile for splitting observations into `good' and `bad' trials was set at \SI{25}{\percent}. For the dual objective optimization, the splitting of observations into two sets is complex, see Ozaki et al.~\cite{ozaki_multitpe_2022} for details on the splitting algorithm. This information is summarized in table~\ref{tab:opt_description}. The number of initial observations is less than the full \num{140} hyperparameter trials because a) some trials failed to converge an MSM, and b) in the case of Chignolin, some MSMs did not have a resolvable value of $t_3$.  
+In the case of single objective optimisation the acquisition function was the \emph{expected improvement}; in the case of multi-objective optimisation the acquisition function was the expected hyper-volume improvement~\cite{ozaki_multitpe_2022}. The quantile for splitting observations into `good' and `bad' trials was set at \SI{25}{\percent}. For the dual objective optimization, the splitting of observations into two sets is complex, see Ozaki et al.~\cite{ozaki_multitpe_2022} for details on the splitting algorithm. This information is summarized in Table~\ref{tab:opt_description}. The number of initial observations is less than the full \num{140} hyperparameter trials because a) some trials failed to converge an MSM, and b) in the case of Chignolin, some MSMs did not have a resolvable value of $t_3$.  
 
 \begin{table}[ht]
     \caption{\textsc{Hyperparameter optimization tasks.}}
@@ -398,14 +407,14 @@ The acquisition function for the single objective functions was the expected imp
     \midrule
     Chignolin & $t_2$        & 131 & 95 \\
     Chignolin & $t_2$, $t_2$/$t_3$ & 55 & 141 \\
-    Chignolin & VAMPeq(2) & 131 & 100 \\
+    Chignolin & VAMP2$_{eq}(2)$ & 131 & 100 \\
 
-    Chignolin & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & 55 & 150 \\
+    Chignolin & VAMP2$_{eq}(2)$, VAMP2$_{eq}(2)$/VAMP2$_{eq}(3)$ & 55 & 150 \\
 
     BBA & $t_2$        & 136 & 100 \\
     BBA & $t_2$, $t_2$/$t_3$ & 136 & 100 \\
-    BBA & VAMPeq(2) & 136 & 100 \\
-    BBA & VAMPeq(2), VAMPeq(2)/VAMPeq(3) & 136 & 100 \\
+    BBA & VAMP2$_{eq}(2)$ & 136 & 100 \\
+    BBA &  VAMP2$_{eq}(2)$, VAMP2$_{eq}(2)$/VAMP2$_{eq}(3)$  & 136 & 100 \\
     \bottomrule
     \end{tabularx}
     \label{tab:opt_description}
@@ -415,37 +424,8 @@ The code used to create the hyperparameter trial data set, $\mathcal{D}$ can be 
 
 \section{Results and discussion}
 
-\subsection{Eigenvectors may change definition with change in hyperparameters}
 
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.7\columnwidth]{results1/timescale_distributions.pdf}
-    \caption{\textsc{Timescales of randomly sampled hyperparameter trials.} Panel (a) refers to BBA, panel (b) refers to Chignolin. The vertical axis is the dominant timescale ($t_2$), the horizontal axis is the trial rank. The solid disc and error bars are the median and \SI{95}{\percent} bootstrapped confidence intervals.  }
-    \label{fig:random_trials}
-\end{figure}
-
-
-\begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.7\columnwidth]{results1/different_relaxation.png}
-    \caption{\textsc{BBA MSMs with different relaxation processes.} The 2nd right eigenvector with an ensemble of structures corresponding to the extremes values of the eigenvectors of: panel (a), the model with the longest median t2 from random sampling; panel (b), the model with the second longest median t2 from random sampling; and panel (c), the model with the longest median t2 from Bayesian optimization of t2.}
-    \label{fig:bba_differences}
-\end{figure}
-
-Figure \ref{fig:random_trials} shows the distribution of the timescale ($t_2$) of the dominant process (corresponding to the 2'nd right-eigenvector of the MSM transition matrix, $\psi_2$)  for each MSM of BBA (panel (a)) and Chignolin (panel (b)), ordered left to right with highest value of $t_2$ on the left. Each point is colored according to the feature used. According to previous research~\cite{scherer_variational_2019} we expect in both cases that the dominant relaxation process to correlate with the folded-to-unfolded transition. According to the variational theorem, the most accurate models (and therefore the `best' set of hyperparameters) are the ones with the largest implied timescales. We would therefore expect that the best model would be the model with the highest value of $t_2$. However, implicit in this decision is that the implied timescale represents the same underlying relaxation process. 
-
-The dominant relaxation modes for Chignolin are similar, as can be seen by inspection of the models 1 and 2 (ranked 1 and 4 respectively in figure~\ref{fig:random_trials}, see table S1 and sections S2.1 and S2.2 for more detailed information on each model).  In model 1, figure S3 (c), shows $\psi_2$ as an unfolded-folded transition.  In model 2, figure S6 (c) shows $\psi_2$ as transitioning between a structure which is almost completely unfolded with only two non-native contacts and the folded state. 
-
-In the case of BBA, the situation is different. The top two best performing models, models 1 and 2 (ranked 1 and 2 respectively in figure \ref{fig:random_trials}, see table S1 and sections S2.4 and S2.5) show evidence of optimizing a similar relaxation mode, $\psi_2$.  Comparing models 1 and 2 we see a similar folded-unfolded transition (figure \ref{fig:bba_differences} panel (a) and (b)). Model 1 is more accurate, as the values of $t_2$ show: \SIci{20.4}{2.3}{176.2}{\micro\second} cf. \SIci{9.7}{2.1}{188.7}{\micro\second}. The accords with differences in the hyperparameters: model 1 and 2 use the logistic distances features, but model 1 has a logistic transform which is more sensitive to changes in contact distances between \SIrange[range-phrase=---]{0.1}{10}{\angstrom} (see figure S1) and more discrete basis functions (471 cf. 289, see table S1).  
-
-However, the best-performing models with the other features have markedly different $\psi_2$ which do not correspond to the same transition as models 1 and 2.  Model 3 is the best model with the dihedrals feature (rank 7 in figure~\ref{fig:random_trials}, see table S1 and section S2.6) and model 4 is the best model with the distances feature (rank 54 in figure~\ref{fig:random_trials}, see table S1 and section S2.7). Both of these show markedly different transitions for $\psi_2$, see figures S18(c) and S21(c) respectively. 
-
-Thus, when optimizing MSMs the objective function ($t_2$ in this case), $\psi_2$ may change definition across the search space and one is not comparing like-with-like when looking at \emph{just} the objective function.  
-
-To mitigate this problem, we advocate checking the character of the eigenvectors when selecting appropriate hyperparameters to ensure one is optimizing at least a consistent set of relaxation processes.  
-
-
-\subsection{VAMP2$(k)$ scores of reversible MSMs give inconsistent results}\label{sec:vamps_inconsistent}
+\subsection{VAMP2$(k)$ scores of reversible MSMs give inconsistent results}
 
 
 \begin{figure}[ht]
@@ -466,33 +446,55 @@ To mitigate this problem, we advocate checking the character of the eigenvectors
 
 The VAMP2$(k)$ score~\cite{wuVariationalApproachLearning2020c} provides a principled metric for optimizing MSM hyperparameters. The benefits are that it can be used for stationary, non-stationary, reversible and non-reversible MSMs. It is linked directly to the kinetic variance captured by the basis states such that maximizing the VAMP2$(k)$ score will maximize the timescales of pertaining to the first $k$ eigenvectors of the model. In addition, it can be used with bootstrapping and cross-validation techniques for assessing generalizability. 
 
-Inspection of the VAMP2$(k)$ and $t_2$ values in the hyperparameter trial dataset for BBA revealed that for some subsets of the trials, VAMP2$(2)$ was inversely proportional to $t_2$. An example of this is shown in figure~\ref{fig:bad_vamp_scores}. In panel (a) the VAMP2$(2)$ score is shown for the trials ranked first, third, and fourth. In panel (c) the first five timescales are shown for each model. Timescales for the third to sixth eigenvectors are similar for each trial, however $t_2$ clearly \emph{increases} with \emph{decreasing} VAMP2$(2)$ score. The second-ranked model is omitted for clarity because it does not follow this pattern. We suggest the reason for this behavior is due to the fact by enforcing reversibility in the estimation of the transition matrix it is difficult to get numerical consistency between the three count matrices ($\mathbf{C}_{00/0t/tt}$) and the eigenvectors ($\mathbf{U}/\mathbf{V}$) in equation~\ref{eqn:vamp_def}). 
+Inspection of the VAMP2$(k)$ and $t_2$ values in the hyperparameter trial dataset for BBA revealed that for some subsets of the trials, VAMP2$(2)$ was inversely proportional to $t_2$. An example of this is shown in Figure~\ref{fig:bad_vamp_scores}. In panel (a) the VAMP2$(2)$ score is shown for the trials ranked first, third, and fourth. In panel (c) the first five timescales are shown for each model. Timescales for the third to sixth eigenvectors are similar for each trial, however $t_2$ clearly \emph{increases} with \emph{decreasing} VAMP2$(2)$ score. The second-ranked model is omitted for clarity because it does not follow this pattern. We suggest the reason for this behavior is due to the fact by enforcing reversibility in the estimation of the transition matrix it is difficult to get numerical consistency between the three count matrices ($\mathbf{C}_{00/0t/tt}$) and the eigenvectors ($\mathbf{U}/\mathbf{V}$) in Equation~\ref{eqn:vamp_def}). 
 
-To ensure that this phenomenon was not an artifact of the processing pipeline the effect was replicated with a three-state toy model (example 1 in Trendelkamp et al.~\cite{trendelkamp-schroer_estimation_2015}). $\num{10000}\times20$-step trajectories were sampled from the same $3\times 3$ transition matrix and for each trajectory count matrices ($\mathbf{C}_{00/0t/tt}$) were calculated.  We assert that the differences in the count matrices arising from the finite sampling in this toy model are similar to the differences from different discretization schemes in the example of BBA.  From each set of count matrices $t_2$ and VAMP2$(2)$ scores were estimated and  these are shown in figure~\ref{fig:bad_vamps_examples} panel (a). While  $t_2$ is clearly rank-correlated with VAMP2$(2)$, the rank correlation is not perfect.  Many subsets of these results form sets which are anti-correlated,  three examples of this inverse relationship are shown as black lines labeled `Inverse'. These subsets mirror the effect seen in the BBA models in figure~\ref{fig:bad_vamp_scores}.  As a comparison, in panel (b) we plot the sum of the squares of the first two eigenvalues, VAMP2$_{eq}(2)$, which shows perfect rank correlation (as they must). 
+To ensure that this phenomenon was not an artifact of the processing pipeline the effect was replicated with a three-state toy model (example 1 in Trendelkamp et al.~\cite{trendelkamp-schroer_estimation_2015}). $\num{10000}\times20$-step trajectories were sampled from the same $3\times 3$ transition matrix and for each trajectory count matrices ($\mathbf{C}_{00/0t/tt}$) were calculated.  We assert that the differences in the count matrices arising from the finite sampling in this toy model are similar to the differences from different discretization schemes in the example of BBA.  From each set of count matrices $t_2$ and VAMP2$(2)$ scores were estimated and  these are shown in Figure~\ref{fig:bad_vamps_examples} panel (a). While  $t_2$ is clearly rank-correlated with VAMP2$(2)$, the rank correlation is not perfect.  Many subsets of these results form sets which are anti-correlated,  three examples of this inverse relationship are shown as black lines labeled `Inverse'. These subsets mirror the effect seen in the BBA models in Figure~\ref{fig:bad_vamp_scores}.  As a comparison, in panel (b) we plot the sum of the squares of the first two eigenvalues, VAMP2$_{eq}(2)$, which shows perfect rank correlation (as they must). 
 
 The reason for writing the VAMP2$(k)$ score as the product of count matrices and eigenvectors/singular vector matrices is to facilitate data-splitting in cross-validation. While we used bootstrapping for this work and thus mitigated this, the effect of data splitting would be to worsen the discrepancy between the count and transition matrices. This is because the count matrices are now estimated on different data compared to the eigenvector matrices.  
 
-Due to the problem of consistency between the matrices in equation~\ref{eqn:vamp_eq_def} arising from a) enforcing reversibility and b) data splitting for cross-validation,  we recommend that VAMP2$(k)$ scores, either cross-validated or bootstrapped, should not used for reversible and stationary MSMs. Instead, we recommend bootstrapping the sum of the squared eigenvalues (VAMP$_{eq}(k)$) directly from the reversible transition matrix. This has the same theoretical properties of the VAMP2$(k)$ score (i.e., represents captured kinetic variance, and link to variational theorem) while not a) wasting data due to data splitting and b) perfect correlation with the implied timescales.
+Due to the problem of consistency between the matrices in Equation~\ref{eqn:vamp_eq_def} arising from a) enforcing reversibility and b) data splitting for cross-validation,  we recommend that VAMP2$(k)$ scores, either cross-validated or bootstrapped, should not used for reversible and stationary MSMs. Instead, we recommend bootstrapping the sum of the squared eigenvalues (VAMP2$_{eq}(k)$) directly from the reversible transition matrix. This has the same theoretical properties of the VAMP2$(k)$ score (i.e., represents captured kinetic variance, and link to variational theorem) while not a) wasting data due to data splitting and b) perfect correlation with the implied timescales.
 
 \FloatBarrier
 \clearpage
 
-\subsection{Bayesian optimization may optimize different processes}\label{sec:bayes}
+\subsection{Eigenvectors may change definition with change in hyperparameters}
 
 \begin{figure}[ht]
     \centering
-    \includegraphics[width=\columnwidth]{results3/optimisation_summary.pdf}
-    \caption{\textsc{Optimization of MSMs of Chignolin and BBA}. The vertical axis is the optimization objective, the horizontal axis is the trial number. The thin line refers to the incumbent over the initialization data (`init.'), and the squares are the incumbent at each trial number. Panels (a) and (c) refer to Chignolin, (b) and (d) to BBA. Panels (a) and (b) refer to Bayesian optimization with either $t_{2}$  (red), or dual-objective optimization of both $t_{2}$ and the timescale gap, $t_{2}/t_{3}$.  Panels (c) and (d) refer to optimization of  $\mathrm{VAMP}_{eq}(2)$ (red) and dual-objective optimization of both  $\mathrm{VAMP}_{eq}(2)$ and $\mathrm{VAMP}_{eq}(2)/\mathrm{VAMP}_{eq}(3)$. The optimized values of $t_2$ are shown as labels. }
-    \label{fig:optimisation_trials}
+    \includegraphics[width=0.7\columnwidth]{results1/timescale_distributions.pdf}
+    \caption{\textsc{Timescales of randomly sampled hyperparameter trials.} Panel (a) refers to BBA, panel (b) refers to Chignolin. The vertical axis is the dominant timescale ($t_2$), the horizontal axis is the trial rank. The solid disc and error bars are the median and \SI{95}{\percent} bootstrapped confidence intervals.  }
+    \label{fig:random_trials}
 \end{figure}
 
-We tested whether Bayesian optimization could increase $t_2$ by selecting better hyperparameters.  We optimized the search space in table~\ref{tab:search_space} using both single-objective and dual-objective optimization, with objectives based on the timescales, $t_{2/3}$ and the VAMP$_{eq}(2/3)$ scores, see table~\ref{tab:opt_description} for a list of optimization experiments.  The optimization using dual objectives of $t_2$ with $t_2/t_3$ (and the VAMP$_{eq}$ equivalent) was prompted by the observation that from the randomly sampled hyperparameter trial data set, there were many models with similar values of $t_2$ but with a wide range of timescale gaps $t_2/t_3$. A large timescale gap gives rise to models which are more accurate when truncated and coarse-grained into a two-state model. Our hope was therefore to bias the optimization results in favor of both large $t_2$ and a large separation of timescales. The optimization trajectories, which show the largest value of $t_2$ (vertical axis) in all trials up to the current trial number (horizontal axis) are shown in figure~\ref{fig:optimisation_trials}.  
 
-Single objective optimization of both $t_2$ and VAMP$_{eq}(2)$ increased $t_2$ for Chignolin and BBA.  For Chignolin the increase was modest, between \SIrange[range-phrase=---]{2.4}{5.5}{\percent} for all four objective functions.  The single objective optimization of $t_2$ had the smallest increase (panel (a) red squares) while the multi-objective optimization of the VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$ gave the largest increase in $t_2$ (panel (c) blue squares), although the increase in the gap was modest (see figure S32 (c)). 
+\begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.7\columnwidth]{results1/different_relaxation.png}
+    \caption{\textsc{BBA MSMs with different relaxation processes.} The 2nd right eigenvector with an ensemble of structures corresponding to the extremes values of the eigenvectors of: panel (a), the model with the longest median t2 from random sampling; panel (b), the model with the second longest median t2 from random sampling; and panel (c), the model with the longest median t2 from Bayesian optimization of t2.}
+    \label{fig:bba_differences}
+\end{figure}
+
+Figure \ref{fig:random_trials} shows the distribution of the timescale ($t_2$) of the dominant process (corresponding to the 2\textsuperscript{nd} right-eigenvector of the MSM transition matrix, $\psi_2$)  for each MSM of BBA (panel (a)) and Chignolin (panel (b)), ordered left to right with highest value of $t_2$ on the left. Each point is colored according to the feature used. According to previous research~\cite{scherer_variational_2019} we expect in both cases that the dominant relaxation process to correlate with the folded-to-unfolded transition. According to the variational theorem, the most accurate models (and therefore the `best' set of hyperparameters) are the ones with the largest implied timescales. We would therefore expect that the best model would be the model with the highest value of $t_2$. However, implicit in this decision is that the implied timescale represents the same underlying relaxation process. 
+
+The dominant relaxation modes for Chignolin are similar, as can be seen by inspection of the models 1 and 2 (ranked 1 and 4 respectively in Figure~\ref{fig:random_trials}, see Table S1 and sections S2.1 and S2.2 for more detailed information on each model).  In model 1, Figure S3 (c), shows $\psi_2$ as an unfolded-folded transition.  In model 2, Figure S6 (c) shows $\psi_2$ as transitioning between a structure which is almost completely unfolded with only two non-native contacts and the folded state. 
+
+In the case of BBA, the situation is different. The top two best performing models, models 1 and 2 (ranked 1 and 2 respectively in Figure \ref{fig:random_trials}, see Table S1 and sections S2.4 and S2.5) show evidence of optimizing a similar relaxation mode, $\psi_2$.  Comparing models 1 and 2 we see a similar folded-unfolded transition (Figure \ref{fig:bba_differences} panel (a) and (b)). Model 1 is more accurate, as the values of $t_2$ show: \SIci{20.4}{2.3}{176.2}{\micro\second} cf. \SIci{9.7}{2.1}{188.7}{\micro\second}. The accords with differences in the hyperparameters: model 1 and 2 use the logistic distances features, but model 1 has a logistic transform which is more sensitive to changes in contact distances between \SIrange[range-phrase=---]{0.1}{10}{\angstrom} (see Figure S1) and more discrete basis functions (471 cf. 289, see Table S1).  
+
+However, the best-performing models with the other features have markedly different $\psi_2$ which do not correspond to the same transition as models 1 and 2.  Model 3 is the best model with the dihedrals feature (rank 7 in Figure~\ref{fig:random_trials}, see Table S1 and section S2.6) and model 4 is the best model with the distances feature (rank 54 in Figure~\ref{fig:random_trials}, see Table S1 and section S2.7). Both of these show markedly different transitions for $\psi_2$, see Figures S18(c) and S21(c) respectively. 
+
+Thus, when optimizing MSMs the objective function ($t_2$ in this case), $\psi_2$ may change definition across the search space and one is not comparing like-with-like when looking at \emph{just} the objective function.  
+
+To mitigate this problem, we advocate checking the character of the eigenvectors when selecting appropriate hyperparameters to ensure one is optimizing at least a consistent set of relaxation processes.  
+
+\subsection{Bayesian optimization may optimize different processes}
+
+We tested whether Bayesian optimization could increase $t_2$ by selecting better hyperparameters.  We optimized the search space in Table~\ref{tab:search_space} using both single-objective and dual-objective optimization, with objectives based on the timescales, $t_{2/3}$ and the VAMP2$_{eq}(2/3)$ scores, see Table~\ref{tab:opt_description} for a list of optimization experiments.  The optimization using dual objectives of $t_2$ with $t_2/t_3$ (and the VAMP2$_{eq}$ equivalent) was prompted by the observation that from the randomly sampled hyperparameter trial data set, there were many models with similar values of $t_2$ but with a wide range of timescale gaps $t_2/t_3$. A large timescale gap gives rise to models which are more accurate when truncated and coarse-grained into a two-state model. Our hope was therefore to bias the optimization results in favor of both large $t_2$ and a large separation of timescales. The optimization trajectories, which show the largest value of $t_2$ (vertical axis) in all trials up to the current trial number (horizontal axis) are shown in Figure~\ref{fig:optimisation_trials}.  
+
+Single objective optimization of both $t_2$ and VAMP2$_{eq}(2)$ increased $t_2$ for Chignolin and BBA.  For Chignolin the increase was modest, between \SIrange[range-phrase=---]{2.4}{5.5}{\percent} for all four objective functions.  The single objective optimization of $t_2$ had the smallest increase (Figure S32, panel (a) red squares) while the multi-objective optimization of the VAMP2$_{eq}(2)$ and VAMP2$_{eq}(2)$/VAMP2$_{eq}(3)$ gave the largest increase in $t_2$ (Figure S32, panel (c) blue squares), although the increase in the gap was modest (see Figure S33 (c)). 
  
-The small $t_2$ increase for Chignolin is unsurprising given the consistency of $t_2$ across the randomly sampled hyperparameter trials.  However, the $t_2$ optimized MSM, model 3 (see table S1 and section S2.3) shows a partially folded to folded transition in figure S9(c) rather than the fully unfolded to folded transition in the incumbent.  In terms of the values of the hyperparameters, the optimization has changed the TICA lag-time significantly (from \SI{71}{\nano\second} in model 1 to \SI{3}{\nano\second} in model 1 - the other hyperparameters have remained largely unchanged). The VAMP$_{eq}(2)$ and VAMP$_{eq}(2)$/VAMP$_{eq}(3)$ optimized MSM, model 4 (see table S1 and section S2.4) shows the same unfolded---folded transition as model 1 (see figure S12(c). Both the dual-objective optimizations ($t_2$ with $t_2/t_3$ and the VAMP equivalent) increased both the $t_2$ and the separation of timescales (see figure S26). 
+The small $t_2$ increase for Chignolin is unsurprising given the consistency of $t_2$ across the randomly sampled hyperparameter trials.  However, the $t_2$ optimized MSM, model 3 (see Table S1 and section S2.3) shows a partially folded to folded transition in Figure S9(c) rather than the fully unfolded to folded transition in the incumbent.  In terms of the values of the hyperparameters, the optimization has changed the TICA lag-time significantly (from \SI{71}{\nano\second} in model 1 to \SI{3}{\nano\second} in model 1 - the other hyperparameters have remained largely unchanged). The VAMP2$_{eq}(2)$ and VAMP2$_{eq}(2)$/VAMP2$_{eq}(3)$ optimized MSM, model 4 (see Table S1 and section S2.4) shows the same unfolded---folded transition as model 1 (see Figure S12(c). Both the dual-objective optimizations ($t_2$ with $t_2/t_3$ and the VAMP equivalent) increased both the $t_2$ and the separation of timescales (see Figure S26). 
 
-For BBA the single objective optimization of $t_2$ and VAMP$_{eq}(2)$ increased $t_2$ by \SI{128}{\percent} and \SI{135}{\percent} respectively.  However, these models have not optimized the same relaxation process as the incumbent from the randomly sampled hyperparameters, model 1. The $t_2$ optimized MSM, model 5 (see table S1 and section S2.8), denotes a transition between two misfolded structures (see figure S24(c)).  This is perhaps surprising given that the main difference between the two model specifications is that change in the logistic transform (see Figure S1 for the difference between model 1 and model 5's logistic transform).  In contrast the VAMP$_{eq}(2)$ optimized model shows a similar transition to models 1 and 2 (see figure S15(c)).  Both the dual objective optimization runs did not improve $t_2$ significantly, although, in the case of optimization of $t_2$ with $t_2/t_3$, the gap increased significantly (see figure S26(b)). 
+For BBA the single objective optimization of $t_2$ and VAMP2$_{eq}(2)$ increased $t_2$ by \SI{128}{\percent} and \SI{135}{\percent} respectively.  However, these models have not optimized the same relaxation process as the incumbent from the randomly sampled hyperparameters, model 1. The $t_2$ optimized MSM, model 5 (see Table S1 and section S2.8), denotes a transition between two misfolded structures (see Figure S24(c)).  This is perhaps surprising given that the main difference between the two model specifications is that change in the logistic transform (see Figure S1 for the difference between model 1 and model 5's logistic transform).  In contrast the VAMP2$_{eq}(2)$ optimized model shows a similar transition to models 1 and 2 (see Figure S15(c)).  Both the dual objective optimization runs did not improve $t_2$ significantly, although, in the case of optimization of $t_2$ with $t_2/t_3$, the gap increased significantly (see Figure S26(b)). 
 
 The implications for Bayesian optimization are similar to the lessons learned from random optimization: changing hyperparameters can change the optimized process, meaning one must analyze the character of the eigenvectors to ensure one is optimizing the same processes.  
 
@@ -504,7 +506,7 @@ The implications for Bayesian optimization are similar to the lessons learned fr
 \begin{figure}[ht]
     \centering
     \includegraphics{results4/vampeq_rank_vs_lag.pdf}
-    \caption{\textsc{Consistency of $\operatorname{VAMP}_{\mathrm{eq}}(k)$ rank with Markov lag time, $\tau$ for BBA}. The $i, j$'th cell in panel (a) shows the Spearman's rank correlation coefficient of $\operatorname{VAMP}_{\mathrm{eq}}(2)$ for each trial measured at the $i$'th lag time, with  $\operatorname{VAMP}_{eq}(2)$  measured at the $j$'th lag time.   Panel (b) show the same measurements with $\operatorname{VAMP}_{\mathrm{eq}}(10)$ score respectively. }
+    \caption{\textsc{Consistency of $\operatorname{VAMP2}_{\mathrm{eq}}(k)$ rank with Markov lag time, $\tau$ for BBA}. The $i, j$'th cell in panel (a) shows the Spearman's rank correlation coefficient of $\operatorname{VAMP2}_{\mathrm{eq}}(2)$ for each trial measured at the $i$'th lag time, with  $\operatorname{VAMP2}_{eq}(2)$  measured at the $j$'th lag time.   Panel (b) show the same measurements with $\operatorname{VAMP2}_{\mathrm{eq}}(10)$ score respectively. }
     \label{fig:vamp_rank_vs_lag}
 \end{figure}
 
@@ -533,10 +535,10 @@ We also showed that selecting lag-times and a number of scored eigenvectors in t
 Taken together these observations suggest a number of recommendations: 
 
 \begin{enumerate}
-    \item Randomly sample a range of hyper-parameters and use the VAMP$_{eq}$ or $t_2$ (or the timescale of interest) to rank hyperparameters. 
-    \item Use a small (2 - 5) subset of models with different lag times ($\tau$) and score with a range of eigenvectors ($k$) and choose $\tau$ and $k$ such that VAMP$_{eq}$ is independent of both.  
+    \item Randomly sample a range of hyper-parameters and use the VAMP2$_{eq}$ or $t_2$ (or the timescale of interest) to rank hyperparameters. 
+    \item Use a small (2 - 5) subset of models with different lag times ($\tau$) and score with a range of eigenvectors ($k$) and choose $\tau$ and $k$ such that VAMP2$_{eq}$ is independent of both.  
     \item Inspect eigenvectors to check for consistency across different hyperparameters. 
-    \item Bayesian optimization of $t_2$ or VAMP$_{eq}$ can be used to optimize hyperparameters but the eigenvectors must be inspected for consistency.  
+    \item Bayesian optimization of $t_2$ or VAMP2$_{eq}$ can be used to optimize hyperparameters but the eigenvectors must be inspected for consistency.  
 \end{enumerate}
 
 
@@ -558,7 +560,8 @@ Taken together these observations suggest a number of recommendations:
 % There are a two main limitations of this study.  First the we have a performed our analysis on only one system which limits the applicability some of the specific results. For example, the sensitivity of the hyperparameters to the timescales should be not taken as generally applicable for other systems. Second, the fitting of the Gaussian process used in the sensitivity calculation and the Bayesian optimization required a lot of ad-hoc preprocessing and its own model selection procedure.  More flexible models which still return estimates of input importance and of uncertainty, such as random forests or tree parzen estimators, may be more appropriate see for example [] and [].   
 
 \section{Data Availability}
-All data for the experiments carried out and instructions on how to reproduce this work can be found at 
+
+The molecular dynamics trajectories used in this work were used with permission from D. E. Shaw Research and may be obtained by from them. All processing for the experiments carried out and instructions on how to reproduce this work can be found at \url{www.github.com/RobertArbon/msm_sensitivity} and \url{www.github.com/RobertArbon/msm_sensitivity_analysis}. 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The "Acknowledgement" section can be given in all manuscript
@@ -567,8 +570,7 @@ All data for the experiments carried out and instructions on how to reproduce th
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{acknowledgement}
 
-``The authors thank \ldots'' for useful discussions with Andreas Mardt and others please fix.
-
+The authors would like to thanks Andreas Mardt for useful discussions and Redesign Science for partial support of this work. 
 
 \end{acknowledgement}
 
@@ -592,284 +594,4 @@ The Supporting Information is available free of charge at
 \end{document}
 
 
-
-
-
-% \begin{itemize}
-    % \item Markov state models are a popular model for analysing MD data. 
-    % \item They are able to provide a quantitative picture of the conformational dynamics of biomolecular systems. 
-    % \item They have been used to study protein folding, ligand binding, peptide- and protein-protein association,  enzymatic reaction dynamics. 
-    % \item They have also been used in adaptive sampling algorithms where statistical properties of the model are used to select conformations from which to seed more MD simulations to speed convergence. 
-    % \item Like any any statistical model, a number of choices must be made when estimating an MSM. These include choice of estimation algorithm, convergence criteria for optimizing loss-functions; batching, sub-sampling and splitting data for compute resource management and estimating out of sample accuracy; data pre-processing e.g., image resizing, feature-scaling and warping; feature selection and egineering, de-correlating etc. 
-    % % \item These choices affect the outcome of the model to varying to degrees but are not `learned' from the data via minimizing a loss function, in the way the parameters of the model are (e.g., neural network weights, MSM transition matrix elements). For this reason they are called `hyperparameters' of the model. 
-    % \item There has been a lot of recent attention paid to the affects of hyperparameter selection in, for e.g.,  psychology, neuroscience and machine learning  where opaque methods of hyperparameter selection have lead to irrepreducible results. 
-    % \item There are a host of different approaches to this problem, which differ according to whether explanatory power or predictive accuracy of the model are required. 
-    % \item When statistical models are made for their explanatory power variants of sensitivity analysis are often used. SA entails estimating models with  several plausible sets of hyperparameters to see how they affect the results [ref].  Similarly, multiverse analysis uses a more thorough enumeration of potential hyperparameters [ref].  Specification curve analysis [ref] also uses a multiverse of results while going further to infer information from the distribution of results. 
-    % \item In machine learning, where predictive power is often more important, hyperparameters can be chosen to optimize performance metrics of the model, e.g., out of sample accuracy. Hyperparameters can be randomly or uniformly selected, or even optimized using e.g., Bayesian optimization.  
-    % \item The essential task in MSM estimation is to choose hyperparameters for preprocessing MD data into a smaller number of basis  states for which the MSM can be estimated. 
-    % \item traditionally these basis states are discrete states corresponding to small regions of configuration space of the protein. Recent work has focused on estimating fuzzy basis sates using deep learning approaches.  
-    % \item Either way a number of hyperparameters must be chosen. The resulting basis states can be judged according to variational scores. 
-    % \item For reversible MSMs the generalized matrix Rayleigh coefficient (GMRQ) was introduced as metric of optimising basis states.  This was later expanded to include non-reversible and non-stationary MSMs with the variational approach to Markov processes (VAMP). 
-    % \item By varying hyperparameters to increase the variational score, the basis states can be made increasingly accurate. 
-    % \item  However, most recent papers which utilise MSMs as their man analytic tool, do not report how hyperparameters were chosen.  
-    % \item Where methods for hyperparameter selection were discussed VAMP scores were generally used to discriminate between a handful of different hyperparameters.  
-    % \item Taking inspiration from the literature on sensitivity analysis and hyperparameter optimization we investigate whether more extensive hyperparameter selection methods are needed or appropriate. 
-    % \item We investigate how sensitive how MSM timescales are to changes in hyperparameters, demonstrate how an active learning approach might work to finding good quality hyperparameters might work and comment on the commonly used VAMP scores for optimizing basis states.
-    % \item This work is structured as follows. Section~\ref{theory} covers the theory of Markov state models and of hyperparameter optimization and search strategies; section~\ref{methods} covers the methods and materials used; section~\ref{results} discusses results using the fast folding protein BBA as an example; section~\ref{conclusion} concludes with recommendations for estimating MSMs. 
-% To get a sense of the current practice for estimating MSMs a small survey of recent literature was conducted. Web Of Science[] was used to look for articles citing PyEMMA~\cite{schererPyEMMASoftwarePackage2015a}, Enspara~\cite{porter_enspara_2019} and MSMBuilder~\cite{beauchamp_msmbuilder2:_2011} and Deeptime~\cite{deeptime}, published since 2020 and 25 randomly selected for detailed investigation~\cite{tosstorff_study_2020, fernandez-quintero_mutation_2021, kahler_sodium-induced_2020, paul_thermodynamics_2021, quoika_implementation_2021, liu_misfolding_2020, tian_deciphering_2020, hempel_molecular_2021, koulgi_structural_2021., sharma_comparative_2020, mckiernan_dynamical_2020, dutta_distinct_2022, zhou_molecular_2021, fernandez-quintero_cdr_2022, song_modulation_2021, sadiq_multiscale_2021, ibrahim_dynamics_2022, linker_polarapolar_2022, hu_discovery_2022, cannariato_prediction_2022, jones_determining_2021, zhu_critical_2021, zhu_critical_2021, bergh_markov_2021, pantsar_decisive_2022, grabski_molecular_2021}. Articles looking at purely methodological questions were excluded. Three questions were asked: 
-% \begin{itemize}
-%     \item Were sensitivity analyses performed? i.e., were the sensitivity of observables tested with respect to the model hyperparameters?
-%     \item How did the authors select the hyperparameters? e.g., using VAMP score? 
-%     \item Did the authors perform a validation of the selected model using implied timescales and/or a Chapman-Kolmogorov test? 
-% \end{itemize}
-
-% Only one of the studies presented a sensitivity analysis, (this analysis also served as a hyperparameters selection technique)~\cite{bergh_markov_2021}. The the majority (15, \SI{60}{\percent}) of studies did not discuss any hyperparameter search techniques and of those that did,  the majority~\cite{paul_thermodynamics_2021, koulgi_structural_2021, sharma_comparative_2020, dutta_distinct_2022, zhou_molecular_2021, jones_determining_2021, zhu_critical_2021, grabski_molecular_2021} used VAMP scores (8, \SI{89}{\percent}), while one article used the elbow method with important observables \cite{bergh_markov_2021} as their objective function. Only a minority~\cite{quoika_implementation_2021, hempel_molecular_2021, song_modulation_2021, ibrahim_dynamics_2022} failed to give evidence of validation.  
-
-% It can be concluded that hyperparameter optimization is popular but not universal and sensitivity analysis is either a) not performed or b) not thought important (either by journals or by the authors) enough not to include in the journal article. 
-% \end{itemize}
-
-
-
-
-
-% \begin{itemize}
-%     \item The variational theorem applied to the transfer operator $\mathcal{T}(\tau)$, implies that the sum eigenvalues of the $\mathbf{T}$ in some arbitrary basis, will always be less than the sum of the true eigenvalues. 
-%     \item Thus, one is free to choose a basis which will increase the sum of the eigenvalues. The associated timescales and eigenvectors will become closer to the true timescales and eigenvectors. 
-%     \item In practice we restrict the score to pertain to the $k$ slowest processes, where $k=2 - \simeq 10$. We write the score as $S(\bm{\theta}; k) = \sum_{i=1}^{k}\lambda_{i}$. The functional dependence on $\bm{\theta}$ highlights the fact that the score is assessing the accuracy of the basis states. 
-%     \item A general method of finding the most accurate basis states would be to vary the elements of $\bm{\theta}$ until a sufficiently large value of $S$ is found.  However, as pointed out in [mcgibbon] this would favour basis states which fit to noisy fluctuations in the data and do not represent the most accurate basis states, i.e., they would over-fit to the data at hand.
-%     \item There are two common techniques to avoid over-fitting. First is the Bootstrap [ref bootstrap] and Cross-validation. The approach  taken by [Noe] and [Pande] is to use cross-validation. 
-%     \item The cross-validated estimator of $S$ first estimates the eigenvectors on half of the discretized MD data (the matrix of eigenvectors is given by $\mathbf{U}^{i}$, where the $i$ denotes the $i$th training cross-validation split) the count ($\mathbf{C}_{01}^{-i}$, where $-i$ denotes the complementary test split to $i$) and population ($\mathbf{C}_{00}^{-i}$) matrices are estimated on the remaining half of the data. This is repeated $N$ times with the score being given by: 
-%     \begin{equation}
-%         GMRQ(\bm{\theta}; k) = \frac{1}{N}\sum_{i}^{N} \operatorname{Tr}\left[(\mathbf{U}^{iT}\mathbf{C}_{01}^{-i}\mathbf{U}^{i})(\mathbf{U}^{iT}\mathbf{C}_{00}^{-i}\mathbf{U}^{i})^{-1}\right]
-%     \end{equation}\label{eqn:gmrq_cv_def}
-%     \item In other words, this tests how well the training eigenvectors, diagonalize the test count and population matrices. 
-%     \item Because the eigenvectors are estimated from a reversible transition matrix they are not consistent with the count matrix.  To account for this, a symmetrized count matrix is used: $\mathbf{C}_{01}^{\mathrm{rev}} = \mathrm{T}^{\mathrm{rev}}\cdot \bm{\Pi}^{\mathrm{rev}}$.  Where $\Pi$ is a diagonal matrix with the elements of $\pi$ on its diagonal. 
-%     \item The VAMP scores follow the same principle as the GMRQ but with a distinction drawn between populations at time $t$ and at time $t+\tau$. I.e., $\mathbf{C}_{00} \neq \mathbf{C}_{11}$
-%     \item this is to allow the possibility of non-stationary and non-reversible models.
-%     \item Instead of eigenvectors, left and right singular vectors, $\mathbf{U}$ and $\mathbf{V}$ of the transition matrix are used (the cross-validation notation is dropped for clarity): 
-
-%     \item When the count and population matrices and the singular vectors are all estimated from the same data, this amounts to the sum of the singular vectors raised to the power of $r$.  
-%     \item When $\mathbf{C}_{00} = \mathbf{C}_{11}$ and $\mathbf{C}_{01}$ symmetric, then this expression with $r=1$ should be equivalent to the GMRQ.  i.e., the singular values should equal the eigenvalues.  
-%     \item With $r=2$ this expression measures the kinetic variance~\cite{noeKineticDistanceKinetic2015} captured by the basis sets. 
-%     \item Both scores truncate the eigenvector/singular vectors to the first $k$ components to restrict the score to just those processes. 
-%     \item Both formulae can also be used with bootstrapping where the train and test data are the same but $N$ data sets are generated by sampling with replacement from the pool of available MD trajectories.   
-%     \item The VAMP-r scores have also been adapted to score the features only [ref]. 
-% \end{itemize}
-
-
-Theory
-
-
-SENSITIVITY ANALYSIS
-
-Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work, we conduct a \emph{global sensitivity analysis} which looks at model outputs as a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis is based on the work of [bergstra] which modelled the accuracy of a deep neural network image classifier in response to changes in its hyperparameters (e.g., the learning rate) as Gaussian process.  
-
-The sensitivity of the hyperparameters are calculated from the learned parameters of the covariance matrix, specifically the values of $l$ for each term in equations~\ref{eqn:plus_kernel} or \ref{eqn:mult_kernel}.  $l_{i}$  determines how correlated the response is as a function of the distance between two different points of the $i$'th hyperparameters $\theta^{i}$. For a large value of $l_{1}$, two observations $y_{i}, y_{j}$ will be, on average, correlated with one another for a given large values of $|\theta_{i}^{1} - \theta_{j}^{1}|$. This means $y$ does not vary significantly with changes in $\theta^{1}$. The converse will also be true: for small $l_{1}$, $y$ will change significantly for given large value of $|\theta_{i}^{1} - \theta_{j}^{1}|$. Thus, the sensitivity of the response to hyperparameter $i$ can be measured by the \emph{relevance}, $R_{i}$: 
-\begin{equation}\label{eqn:relevance_def}
-    R_{i} = \frac{1}{l_{i}}
-\end{equation}
-
-A popular type of model based search is Bayesian optimization. The Bayesian optimization algorithm is applied to MSM estimation is as follows: 
-
-\begin{enumerate}
-    \item Randomly sample a small set of hyperparameters and measure the response of the resulting MSMs. This gives a hyperparameter trial data set $\mathcal{D}_{n}=\left\{(y_1, \bm{\theta}_1),  \ldots (y_n, \bm{\theta}_n) \right \}$ where $y$ is the model response.
-    \item Fit a regression model called a \emph{response surface}, which predicts $y$ as a function of $\bm{\theta}$ using the data $\mathcal{D}$: $y \simeq \hat{S}(\theta) + \epsilon$ (where $\epsilon$ is some error term). 
-    \item \label{step:calc_alpha} Calculate an acquisition function, $\alpha$, which is a function of the response surface: $\alpha=\alpha\left[\hat{\bm{\theta}}\right]$. The acquisition function maps the hyperparameters to their utility towards optimising $y$. In other words, it suggests hyperparameters that are likely to optimize $y$. 
-    \item Use $\alpha$ to suggest a set of hyperparameters, $\bm{\theta}_{n+1} = \argmax_{\bm{\theta}}{\left[\alpha(\hat{S})\right]}$ and measure the response, $y_{n+1}$ by fitting the MSM.  
-    \item \label{step:reestimate_rs} Re-estimate the response surface with the new observations incorporated into the trial data set, $\mathcal{D}_{n+1}$
-    \item Repeat steps~\ref{step:calc_alpha} to \ref{step:reestimate_rs} until convergence is reached in the variational score. 
-\end{enumerate}
-
-Gaussian process regression models  are popular as response surface models and these will be discussed below. There are many different acquisition functions, in this work we use the expected improvement.  The improvement, $I$, is the one-sided difference between the current best trial value, called the incumbent, $y^{*} = \max_{\bm{\theta}\in \mathcal{D}}{S(\bm{\theta})}$ and a value of the score: $I(\bm{\theta}) = \max{\left(\hat{S}(\bm{\theta}   -y^{*}, 0\right)}$. The expected improvement is the expectation of this value after integrating out the uncertainty in the response surface $\hat{S}$. It takes into account both the size of the improvement and its probability of occurring. 
-
-\subsubsection{Gaussian process regression}
-
-Gaussian process regression (GPR) models an outcome, $y$, (in our case the variational score) as a function of inputs, $\bm{\theta}$, (in our case a vector representing the MSM hyperparameters) in the form of a multivariate normal distribution: 
-\begin{equation}
-   y = \hat{S}(\bm{\theta}) \sim \mathcal{N}\left(\mu(\bm{\theta}), \mathbf{K}\right ) \label{eqn:gp_def}
-\end{equation}
-where $\mu(\bm{\theta})$ is the mean function and $\mathbf{K}$ matrix which specifies the covariance between different, arbitrary, values of the outcome, $y$ at different values of $\bm{\theta}$. To understand this expression, first specifying a set of points of $\bm{\theta}$ and a value of $\mu$, e.g., $\mu=0$. Then sampling from the resulting multivariate normal distribution gives rise to a mapping between $\bm{\theta}$ and $y$.
-
-However, as written, equation~\ref{eqn:gp_def}, contains no information.  To make predictions about new points, $(y_{*}, \bm{\theta}_{*})$ (the asterisk denotes unseen data), training data $\mathcal{D}_{n}=\left\{(y_1, \bm{\theta}_1),  \ldots (y_n, \bm{\theta}_n) \right \}$,  needs to be incorporated into the definition of  $\mu$ and $\mathbf{K}$:  
-
-$$
-\begin{aligned}
-\mu & =K\left(\bm{\theta}_*, \bm{\theta}\right)\left[K(\bm{\theta}, \bm{\theta})+\sigma_n^2 I\right]^{-1} \mathbf{y} \label{eqn:gpr_pred_mu} \\
-\mathbf{K} &=K\left(\bm{\theta}_*, \bm{\theta}_*\right)-K\left(\bm{\theta}_*, \bm{\theta}\right)\left[K(\bm{\theta}, \bm{\theta})\right]^{-1} K\left(\bm{\theta}, \bm{\theta}_*\right), \label{eqn:gpr_pred_cov}
-\end{aligned}
-$$
-here $K\left(\bm{\theta}_*, \bm{\theta}\right)$ is the covariance between the response at some arbitrary new points, $\bm{\theta}_*$, and the points in training data $\bm{\theta}$ (and similarly $K\left(\bm{\theta}_*, \bm{\theta}_*\right)$, and $K\left(\bm{\theta}, \bm{\theta}\right)$). The GPR model thus specified predicts a response $y_*$, given a new set of inputs, $\bm{\theta}_*$, as a Gaussian distribution, with a mean and variance derived from equations~\ref{eqn:gpr_pred_mu} and~\ref{eqn:gpr_pred_cov}. 
-
-In order to calculate the covariance between the response in the training data and the response of new points, a covariance kernel is used. As an example, equation~\ref{eqn:gauss_kernel} shows the Gaussian kernel: 
-\begin{equation}
-    k(\theta_i, \theta_j; l) =  \exp\left(-\frac{\left|\theta_i-\theta_j\right|^2}{l^2}\right), \label{eqn:gauss_kernel}
-\end{equation}
-it calculates the covariance between the response $y_i$ and $y_j$ with input values of $\theta_i$ and $\theta_j$. It is parameterized by a length-scale parameter, $l$, which is learned from the training data. To increase the flexibility of the covariance calculation, equation~\ref{eqn:gauss_kernel} can be augmented to: 
-\begin{align}
-    K(\theta_i, \theta_j) & = \eta^2  k(\theta_i, \theta_j; l) + \sigma^2\delta_{ij}, 
-\end{align}
-here $k(\theta_i, \theta_j)$ is a covariance kernel (e.g., a Gaussian kernel),  $\theta_i$ and $\theta_j$ are two values of the inputs, $\eta$ determines the scale of the correlation in response (as $0<k\le 1$ in equation~\ref{eqn:gauss_kernel}), $l$ is the characteristic lengths scale of the Gaussian process, and $\sigma$ is the variance of a term which models the noise in the \emph{observed} responses. 
-
-There are many different types of kernel with different functional forms depending on the type of data (e.g., periodic data). When the covariance depends only on distance between observations (as above) the kernel is known as \emph{stationary}.  We will only consider stationary kernels in this work and these will be discussed in the methods section. 
-
-The parameters of the GPR ($\eta, l, \sigma$ in the above case) are learned through maximizing the marginal log-likelihood of the data with respect to the parameters. Typically, prior distributions are placed over these parameters which reflect prior knowledge or restrictions on the data. Details on the fitting process can be found in [rasmussen and williams]. 
-
-With multidimensional inputs (i.e., multiple MSM hyperparameters) then there is flexibility over how to create a kernel over all the input dimensions. Two simple approaches is a fully additive ($K^{\mathrm{+}}$) and a fully multiplicative ($K^{\mathrm{\times}}$) covariance function: 
-
-\begin{align}
-    K^{\mathrm{+}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j; l_{1}) + k(\theta^{2}_i, \theta^{2}_j; l_{2}) \ldots \right ] + \sigma^2  \label{eqn:plus_kernel} \\ 
-    K^{\mathrm{\times}}_{i,j} & = \eta^2  \left [k(\theta^{1}_i, \theta^{1}_j; l_{1}) \times k(\theta^{2}_i, \theta^{2}_j, l_{2}) \times \ldots \right ] + \sigma^2 \label{eqn:mult_kernel}
-\end{align}
-
-where the elements of $\bm{\theta}$ are labelled $\theta^{1}, \theta^{2} \ldots$. The different kernel constructions lead to different interpretations of covariance structures.  Kernel functions can by combined in arbitrary ways to suite the modelling needs, see [duvenand thesis]. 
-
-Method
-
-Sensitivyt analysis. 
-The hyperparameter trial data set, $\mathcal{D}$, was used to estimate the sensitivity of the dominant timescale, $t_2$, to the quasi-continuous hyperparameters (i.e., everything except the type of contact distance scheme, although this was included in the GPR modelling), for each feature, $f$, separately. For example, the relevance (equation~\ref{eqn:relevance_def}) of the TICA lag-time, $\tau_{\mathrm{T}}$, in determining $t_2$ was calculated for the `dihed.', `dist.' and `logit(dist.)' feature.  The relevance of each hyperprameter was calculated from the characteristic length-scales in a GPR fitted to $\mathcal{D}$.  
-
-A number of different covariance structures were trialled when fitting the GPRs to $\mathcal{D}$. Four different types of kernels over each hyperparameter were trialled (see equations~\ref{eqn:kern_exp} to~\ref{eqn:kern_gauss}, below) and combined in both a fully multiplicative and fully additive covariance matrix (equations~\ref{eqn:mult_kernel} and~\ref{eqn:plus_kernel} respectively).  So for each feature, eight different GPR models were fit. The final form of the covariance matrix elements were chosen by looking at the RMSE of the predictions across all features. The three different kernel functions were taken from the Mat\'ern family with $\nu=\sfrac{1}{2}, \sfrac{3}{2}, \sfrac{5}{2}, \infty$ ($\nu=\sfrac{1}{2}$, and $\nu=\infty$ correspond to the Exponential and Gaussian kernels respectively), these are given by: 
-\begin{align}
-k_{\text{Exp}}\left(r; \sfrac{1}{2}\right) &=\exp (-r) \label{eqn:kern_exp}\\
-k_{\text{M3-2}}\left(r; \sfrac{3}{2}\right) &= \exp (-\sqrt{3} r)(1+\sqrt{3} r) \label{eqn:kern_m32} \\
-k_{\text{M5-2}}\left(r; \sfrac{5}{2}\right) &= \exp (-\sqrt{5} r)\left(1+\sqrt{5} r+\frac{5}{3} r^{2}\right) \label{eqn:kern_m52}\\
-k_{\text{RBF}}\left(r; \infty\right) &= \exp \left(-\frac{1}{2} r^{2}\right), \label{eqn:kern_gauss}
-\end{align}
-where $r = \frac{|\theta_i-\theta_j|}{l}$. See chapter 5 of  reference~\cite{rasmussenGaussianProcessesMachine2006} for a full description of the Mat\'{e}rn kernels and their properties.  
-
-The hyperparameter trial data set was processed with the following steps prior to modelling (this was done using the data for all features):
-\begin{enumerate}
-    \item The median of $t_2$ across the bootstrap samples was taken as the response variable. 
-    \item The response  was log-transformed and then centred and scaled by its median and inter-quartile range, respectively. This was because of its large range: $t_2$ ($10 < t_2 < \num{20000}$. 
-    \item The input variables ($m$, $\tau_{T}$, \ldots, etc.) were scaled to have the same range as the transformed response. This was done so that the kernel hyperparameters could be comparable to each other. The exception to this was contact distance scheme which was left dummy coded as $1$ (indicates trial used closest-heavy distance) and $0$ (trial used alpha-Carbon distance). 
-\end{enumerate}
-
-The GPR was fit using PyMC v4.0 [need ref] using the marginal likelihood implementation.  The values of the GPR parameters were found by maximizing the marginal likelihood using the `find$\_$MAP()' function. An informative prior was placed over the kernel parameters: a half-Cauchy distribution with a scale parameter of $1$ for $\sigma$ and $\eta$, and a Gamma distribution with $\alpha, \beta$ = $1, 0.5$. The informative priors and the scaling of the response and hyperparameter inputs were done to to ensure the MAP algorithm consistently converged to an answer with a low RMSE. Without these measures the `find$\_$MAP()' frequently predicted the response to be zero or near zero. 
-
-After fitting a GPR model and selecting the best fitting covariance matrix form, the uncertainty in the covariance parameters $\sigma, \eta, l_{1}, l_{2}\ldots$ were determined by bootstrapping with $100$ iterations. 
-
-Optimization 
-
-Bayesian optimization was applied to optimize the hyperparameters conditional on a given feature. This was done as follows: 
-
-\begin{enumerate}
-    \item The GPR model used in the sensitivity analysis was used to compute the expected improvement \emph{at the values of $\theta$ in $\mathcal{D}$} according to the following: 
-    \begin{align}
-     \mathbb{E}[I(\bm{\theta})] &= \mathbb{E}[\max{(0, f(\bm{\theta})-f^{*})}] \label{eqn:ei_def} \\ 
-     & = \sigma \left ( z \Phi(z)  + \phi(z) \right) \label{eqn:ei_for_gp}
-    \end{align}
-    where $z = (\mu-\mu^{*})/\sigma$ and $\mu$, $\sigma$ are the mean and standard deviation of the GPR at a given point, and $\mu^{*}$ is the incumbent. 
-    \item The maximum of the expected improvement over whole of the hyperparameter search space would be too computational inefficient to calculate. So we assumed that the maximum would be in the neighbourhood of the incumbent set of hyperparameters (i.e., the maximum $\mathbb{E}[I(\bm{\theta})]$ restricted to those $\bm{\theta}\in \mathcal{D}$). 
-    \item The neighbourhood of the incumbent was determined as the range of $\bm{\theta}$ which have an $\mathbb{E}[I(\bm{\theta}])]$ within \SI{5}{\percent} of the incumbent. 
-    \item A grid of new hyperparameters was place over this neighborhood and the expected improvement was calculated at each grid point.  This gave a list of new hyperparameters which were ordered according to their expected improvement.  MSMs using the top 5 unique hyperparameters were then calculated. 
-\end{enumerate}
-
-
-
-
-% We start from a position of limited information on appropriate modelling choices for creating an MSM of the fast folding proteins BBA and Chignolin.  We assume that the
-% relevant hyperparameters are contained in the  hyperparameter search space, table~\ref{tab:search_space} and set out to answer our motivating questions: 
-
-% \begin{itemize}
-%     \item How do MSM timescales vary with the hyperparameters? 
-%     \item How sensitive are timescales to the hyperparameters? 
-%     \item Is Bayesian optimization a useful tool to optimise hyperparameters of an MSM? 
-%     \item Are the current variational scores (VAMP, GMRQ) appropriate for optimising hyperparameters? 
-%     \item How does model selection depend on choices in the variational score? 
-% \end{itemize}
-
-
-% Our aim in answering these questions is ensure that an MSM analysis (or indeed any statistical analysis of MD data) is robust and reproducible.  
-
-% Unless otherwise stated, the Markov lag time, $\tau_{\mathrm{M}}$ was set at \SI{41}{\nano\second} and [Ryan] which was the smallest lag time across the whole hyperparameter trial data set which gave rise to a Markovian model.  
-
-
-% [figure 1 shows timescales of BBA and Chinolin, arranged in decreasing values for each set of hyperparameters]
-
-% \begin{itemize}
-%     \item Previous analysis of BBA and CLN using the MSM approach have shown that the slowest timescale process $t_{2}$ is well correlated with the folding of the protein into its native state [sherere 2018] 
-%     \item We optimised MSMs using random search using a the metric of a bootstrapped $t_{2}$, these are shown in figure 1.
-%     \item In order for th optimization to be valid the definition, in terms of the exact molecular process, needs to remain consistent across each each trial.
-%     \item For chignolin, the timescales are similar, see figure 1 panel (a) and the definition of $\psi_2$ remains similar, see figure A1 and A2 [model summary plot for best and middle best models.]. thus the objective is consistent and optimization valid. 
-%     \item However, for BBA, there is a wide range timescales  of the `best' performing set of hyperparameters (model 1), $t_2 \simeq \SI{18}{\micro\second} $ and the second `best' performing set of hyperparameters (model 2) correspond to two different relaxation processes.  
-%     \item In model 1 we see two distinct partially folded 
-    
-    
-%     See figure A1 in the appendix for a description of the two models. 
-%     \item Thus, the sampled trials for BBA actually refer to two, or possibly more, distinct relaxation processes.  
-%     \item I don't know what else to say about this. 
-    
-% \end{itemize}
-
-
-% \subsection{Sensitivity to hyperparameters is low but varies by feature}\label{sec:sensitivity}
-
-% % \begin{figure}
-% %     \centering
-% %     \includegraphics[width=0.8\textwidth]{figures/sensitivity.pdf}
-% %     \caption{\textbf{Relevance of hyperparameters to the implied timescales and expected improvement.} The hyperparameter relevance ($R$) to the timescales ($y=\log{t_{2}}$) for the three different features,  and the expected improvement ($y=\log{\mathbb{E}[I]}$) for the logistic-distances feature. The larger the relevance, the more sensitive the outcome is to each hyperparameter.  The relevance is calculated from the learned kernel parameters of the relevant Gaussian process. Box plots show the distribution of values from \num{100} bootstrap samples. The relevance $R$ is the inverse of the characteristic length-scale of the exponential kernel in equation~\ref{eqn:kern_exp}. }
-% %     \label{fig:sensitivity}
-% % \end{figure}
-
-% In order to understand the timescale distribution we estimate the sensitivity of the timescales to the hyperparameters. Previous work has shown that the type of feature used is important in determining the eigenvector accuracy. This is consistent with figure~\ref{fig:1fme_timescales}  where the majority of the best hyperparameters use the `logit(dist.)' feature.  However, figure~\ref{fig:ts_distribution} also shows that a) there is significant overlap of the timescale distributions for each feature, and b) the best performing feature also gives rise to the worst performing models. The type of feature is therefore a necessary but not sufficient hyperparameter to tune in order to maximize the timescales. It is important, therefore, to consider the remaining hyperparameters (e.g., the TICA lag time, TICA dimension etc.) and how they affect the timescales.  
-
-% We estimate the sensitivity of the remaining hyperparameters for each feature by modelling $\log{t_{2}}$ as a Gaussian process as a function of the MSM hyperparameters. This model of the response of the $t_2$ to variation in the hyperparameters we call a \emph{response surface}. The covariance function that gave the best fitting model used the fully additive structure, equation~\ref{eqn:plus_kernel}, with an exponential kernel over each hyperparameters, equation~\ref{eqn:kern_exp}. 
-
-% Figure~\ref{fig:sensitivity} plots the  the relevance of hyperparameters, $R$, in determining $t_{2}$. It shows that the hyperparameters vary in how important they are in determining $t_2$ for each different feature.  For the `dihed.' feature it shows that the TICA dimension, lag time and number of microstates are all equally relevant in determining $t_2$, however $t_2$ does not vary greatly with changes in any of these hyperparameters (as $R\simeq 1$). For the `dist.' feature the number of microstates is the most relevant in determining $t_2$. For the `logit(dist.)' feature the location of the centre of the logistic function (as this feature is a continuous approximation to a contact map, the `centre' corresponds  to the contact map cut-off) is the most important hyperparameter. The fitted Gaussian process regression models which give rise these values are shown in the supplementary material figures~\ref{fig:repsonse_diheds}, \ref{fig:repsonse_dist}, and \ref{fig:repsonse_logistic}. 
-
-% Why is the hyperparameter sensitivity important? First, as has been  previously shown~\cite{bergstra_jamesbergstra_random_2012}, if all hyperparameters have a large relevance ($R \gg 1$), then to finding the maximum of the response surface (i.e., the hyperparameters which give rise to the maximum $t_2$) is hard. In this case, it is important to try all combinations of hyperparameters i.e., a  grid-search strategy, or to employ an active learning approach~\cite{snoekAbstractBayesianOptimization2013}.  However, if only a small proportion of the hyperparameters have a high relevance then randomly sampling hyperparameters is the more efficient strategy.  Second, the lack of pattern in the relevance of hyperparameters indicates that it is not possible to draw general conclusions about hyperparameters, indicating that default values of hyperparameters may not be useful and that each system must optimized individually. 
-
-
-
-
-% \begin{figure}
-%     \centering
-%     \includegraphics{figures/surface_distances_logistic_ei.pdf}
-%     \caption{\textbf{Expected improvement as a function of the two most relevant hyperparameters - the logistic center ($c$) and steepness ($s$)}. The remaining hyperparameters take on the values shown in the annotation. These were chosen so as to maximize the expected improvement, i.e., the figure plots $y=f(s, c, d^{*}, m^{*}, \tau^{*}, n^{*})$ where $s^{*}, c^{*}, d^{*}, m^{*}, \tau^{*}, n^{*} = \argmax \left [f(s, c, d, m, \tau,n)\right]$. }
-%     \label{fig:ei_surface}
-% \end{figure}
-
-
-
-
-% In order to check the convergence of the results shown in panel (a) of figure~\ref{fig:1fme_timescales} and to potentially improve the $t_2$ estimate,  we use a single round of Bayesian optimization. To this end, we first calculate the expected improvement, $\mathbb{E}[I]$,  using the response surface calculated in the sensitivity analysis and  equation~\ref{eqn:ei_for_gp}. As the `logit(dist.)' feature has the best performing trials we optimise only this feature. 
-
-
-% The expected improvement is shown in figure~\ref{fig:ei_surface} as a function of the `centre' and the `steepness' hyperparameters (the remaining hyperparameters are held at their values at the peak of expected improvement).  This shows that we expect any values of the `centre' and `steepness' hyperparameters to increase $t_2$ by at least \SI{2}{\micro\second} if the other hyperparameters take on their values in the annotation. However, with $c\simeq \SI{7}{\angstrom}$ and $s\simeq \SI{0.5}{\per\angstrom}$ we can expect an improvement in the timescales of almost $\SI{3}{\micro\second}$. 
-
-
-% We then estimated MSMs using the five sets of hyperparameters with the largest expected improvement. The new optimized values of $t_2$ are shown in panel (b) of figure~\ref{fig:1fme_timescales}.  These clearly show that optimized models all have timescales slightly greater than the incumbent ($t_2 \simeq \SI{20}{\micro\second}$):  the optimized timescales range up to $t_2 \simeq \SI{24}{\micro\second}$, which are similar to the improvements predicted by the expected improvement function. The optimized hyperparameters differ slightly from the incumbent (except in the choice of distance scheme - all used the $\alpha$-carbon distances). We have, therefore, a set of six MSMs which differ slightly in the values of their hyperparameters, which all give similar implied timescales: we can be sure that our model is robust. 
-
-% In order to check the validity of the optimized models, figure xx shows the metastable states of (a) the second ranked model from the unoptimized set (the second model in figure~\ref{fig:1fme_timescales}(a), $t_2 simeq \SI{9}{\micro\second}$), (b) the first ranked model from the unoptimized set (the first model in figure~\ref{fig:1fme_timescales}(a), $t_2 simeq \SI{20}{\micro\second}$) and (c) the optimized model (the first ranked model from the optimized set (the first model in figure~\ref{fig:1fme_timescales}(b), $t_2 simeq \SI{24}{\micro\second}$). 
-
-% We can also ask ourselves whether we could improve our hyperparameters using Bayesian optimization with less data. This is relevant if estimating the models is expensive. To answer this, we remove the incumbent in panel (b) from the hyperparameter trial data set, re-estimated the response surface and expected improvement and sampled new hyperparameters. The new incumbent in this case was $t_2 = \simeq \SI{10}{\micro\second}$, shown in purple in panel (c) figure~\ref{fig:1fme_timescales}.  The new values of $t_2$,  are all improvements of up to \SI{10}{\micro\second}: the new timescales range up to $t_2 \simeq \SI{20}{\micro\second}$. It is therefore plausible that one may use Bayesian optimization to optimize MSM hyperparameters, even when the timescale measurements are noisy and there are no strong dependence on any of hyperparameters.  
-
-
-
-% \subsection{Sensitivity analysis}
-
-% \textbf{Ryan}
-
-% \begin{itemize}
-%     \item Can you put the details about how exactly hyperparameter importance was measured.
-%     \item should include calculation details and refer to the theory in previous section. 
-%     \item I would do this first before the theory (so you don't include useless detail in the theory section). 
-% \end{itemize}
-
-
-
-
- 
-
-% \subsubsection{Sensitivity Analysis}
-
-% Sensitivity analysis is used to determine the dependency of model outputs on their inputs [uncertainty book]. This is a large research area and we refer the reader to [uncertainty book] and the references within for a full account.  In this work, we conduct a \emph{global sensitivity analysis} which looks at model outputs as a function of the whole input space. This is in contrast to a \emph{local sensitivity analysis} which look at  how small perturbations around a give set of inputs affect the outcomes.  Our simplified sensitivity analysis uses analysis of variance in conjunction with random forests to assess, as developed by Hutter et. al. \cite{hutter_efcient_nodate}.  
-
-
-% \textbf{Ryan}:
-% \begin{itemize}
-%     \item Summarise the theory and method for assessing hyperparameter importance in Optunal. 
-%     \item reference is: https://proceedings.mlr.press/v32/hutter14.html
-%     \item Should be relatively brief (a few paragraphs) 
-% \end{itemize}
 
