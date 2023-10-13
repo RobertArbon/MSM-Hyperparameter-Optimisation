@@ -25,6 +25,30 @@
 \usepackage{bm}
 \usepackage{xfrac}
 \usepackage{graphicx}
+
+\usepackage[backend=biber,style=chem-acs, eprint=false, articletitle=true, note=false]{biblatex}
+
+\DeclareSourcemap{
+  \maps[datatype=bibtex, overwrite]{
+    \map{
+      \step[fieldset=isbn, null]
+      \step[fieldset=issn, null]
+      \step[fieldset=language, null]
+    \step[fieldset=address, null]
+    \step[fieldset=series, null]
+    \step[fieldset=note, null]
+    % \step[fieldset=Publisher, null]
+    % \step[fieldset=language, null]
+    }
+  }
+}
+
+\ExecuteBibliographyOptions[misc]{eprint=true}
+\addbibresource{references.bib} 
+
+
+
+
 \usepackage[section]{placeins}
 
 \DeclareMathOperator*{\argmax}{arg\,max}
@@ -41,26 +65,27 @@
 \newcommand{\dihedlabel}{$dihed.\ $}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% supplementary materials
-\usepackage{xr}
-\newcommand*\sref[1]{%
-    S\ref{#1}}
+% % supplementary materials
+% \usepackage{xr}
+% \newcommand*\sref[1]{%
+%     S\ref{#1}}
     
-\makeatletter
-\newcommand*{\addFileDependency}[1]{% argument=file name and extension
-  \typeout{(#1)}
-  \@addtofilelist{#1}
-  \IfFileExists{#1}{}{\typeout{No file #1.}}
-}
-\makeatother
+% \makeatletter
+% \newcommand*{\addFileDependency}[1]{% argument=file name and extension
+%   \typeout{(#1)}
+%   \@addtofilelist{#1}
+%   \IfFileExists{#1}{}{\typeout{No file #1.}}
+% }
+% \makeatother
 
-\newcommand*{\myexternaldocument}[1]{%
-    \externaldocument{#1}%
-    \addFileDependency{#1.tex}%
-    \addFileDependency{#1.aux}%
-    }
-    
-\myexternaldocument{SI}
+% \newcommand*{\myexternaldocument}[1]{%
+%     \externaldocument{#1}%
+%     \addFileDependency{#1.tex}%
+%     \addFileDependency{#1.aux}%
+%     }
+
+
+% \myexternaldocument{SI}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % \usepackage{caption}
@@ -144,31 +169,11 @@
 %% require that it is printed as part of the abstract page. It will
 %% be automatically moved as appropriate.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% \begin{tocentry}
+\begin{tocentry}
 
-% \begin{figure}
-%     \centering
-%     \includegraphics{figures/Slide1.tiff}
-%     % \caption{Caption}
-%     % \label{fig:enter-label}
-% \end{figure}
-% Some journals require a graphical entry for the Table of Contents.
-% This should be laid out ``print ready'' so that the sizing of the
-% text is correct.
+\includegraphics{figures/toc.eps}
 
-% Inside the \texttt{tocentry} environment, the font used is Helvetica
-% 8\,pt, as required by \emph{Journal of the American Chemical
-% Society}.
-
-% The surrounding frame is 9\,cm by 3.5\,cm, which is the maximum
-% permitted for  \emph{Journal of the American Chemical Society}
-% graphical table of content entries. The box will not resize if the
-% content is too big: instead it will overflow the edge of the box.
-
-% This box and the associated title will always be printed on a
-% separate page at the end of the document.
-
-% \end{tocentry}
+\end{tocentry}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% The abstract environment will automatically gobble the contents
@@ -195,7 +200,7 @@ No `ground truth' data exist for MSMs used for the analysis of protein MD trajec
 To use a variational score, it is necessary to specify the lag time ($\tau$) of the MSM and the number of slow relaxation modes to optimize ($k$), and then estimate the MSM with different hyperparameters. The `best' set of hyperparameters is the one with the highest variational score. In the case of the VAMP-E score, one may also add $k$ to the list of hyperparameters to optimize. 
 
 This procedure removes the need for potentially arbitrary hyperparameter selection with the concomitant risk of findings that are not robust to changes in modeling assumptions. This method has been used in a number of different studies~\cite{A_Minimum_2018, Adaptive_M2020, High-Resol2019, Maximizing2018, Modeling_t2017, Optimized_2016, Quantitati2018, VAMPnets_f2018, Variationa2018, Ward_Clust2017}. In addition, it has allowed investigations into the roles of various hyperparameters and for other methods for hyperparameter selection to be developed. In Husic et al.~
-\cite{Ward_Clust2017} the authors used the GMRQ to show that the Ward and K-means methods are optimal for clustering conformations for MSMs. In Husic et al.~\cite{Optimized_2016} the authors performed a sensitivity analysis of the GMRQ  in order to determine the sensitivity of hyperparameters in describing protein folding.  An extension of the VAMP score by Scherer et al.~\cite{scherer_variational_2019} showed that the optimal set of features could be selected before going through the full MSM creation and scoring pipeline.  
+\cite{Ward_Clust2017} the authors used the GMRQ to show that the Ward and K-means methods are optimal for clustering conformations for MSMs. In Husic et al.~\cite{Optimized_2016} the authors performed a sensitivity analysis of the GMRQ  in order to determine the sensitivity of hyperparameters in describing protein folding.  An extension of the VAMP score by Scherer et al.~\cite{scherer_variational_2019} showed that the optimal set of features could be selected before going through the full MSM creation and scoring pipeline. However, using variational optimization is not the only method for principled construction of MSMs, see for example Nagel et al.~\cite{nagelSelectingFeaturesMarkov2023}'s careful construction of an MSM of the Villin headpiece. 
 
 It is tempting to think that with a single model metric and state-of-the-art ML optimization software, it should be possible to form an automatic pipeline wherein simulation data are fed in, and a single optimized MSM describing the kinetics and thermodynamics of the system comes out. However, many detailed questions need to be answered before such a pipeline is possible. First, do variational scores refer to the same relaxation mode across all possible combinations of hyperparameters?  It is possible that with certain combinations of hyperparameters, the eigenvectors could describe different relaxation modes. It is therefore possible that the variational scores do not compare the same set of processes across different sets of hyperparameters. Second, the MSM lag time and number of scored processes interest will affect the variational scores --- does this have any material effect on how we rank different sets of hyperparameters? Third, do we need variational scores to optimize models at all?  Will model observables, such as the implied timescales suffice to optimize MSMs?  Finally, does hyperparameter optimization work for MSMs compared to randomly sampling hyperparameters?  Here, we use a common method (Bayesian optimization with tree Parzen estimators) for optimizing machine learning models to find optimal hyperparameters. 
 
@@ -206,7 +211,7 @@ The remainder of this work is structured as follows.  In the next section, we co
 \subsection{Markov state models}
 \subsubsection{Overview}
 
-What follows is a brief overview of the theory of Markov state models (MSMs), for a more detailed picture see some of the many good references~\cite{prinzMarkovModelsMolecular2011, trendelkamp-schroer_estimation_2015,husic_markov_2018}. MSMs describe the first-order conformational kinetics of a system by specifying the conditional probability of transitioning from a state $i$ at a time $t$ to a state $j$ at a time $t+\tau$  later. This information is summarized in the transition matrix $T_{ij}(\tau) = P(j, t+\tau | i, t)$. Each state, $i$, is a collection of conformations which have similar kinetic properties. The transition matrix is a finite and discrete representation of the underlying Markovian transfer operator, $\mathcal{T}(\tau)$, which describes the dynamics of the system. The first left eigenvector $\phi_1$ (in descending eigenvalue order $\lambda_i$, with $\lambda_{1} = 1$) corresponds to the stationary or equilibrium distribution, which we also label $\pi$; the second left eigenvector, $\phi_2$ corresponds to the slowest conformational relaxation process; the third is the next slowest relaxation process and so on. The corresponding right eigenvectors, $\psi_{i}$ are normalized by $\pi$ (so $\psi_{2} = 1$ for all states). The eigenvalues are related to the timescales of these relaxation processes by: $t_{i} = -\tau/\log{\lambda_i}$.  The transition matrix is said to be reversible if it obeys detailed balance $\pi_i T_{ij}=\pi_j T_{ji}$. 
+What follows is a brief overview of the theory of Markov state models (MSMs), for a more detailed picture see some of the many good references~\cite{prinzMarkovModelsMolecular2011, trendelkamp-schroer_estimation_2015,husic_markov_2018}. MSMs describe the first-order conformational kinetics of a system by specifying the conditional probability of transitioning from a state $i$ at a time $t$ to a state $j$ at a time $t+\tau$  later. This information is summarized in the transition matrix $T_{ij}(\tau) = P(j, t+\tau | i, t)$. Each state, $i$, is a collection of conformations which have similar kinetic properties. The transition matrix is a finite and discrete representation of the underlying Markovian transfer operator, $\mathcal{T}(\tau)$, which describes the dynamics of the system. The first left eigenvector $\phi_1$ (in descending eigenvalue order $\lambda_i$, with $\lambda_{1} = 1$) corresponds to the stationary or equilibrium distribution, which we also label $\pi$; the second left eigenvector, $\phi_2$ corresponds to the slowest conformational relaxation process; the third is the next slowest relaxation process and so on. The corresponding right eigenvectors, $\psi_{i}$ are normalized by $\pi$ (so $\psi_{1} = 1$ for all states). The eigenvalues are related to the timescales of these relaxation processes by: $t_{i} = -\tau/\log{\lambda_i}$.  The transition matrix is said to be reversible if it obeys detailed balance $\pi_i T_{ij}=\pi_j T_{ji}$. 
 
 The transition matrix is specified with respect to a set of $p$ basis states, $\chi_1, \chi_2, ..., \chi_p$ which we denote as a vector $\bm{\chi}$. In what follows, the basis states are assumed to be discrete and orthonormal and each one corresponds to a small region of conformational space.  Each frame of an MD trajectory can be mapped to one of these basis states and these discretized MD trajectories form the data from which the transition matrix is estimated.
 
@@ -214,7 +219,8 @@ The mapping between the atomic coordinates $\mathbf{x}$ and the basis states we 
 
 \subsubsection{Estimating a reversible MSM}
 
-The first step in estimating a reversible MSM is projecting the MD trajectories onto the proposed basis states, $\bm{\chi}$. Transitions between each basis state at time $t$ and time $t + \tau$ are tabulated in a count matrix, $\mathbf{C}_{0t}$ (the subscript $0$ and $t$ refer to the fact that the counted transitions are between $t$ and $t+\tau$). The population of each state is given by the diagonal matrix, $\mathbf{C}_{00}$ calculated as the row-sum of the count matrix $[\mathbf{C}_{00}]_{i, i} = \sum_j [\mathbf{C}_{0t}]_{i, j}$.  A \emph{non-reversible} transition matrix is then given by $\mathbf{T}^{\mathrm{irrev}} = \mathbf{C}_{0t}\mathbf{C}_{00}^{-1}$. It is non-reversible because of the finite amount of simulation data will not be in perfect equilibrium. A transition matrix and stationary vector which obey detailed balance, $\mathbf{T}^{\mathrm{rev}}$ and $\bm{\pi}^{\mathrm{rev}}$, can be estimated from $\mathbf{C}_{0t}$ using maximum likelihood estimation with constraints~\cite{trendelkamp-schroer_estimation_2015}. The constraints ensure that detailed balance is obeyed by $\mathbf{T}$ and its dynamics are reversible.  However, once $\mathbf{T}^{\mathrm{rev}}$ and $\bm{\pi}^{\mathrm{rev}}$ have been estimated, they are now inconsistent with $\mathbf{C}_{0t}$ and $\mathbf{C}_{00}$, as obtained from the MD trajectory.
+The first step in estimating a reversible MSM is projecting the MD trajectories onto the proposed basis states, $\bm{\chi}$. Transitions between each basis state at time $t$ and time $t + \tau$ are tabulated in a count matrix, $\mathbf{C}_{0t}$ (the subscript $0$ and $t$ refer to the fact that the counted transitions are between $t$ and $t+\tau$).
+The population of each state is given by the diagonal matrix, $\mathbf{C}_{00}$ calculated as the row-sum of the count matrix $[\mathbf{C}_{00}]_{i, i} = \sum_j [\mathbf{C}_{0t}]_{i, j}$.  A \emph{non-reversible} transition matrix is then given by $\mathbf{T}^{\mathrm{irrev}} = \mathbf{C}_{0t}\mathbf{C}_{00}^{-1}$. It is non-reversible because of the finite amount of simulation data will not be in perfect equilibrium. A transition matrix and stationary vector which obey detailed balance, $\mathbf{T}^{\mathrm{rev}}$ and $\bm{\pi}^{\mathrm{rev}}$, can be estimated from $\mathbf{C}_{0t}$ using maximum likelihood estimation with constraints~\cite{trendelkamp-schroer_estimation_2015}. The constraints ensure that detailed balance is obeyed by $\mathbf{T}$ and its dynamics are reversible.  However, once $\mathbf{T}^{\mathrm{rev}}$ and $\bm{\pi}^{\mathrm{rev}}$ have been estimated, they are now inconsistent with $\mathbf{C}_{0t}$ and $\mathbf{C}_{00}$, as obtained from the MD trajectory.
 
 \subsubsection{Variational scores}
 
@@ -326,7 +332,7 @@ MSMs were estimated using PyEMMA version 2.5.7~\cite{schererPyEMMASoftwarePackag
     \item The frames of the TICA trajectories were clustered using the k-means algorithm into $n$ discrete microstates. 
     \item A reversible, maximum likelihood MSM was then estimated. 
 \end{enumerate}
-To save on memory and compute resources the data was subset in parts of the MSM estimation. The MD trajectories were first strided so that the time between each frame was \SI{1}{\nano\second} in line with previous analysis in the literature.[a reference here] The cluster centers were estimated on frames separated by \SI{10} {\nano\second}, i.e. only the 0\textsuperscript{th}, 10\textsuperscript{th}, etc. frames were used for estimating the cluster centers. 
+To save on memory and compute resources the data was subset in parts of the MSM estimation. The MD trajectories were first strided so that the time between each frame was \SI{1}{\nano\second} in line with previous analysis in the literature~\cite{sultan_mdstride_2018,beauchamp_mdstride_2013}. The cluster centers were estimated on frames separated by \SI{10} {\nano\second}, i.e. only the 0\textsuperscript{th}, 10\textsuperscript{th}, etc. frames were used for estimating the cluster centers. 
 
 The uncertainty for model observables was estimated using bootstrap with \num{100} bootstrap samples. The point estimate and error bars were calculated as the median,   \SI{2.5}{\percent} and \SI{97.5}{\percent} quantiles of the distribution from the bootstrap samples.
 
@@ -357,7 +363,7 @@ Selected models were validated by:
     \item implied timescales as a function of the lag time, $\tau$.
 \end{enumerate} 
 
-This information can be found in the supplementary information. 
+The validation details of the selected models can be found in the supplementary information. 
 
 \begin{table}
     \centering
@@ -562,6 +568,7 @@ Taken together these observations suggest a number of recommendations:
 
 
 
+
 % This work has answered a number of questions pertaining to selecting hyperparameters for discrete MSMs.  We have seen that the type of feature plays an important role but that the other hyperparameters need to be chosen carefully to optimize the implied timescales.  The sensitivity of the implied timescales is generally low, meaning small variations in their values do not change the timescales significantly.  However, the relative sensitivity of the non-feature hyperparameters changes depending on type of feature used: e.g., with some features the number of microstates is most important while with others the timescales are not affected.  The VAMP variational scores, which have recently been used to perform model selection on reversible MSMs have been shown to give results which are not in line with the assumed variational principle underlying them. 
 
 % Given this relatively complex picture of hyperparameter optimization we recommend the following for optimising reversible MSMs: 
@@ -589,7 +596,7 @@ The molecular dynamics trajectories used in this work were used with permission 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{acknowledgement}
 
-The authors would like to thanks Andreas Mardt for useful discussions and Redesign Science for partial support of this work. 
+The authors would like to thanks Andreas Mardt for useful discussions, Redesign Science for partial support of this work and to D. E. Shaw research for the use of their data.  
 
 \end{acknowledgement}
 
@@ -607,9 +614,9 @@ All processing and analysis for the experiments carried out and instructions on 
 %% Notice that the class file automatically sets \bibliographystyle
 %% and also names the section correctly.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\bibliography{references.bib}
+%\bibliography{references.bib}
 %\bibliography{bibliography.bib}
-
+\printbibliography
 \end{document}
 
 
