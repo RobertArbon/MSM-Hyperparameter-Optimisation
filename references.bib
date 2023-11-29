@@ -1,4 +1,180 @@
-@article{cannariatoPredictionProteinProtein2022,
+@article{VAMPnets_f2018,
+  title = {{{VAMPnets}} for Deep Learning of Molecular Kinetics},
+  author = {Mardt, Andreas and Pasquali, Luca and Wu, Hao and No{\'e}, Frank},
+  year = {2018},
+  month = jan,
+  journal = {Nature Communications},
+  volume = {9},
+  number = {1},
+  pages = {5},
+  publisher = {{Nature Publishing Group}},
+  issn = {2041-1723},
+  doi = {10.1038/s41467-017-02388-1},
+  urldate = {2021-07-18},
+  abstract = {There is an increasing demand for computing the relevant structures, equilibria, and long-timescale kinetics of biomolecular processes, such as protein-drug binding, from high-throughput molecular dynamics simulations. Current methods employ transformation of simulated coordinates into structural features, dimension reduction, clustering the dimension-reduced data, and estimation of a Markov state model or related model of the interconversion rates between molecular structures. This handcrafted approach demands a substantial amount of modeling expertise, as poor decisions at any step will lead to large modeling errors. Here we employ the variational approach for Markov processes (VAMP) to develop a deep learning framework for molecular kinetics using neural networks, dubbed VAMPnets. A VAMPnet encodes the entire mapping from molecular coordinates to Markov states, thus combining the whole data processing pipeline in a single end-to-end framework. Our method performs equally or better than state-of-the-art Markov modeling methods and provides easily interpretable few-state kinetic models.},
+  copyright = {2018 The Author(s)},
+  langid = {english},
+  annotation = {Bandiera\_abtest: a Cc\_license\_type: cc\_by Cg\_type: Nature Research Journals Primary\_atype: Research Subject\_term: Machine learning;Molecular modelling;Theoretical chemistry Subject\_term\_id: machine-learning;molecular-modelling;theoretical-chemistry},
+  file = {/Users/robertarbon/Zotero/storage/ZYKXDCL5/Mardt et al. - 2018 - VAMPnets for deep learning of molecular kinetics.pdf;/Users/robertarbon/Zotero/storage/GQ6QBRC5/s41467-017-02388-1.html}
+}
+
+
+@article{bowmanImprovedCoarsegrainingMarkov2012,
+  title = {Improved Coarse-Graining of {{Markov}} State Models via Explicit Consideration of Statistical Uncertainty},
+  author = {Bowman, Gregory R.},
+  year = {2012},
+  month = oct,
+  journal = {The Journal of Chemical Physics},
+  volume = {137},
+  number = {13},
+  issn = {0021-9606},
+  doi = {10.1063/1.4755751},
+  urldate = {2020-03-15},
+  abstract = {Markov state models (MSMs){\textendash}or discrete-time master equation models{\textendash}are a powerful way of modeling the structure and function of molecular systems like proteins. Unfortunately, MSMs with sufficiently many states to make a quantitative connection with experiments (often tens of thousands of states even for small systems) are generally too complicated to understand. Here, I present a Bayesian agglomerative clustering engine (BACE) for coarse-graining such Markov models, thereby reducing their complexity and making them more comprehensible. An important feature of this algorithm is its ability to explicitly account for statistical uncertainty in model parameters that arises from finite sampling. This advance builds on a number of recent works highlighting the importance of accounting for uncertainty in the analysis of MSMs and provides significant advantages over existing methods for coarse-graining Markov state models. The closed-form expression I derive here for determining which states to merge is equivalent to the generalized Jensen-Shannon divergence, an important measure from information theory that is related to the relative entropy. Therefore, the method has an appealing information theoretic interpretation in terms of minimizing information loss. The bottom-up nature of the algorithm likely makes it particularly well suited for constructing mesoscale models. I also present an extremely efficient expression for Bayesian model comparison that can be used to identify the most meaningful levels of the hierarchy of models from BACE.},
+  pmcid = {PMC3477182},
+  pmid = {23039589},
+  file = {/Users/robertarbon/Zotero/storage/MBFVR8UM/Bowman - 2012 - Improved coarse-graining of Markov state models vi.pdf}
+}
+
+@article{martiniVariationalIdentificationMarkovian2017,
+  title = {Variational {{Identification}} of {{Markovian Transition States}}},
+  author = {Martini, Linda and Kells, Adam and Covino, Roberto and Hummer, Gerhard and Buchete, Nicolae-Viorel and Rosta, Edina},
+  year = {2017},
+  month = sep,
+  journal = {Physical Review X},
+  volume = {7},
+  number = {3},
+  pages = {031060},
+  issn = {2160-3308},
+  doi = {10.1103/PhysRevX.7.031060},
+  urldate = {2021-06-16},
+  langid = {english},
+  file = {/Users/robertarbon/Zotero/storage/6DLRFIND/Martini et al. - 2017 - Variational Identification of Markovian Transition.pdf}
+}
+
+
+@article{noeProjectedHiddenMarkov2013a,
+  title = {Projected and Hidden {{Markov}} Models for Calculating Kinetics and Metastable States of Complex Molecules},
+  author = {No{\'e}, Frank and Wu, Hao and Prinz, Jan-Hendrik and Plattner, Nuria},
+  year = {2013},
+  month = nov,
+  journal = {The Journal of Chemical Physics},
+  volume = {139},
+  number = {18},
+  pages = {184114},
+  issn = {0021-9606, 1089-7690},
+  doi = {10.1063/1.4828816},
+  langid = {english}
+}
+
+
+@article{koskinVariationalKineticClustering2023,
+  title = {Variational Kinetic Clustering of Complex Networks},
+  author = {Koskin, Vladimir and Kells, Adam and Clayton, Joe and Hartmann, Alexander K. and Annibale, Alessia and Rosta, Edina},
+  year = {2023},
+  month = mar,
+  journal = {The Journal of Chemical Physics},
+  volume = {158},
+  number = {10},
+  pages = {104112},
+  issn = {1089-7690},
+  doi = {10.1063/5.0105099},
+  abstract = {Efficiently identifying the most important communities and key transition nodes in weighted and unweighted networks is a prevalent problem in a wide range of disciplines. Here, we focus on the optimal clustering using variational kinetic parameters, linked to Markov processes defined on the underlying networks, namely, the slowest relaxation time and the Kemeny constant. We derive novel relations in terms of mean first passage times for optimizing clustering via the Kemeny constant and show that the optimal clustering boundaries have equal round-trip times to the clusters they separate. We also propose an efficient method that first projects the network nodes onto a 1D reaction coordinate and subsequently performs a variational boundary search using a parallel tempering algorithm, where the variational kinetic parameters act as an energy function to be extremized. We find that maximization of the Kemeny constant is effective in detecting communities, while the slowest relaxation time allows for detection of transition nodes. We demonstrate the validity of our method on several test systems, including synthetic networks generated from the stochastic block model and real world networks (Santa Fe Institute collaboration network, a network of co-purchased political books, and a street network of multiple cities in Luxembourg). Our approach is compared with existing clustering algorithms based on modularity and the robust Perron cluster analysis, and the identified transition nodes are compared with different notions of node centrality.},
+  langid = {english},
+  pmid = {36922127},
+  file = {/Users/robertarbon/Zotero/storage/QGV45TDJ/Koskin et al. - 2023 - Variational kinetic clustering of complex networks.pdf}
+}
+
+@article{jainIdentifyingMetastableStates2012,
+  title = {Identifying {{Metastable States}} of {{Folding Proteins}}},
+  author = {Jain, Abhinav and Stock, Gerhard},
+  year = {2012},
+  month = oct,
+  journal = {Journal of Chemical Theory and Computation},
+  volume = {8},
+  number = {10},
+  pages = {3810--3819},
+  issn = {1549-9618, 1549-9626},
+  doi = {10.1021/ct300077q},
+  urldate = {2020-03-17},
+  abstract = {Recent molecular dynamics simulations of biopolymers have shown that in many cases the global features of the free energy landscape can be characterized in terms of the metastable conformational states of the system. To identify these states, a conceptionally and computationally simple approach is proposed. It consists of (i) an initial preprocessing via principal component analysis to reduce the dimensionality of the data, followed by k-means clustering to generate up to 104 microstates, (ii) the most probable path algorithm to identify the metastable states of the system, and (iii) boundary corrections of these states via the introduction of cluster cores in order to obtain the correct dynamics. By adopting two well-studied model problems, hepta-alanine and the villin headpiece protein, the potential and the performance of the approach are demonstrated.},
+  langid = {english},
+  file = {/Users/robertarbon/Zotero/storage/DTATEMZ9/Jain and Stock - 2012 - Identifying Metastable States of Folding Proteins.pdf}
+}
+
+@article{orioliDimensionalReductionMarkov2016,
+  title = {Dimensional Reduction of {{Markov}} State Models from Renormalization Group Theory},
+  author = {Orioli, S. and Faccioli, P.},
+  year = {2016},
+  month = sep,
+  journal = {The Journal of Chemical Physics},
+  volume = {145},
+  number = {12},
+  pages = {124120},
+  publisher = {{American Institute of Physics}},
+  issn = {0021-9606},
+  doi = {10.1063/1.4963196},
+  urldate = {2020-03-17},
+  file = {/Users/robertarbon/Zotero/storage/EWHRC3KD/Orioli and Faccioli - 2016 - Dimensional reduction of Markov state models from .pdf;/Users/robertarbon/Zotero/storage/GC833NIY/1.html}
+}
+
+@article{jainHierarchicalFoldingFree2014,
+  title = {Hierarchical {{Folding Free Energy Landscape}} of {{HP35 Revealed}} by {{Most Probable Path Clustering}}},
+  author = {Jain, Abhinav and Stock, Gerhard},
+  year = {2014},
+  month = jul,
+  journal = {The Journal of Physical Chemistry B},
+  volume = {118},
+  number = {28},
+  pages = {7750--7760},
+  publisher = {{American Chemical Society}},
+  issn = {1520-6106},
+  doi = {10.1021/jp410398a},
+  urldate = {2021-07-15},
+  abstract = {Adopting extensive molecular dynamics simulations of villin headpiece protein (HP35) by Shaw and co-workers, a detailed theoretical analysis of the folding of HP35 is presented. The approach is based on the recently proposed most probable path algorithm which identifies the metastable states of the system, combined with dynamical coring of these states in order to obtain a consistent Markov state model. The method facilitates the construction of a dendrogram associated with the folding free-energy landscape of HP35, which reveals a hierarchical funnel structure and shows that the native state is rather a kinetic trap than a network hub. The energy landscape of HP35 consists of the entropic unfolded basin U, where the prestructuring of the protein takes place, the intermediate basin I, which is connected to U via the rate-limiting U {\textrightarrow} I transition state reflecting the formation of helix-1, and the native basin N, containing a state close to the NMR structure and a native-like state that exhibits enhanced fluctuations of helix-3. The model is in line with recent experimental observations that the intermediate and native states differ mostly in their dynamics (locked vs unlocked states). Employing dihedral angle principal component analysis, subdiffusive motion on a multidimensional free-energy surface is found.},
+  file = {/Users/robertarbon/Zotero/storage/9WU5SRWP/Jain and Stock - 2014 - Hierarchical Folding Free Energy Landscape of HP35.pdf;/Users/robertarbon/Zotero/storage/GCHPTJJU/jp410398a.html}
+}
+
+@article{hummerOptimalDimensionalityReduction2015,
+  title = {Optimal {{Dimensionality Reduction}} of {{Multistate Kinetic}} and {{Markov-State Models}}},
+  author = {Hummer, Gerhard and Szabo, Attila},
+  year = {2015},
+  month = jul,
+  journal = {The Journal of Physical Chemistry B},
+  volume = {119},
+  number = {29},
+  pages = {9029--9037},
+  issn = {1520-6106, 1520-5207},
+  doi = {10.1021/jp508375q},
+  urldate = {2021-07-16},
+  abstract = {We develop a systematic procedure for obtaining rate and transition matrices that optimally describe the dynamics of aggregated superstates formed by combining (clustering or lumping) microstates. These reduced dynamical models are constructed by matching the time-dependent occupancy-number correlation functions of the superstates in the full and aggregated systems. Identical results are obtained by using a projection operator formalism. The reduced dynamic models are exact for all times in their full non-Markovian formulation. In the approximate Markovian limit, we derive simple analytic expressions for the reduced rate or Markov transition matrices that lead to exact auto- and cross-relaxation times. These reduced Markovian models strike an optimal balance between matching the dynamics at short and long times. We also discuss how this approach can be used in a hierarchical procedure of constructing optimal superstates through aggregation of microstates. The results of the general reduced-matrix theory are illustrated with applications to simple model systems and a more complex master-equation model of peptide folding derived previously from atomistic molecular dynamics simulations. We find that the reduced models faithfully capture the dynamics of the full systems, producing substantial improvements over the common local-equilibrium approximation.},
+  langid = {english},
+  file = {/Users/robertarbon/Zotero/storage/JWTE3TNR/Hummer and Szabo - 2015 - Optimal Dimensionality Reduction of Multistate Kin.pdf}
+}
+
+
+
+@article{mitsutakeRelaxationModeAnalysis2018,
+  title = {Relaxation Mode Analysis for Molecular Dynamics Simulations of Proteins},
+  author = {Mitsutake, Ayori and Takano, Hiroshi},
+  year = {2018},
+  month = apr,
+  journal = {Biophysical Reviews},
+  volume = {10},
+  number = {2},
+  pages = {375--389},
+  issn = {1867-2469},
+  doi = {10.1007/s12551-018-0406-7},
+  urldate = {2023-11-29},
+  abstract = {Molecular dynamics simulation is a powerful method for investigating the structural stability, dynamics, and function of biopolymers at the atomic level. In recent years, it has become possible to perform simulations on time scales of the order of milliseconds using special hardware. However, it is necessary to derive the important factors contributing to structural change or function from the complicated movements of biopolymers obtained from long simulations. Although some analysis methods for protein systems have been developed using increasing simulation times, many of these methods are static in nature (i.e., no information on time). In recent years, dynamic analysis methods have been developed, such as the Markov state model and relaxation mode analysis (RMA), which was introduced based on spin and homopolymer systems. The RMA method approximately extracts slow relaxation modes and rates from trajectories and decomposes the structural fluctuations into slow relaxation modes, which characterize the slow relaxation dynamics of the system. Recently, this method has been applied to biomolecular systems. In this article, we review RMA and its improved versions for protein systems.},
+  langid = {english},
+  keywords = {Analysis,Dynamics,Protein,Simulation},
+  file = {/Users/robertarbon/Zotero/storage/S69SJ5BB/Mitsutake and Takano - 2018 - Relaxation mode analysis for molecular dynamics si.pdf}
+}
+
+
+
+@article{cannariato_prediction_2022,
   title = {Prediction of {{Protein}}\textendash{{Protein Interactions Between Alsin DH}}/{{PH}} and {{Rac1}} and {{Resulting Protein Dynamics}}},
   author = {Cannariato, Marco and Miceli, Marcello and Cavagli{\`a}, Marco and Deriu, Marco A.},
   year = {2022},
@@ -11,6 +187,41 @@
   file = {/Users/robertarbon/Zotero/storage/5MXIIDN9/Cannariato et al. - 2022 - Prediction of Protein–Protein Interactions Between.pdf}
 }
 
+@article{nagelBenchmarkMarkovState2023,
+  title = {Toward a {{Benchmark}} for {{Markov State Models}}: {{The Folding}} of {{HP35}}},
+  shorttitle = {Toward a {{Benchmark}} for {{Markov State Models}}},
+  author = {Nagel, Daniel and Sartore, Sofia and Stock, Gerhard},
+  year = {2023},
+  month = aug,
+  journal = {The Journal of Physical Chemistry Letters},
+  volume = {14},
+  number = {31},
+  pages = {6956--6967},
+  publisher = {{American Chemical Society}},
+  doi = {10.1021/acs.jpclett.3c01561},
+  urldate = {2023-11-27},
+  abstract = {Adopting a 300 {$\mu$}s long MD trajectory of the folding of villin headpiece (HP35) by D. E. Shaw Research, we recently constructed a Markov state model (MSM) based on inter-residue contacts. The model reproduces the folding time and predicts that the native basin and unfolded region consist of metastable substates that are structurally well-characterized. Recognizing the need to establish well-defined benchmark problems, we study to what extent and in what sense this MSM can be employed as a reference model. Hence, we test the robustness of the MSM by comparing it to models that use alternative combinations of features, dimensionality reduction methods, and clustering schemes. The study suggests some main characteristics of the folding of HP35 that should be reproduced by other competitive models. Moreover, the discussion reveals which parts of the MSM workflow matter most for the considered problem and illustrates the promises and pitfalls of state-based models for the interpretation of biomolecular simulations.},
+  file = {/Users/robertarbon/Zotero/storage/8HTPWY3F/Nagel et al. - 2023 - Toward a Benchmark for Markov State Models The Fo.pdf}
+}
+
+
+@article{nagelSelectingFeaturesMarkov2023a,
+  title = {Selecting {{Features}} for {{Markov Modeling}}: {{A Case Study}} on {{HP35}}},
+  shorttitle = {Selecting {{Features}} for {{Markov Modeling}}},
+  author = {Nagel, Daniel and Sartore, Sofia and Stock, Gerhard},
+  year = {2023},
+  month = jun,
+  journal = {Journal of Chemical Theory and Computation},
+  volume = {19},
+  number = {11},
+  pages = {3391--3405},
+  publisher = {{American Chemical Society}},
+  issn = {1549-9618},
+  doi = {10.1021/acs.jctc.3c00240},
+  urldate = {2023-11-28},
+  abstract = {Markov state models represent a popular means to interpret molecular dynamics trajectories in terms of memoryless transitions between metastable conformational states. To provide a mechanistic understanding of the considered biomolecular process, these states should reflect structurally distinct conformations and ensure a time scale separation between fast intrastate and slow interstate dynamics. Adopting the folding of villin headpiece (HP35) as a well-established model problem, here we discuss the selection of suitable input coordinates or ``features'', such as backbone dihedral angles and interresidue distances. We show that dihedral angles account accurately for the structure of the native energy basin of HP35, while the unfolded region of the free energy landscape and the folding process are best described by tertiary contacts of the protein. To construct a contact-based model, we consider various ways to define and select contact distances and introduce a low-pass filtering of the feature trajectory as well as a correlation-based characterization of states. Relying on input data that faithfully account for the mechanistic origin of the studied process, the states of the resulting Markov model are clearly discriminated by the features, describe consistently the hierarchical structure of the free energy landscape, and-as a consequence-correctly reproduce the slow time scales of the process.},
+  file = {/Users/robertarbon/Zotero/storage/H5SYY48D/Nagel et al. - 2023 - Selecting Features for Markov Modeling A Case Stu.pdf}
+}
 
 
 @article{chakrabarti_litmus_2022,
@@ -478,7 +689,6 @@ Publisher: Nature Publishing Group},
 	eprinttype = {arxiv},
 	eprint = {1604.00772 [cs.LG]},
 }
-
 
 @inproceedings{hutterSequentialModelbasedOptimization2011,
 	location = {Berlin, Heidelberg},
